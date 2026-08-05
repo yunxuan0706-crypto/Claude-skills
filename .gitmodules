@@ -1,0 +1,30 @@
+[submodule "external/scipilot-figure-skill"]
+	path = external/scipilot-figure-skill
+	url = https://github.com/Haojae/scipilot-figure-skill.git
+[submodule "external/academic-research-skills"]
+	path = external/academic-research-skills
+	url = https://github.com/imbad0202/academic-research-skills.git
+[submodule "external/AI-Research-SKILLs"]
+	path = external/AI-Research-SKILLs
+	url = https://github.com/Orchestra-Research/AI-Research-SKILLs.git
+[submodule "external/literature-survey-skill"]
+	path = external/literature-survey-skill
+	url = https://github.com/SNL-UCSB/literature-survey-skill.git
+[submodule "external/awesome-auto-research-tools"]
+	path = external/awesome-auto-research-tools
+	url = https://github.com/handsome-rich/Awesome-Auto-Research-Tools.git
+[submodule "external/PaperSpine"]
+	path = external/PaperSpine
+	url = https://github.com/WUBING2023/PaperSpine.git
+[submodule "external/claude-skill-citation-checker"]
+	path = external/claude-skill-citation-checker
+	url = https://github.com/PHY041/claude-skill-citation-checker.git
+[submodule "external/claude-statistical-analysis-skill"]
+	path = external/claude-statistical-analysis-skill
+	url = https://github.com/TerryFYL/claude-statistical-analysis-skill.git
+[submodule "external/paper-rag"]
+	path = external/paper-rag
+	url = https://github.com/LucasJLBraz/paper-rag.git
+[submodule "external/latex-precision-skill"]
+	path = external/latex-precision-skill
+	url = https://github.com/MagicMonkey-XK/latex-precision-skill.git

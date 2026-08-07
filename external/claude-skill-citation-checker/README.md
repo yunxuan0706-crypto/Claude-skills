@@ -114,12 +114,16 @@ Tested against 25 curated citations:
 Run the test suite yourself:
 
 ```bash
-# Unit tests only (no API calls)
-python tests/test_citation_checker.py --unit-only
+# Offline unit tests only (default — fast, deterministic, no network)
+python tests/test_citation_checker.py
 
-# Full suite (API calls, ~5 min)
-python tests/test_citation_checker.py --verbose
+# Full suite, adds the live-API accuracy tests (~2 min, needs network)
+python tests/test_citation_checker.py --integration --verbose
 ```
+
+The default run is offline-only so it terminates in seconds and is safe for
+CI/sandboxes. The `--integration` tests are opt-in and skip themselves
+automatically if the citation APIs are unreachable.
 
 ## CI/CD Integration
 

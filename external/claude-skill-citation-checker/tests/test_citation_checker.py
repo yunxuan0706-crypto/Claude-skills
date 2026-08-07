@@ -10,8 +10,14 @@ Tests against a curated set of:
 This prevents the worst failure mode: marking correct citations as wrong.
 
 Usage:
-    python tests/test_citation_checker.py
-    python tests/test_citation_checker.py --verbose
+    python tests/test_citation_checker.py               # offline unit tests only (fast, deterministic)
+    python tests/test_citation_checker.py --integration # + live-API tests (~2 min, needs network)
+    python tests/test_citation_checker.py -i --verbose  # integration with API debug output
+
+By default only the offline unit tests run, so this command terminates in
+seconds and is safe for CI/sandboxes. The live-API integration tests are
+opt-in via --integration and are skipped automatically if the citation APIs
+are unreachable.
 """
 
 import sys
@@ -452,11 +458,40 @@ def test_chimeric(verbose: bool = False) -> tuple[int, int]:
 # Main
 # ============================================================
 
+def network_available(timeout: float = 5.0) -> bool:
+    """Best-effort check that the citation APIs are reachable.
+
+    The integration tests otherwise sleep 3s between ~25 live lookups (plus
+    429 back-offs), so on a sandbox/CI box with no outbound network they would
+    block for minutes before failing. A single short probe lets us skip them
+    cleanly instead."""
+    try:
+        import requests
+        requests.get("https://api.crossref.org/works?rows=0", timeout=timeout)
+        return True
+    except Exception:
+        return False
+
+
 def main():
     import argparse
-    parser = argparse.ArgumentParser()
+    parser = argparse.ArgumentParser(
+        description=(
+            "Citation-checker accuracy tests. Offline unit tests run by "
+            "default; pass --integration to also run the live-API tests "
+            "(~2 min, needs network)."
+        )
+    )
     parser.add_argument("--verbose", "-v", action="store_true")
-    parser.add_argument("--unit-only", action="store_true", help="Skip API tests")
+    parser.add_argument(
+        "--integration", "-i", action="store_true",
+        help="Also run the live-API integration tests (needs network, ~2 min)",
+    )
+    # Kept for backward compatibility; offline-only is now the default.
+    parser.add_argument(
+        "--unit-only", action="store_true",
+        help="(default) Run only the offline unit tests",
+    )
     args = parser.parse_args()
 
     print("=" * 60)
@@ -471,14 +506,21 @@ def main():
     results["red_flags"] = test_red_flags()
     results["rate_limit_classification"] = test_rate_limit_classification()
 
-    if not args.unit_only:
+    if args.integration:
         print("\n" + "=" * 60)
         print("  INTEGRATION TESTS (API calls — ~2 min)")
         print("=" * 60)
 
-        results["known_good"] = test_known_good(verbose=args.verbose)
-        results["known_bad"] = test_known_bad(verbose=args.verbose)
-        results["chimeric"] = test_chimeric(verbose=args.verbose)
+        if not network_available():
+            print("\n  SKIP: citation APIs unreachable — skipping integration")
+            print("        tests (network required). Offline unit tests above")
+            print("        are authoritative for this run.")
+        else:
+            results["known_good"] = test_known_good(verbose=args.verbose)
+            results["known_bad"] = test_known_bad(verbose=args.verbose)
+            results["chimeric"] = test_chimeric(verbose=args.verbose)
+    else:
+        print("\n  (offline mode — pass --integration to run live-API tests)")
 
     # Summary
     print("\n" + "=" * 60)

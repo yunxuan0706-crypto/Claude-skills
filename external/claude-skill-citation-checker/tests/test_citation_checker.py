@@ -319,6 +319,75 @@ def test_red_flags():
     return passed, total
 
 
+def test_rate_limit_classification():
+    """Offline: a citation unverifiable ONLY because a source was 429'd must be
+    reported as 'rate_limited' (couldn't verify), never 'not_found' (looks
+    fabricated). Uses mocked HTTP responses — no network."""
+    print("\n--- Rate-Limit Classification Tests (offline) ---")
+    from scripts import citation_checker as c
+
+    orig_get, orig_sleep = c.requests.get, c.time.sleep
+    c.time.sleep = lambda *a, **k: None
+
+    class FakeResp:
+        def __init__(self, status, body=None, headers=None):
+            self.status_code, self._b, self.headers = status, body or {}, headers or {}
+        def json(self):
+            return self._b
+
+    def entry(title="Adam: A Method for Stochastic Optimization"):
+        return BibEntry(key="kingma2015adam", entry_type="article", title=title,
+                        authors="Diederik Kingma and Jimmy Ba", year="2015")
+
+    passed = total = 0
+    try:
+        # 1) CrossRef reachable-but-absent (200 empty), S2 + OpenAlex 429 -> rate_limited
+        def g1(url, headers=None, timeout=None):
+            if "crossref" in url:
+                return FakeResp(200, {"message": {"items": []}})
+            return FakeResp(429, headers={"Retry-After": "999999"})
+        c.requests.get = g1
+        r = verify_entry(entry())
+        total += 1
+        ok = r.status == "rate_limited" and r.rate_limited_sources == ["Semantic Scholar", "OpenAlex"]
+        print(f"  {'PASS' if ok else 'FAIL'}: 429'd sources -> rate_limited (got {r.status})")
+        passed += ok
+
+        # 2) All sources reachable, none match -> genuine not_found
+        def g2(url, headers=None, timeout=None):
+            if "crossref" in url:
+                return FakeResp(200, {"message": {"items": []}})
+            if "semanticscholar" in url:
+                return FakeResp(200, {"data": []})
+            return FakeResp(200, {"results": []})
+        c.requests.get = g2
+        r = verify_entry(entry("Totally Fake Nonexistent Paper Title 9xzq"))
+        total += 1
+        ok = r.status == "not_found"
+        print(f"  {'PASS' if ok else 'FAIL'}: reachable + no match -> not_found (got {r.status})")
+        passed += ok
+
+        # 3) One clean source finds it, another 429'd -> suspicious + coverage note
+        def g3(url, headers=None, timeout=None):
+            if "crossref" in url:
+                return FakeResp(200, {"message": {"items": [{
+                    "title": ["Adam: A Method for Stochastic Optimization"],
+                    "author": [{"given": "Diederik", "family": "Kingma"},
+                               {"given": "Jimmy", "family": "Ba"}],
+                    "DOI": "10.0/x"}]}})
+            return FakeResp(429, headers={"Retry-After": "999999"})
+        c.requests.get = g3
+        r = verify_entry(entry())
+        total += 1
+        ok = r.status == "suspicious" and any("Incomplete coverage" in n for n in r.notes)
+        print(f"  {'PASS' if ok else 'FAIL'}: 1 source + 429 -> suspicious w/ coverage note (got {r.status})")
+        passed += ok
+    finally:
+        c.requests.get, c.time.sleep = orig_get, orig_sleep
+
+    return passed, total
+
+
 # ============================================================
 # Integration Tests (API calls — rate limited)
 # ============================================================
@@ -400,6 +469,7 @@ def main():
     results["title_similarity"] = test_title_similarity()
     results["author_overlap"] = test_author_overlap()
     results["red_flags"] = test_red_flags()
+    results["rate_limit_classification"] = test_rate_limit_classification()
 
     if not args.unit_only:
         print("\n" + "=" * 60)

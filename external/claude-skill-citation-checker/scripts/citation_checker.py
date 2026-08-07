@@ -68,10 +68,14 @@ class BibEntry:
 @dataclass
 class VerificationResult:
     entry: BibEntry
-    status: str  # "verified", "suspicious", "not_found", "error"
+    # "verified", "suspicious", "not_found", "rate_limited", "error"
+    # "rate_limited" (local addition): couldn't verify because a source was
+    # 429'd — distinct from "not_found" (checked and confirmed absent).
+    status: str
     confidence: float  # 0.0 - 1.0
     sources_checked: list[str] = field(default_factory=list)
     sources_found: list[str] = field(default_factory=list)
+    rate_limited_sources: list[str] = field(default_factory=list)
     best_match_title: Optional[str] = None
     best_match_similarity: float = 0.0
     notes: list[str] = field(default_factory=list)
@@ -331,13 +335,34 @@ def _api_get(url, verbose=False, label="", extra_headers=None, timeout=15):
     return resp
 
 
+# Sentinel returned by a check_* function when it could NOT determine presence
+# because the source was rate-limited (429) or erroring (5xx) — as opposed to
+# returning None, which means "checked cleanly, no match found".
+RATE_LIMITED = object()
+
+
+def _was_rate_limited(resp) -> bool:
+    """True if a response represents a rate-limit / server error, not a clean
+    answer. ``None`` (a raised request) is treated as rate-limited too, since
+    we equally failed to get a verdict from that source."""
+    if resp is None:
+        return True
+    return resp.status_code == 429 or 500 <= resp.status_code < 600
+
+
 def check_crossref(entry: BibEntry, verbose: bool = False) -> Optional[dict]:
     """Search CrossRef for a matching paper. Covers 140M+ DOI-registered works."""
+    rate_limited = False  # saw a 429/5xx
+    got_clean = False     # saw a reachable 200 (so absence is real, not a miss)
     try:
         # If DOI is provided, verify directly
         if entry.doi:
             url = _with_mailto(f"https://api.crossref.org/works/{entry.doi}")
             resp = _api_get(url, verbose=verbose, label="CrossRef", timeout=10)
+            if _was_rate_limited(resp):
+                rate_limited = True
+            elif resp is not None and resp.status_code == 200:
+                got_clean = True
             if resp is not None and resp.status_code == 200:
                 data = resp.json()["message"]
                 title = data.get("title", [""])[0]
@@ -370,6 +395,10 @@ def check_crossref(entry: BibEntry, verbose: bool = False) -> Optional[dict]:
                 f"https://api.crossref.org/works?query.title={query}&rows=5"
             )
             resp = _api_get(url, verbose=verbose, label="CrossRef")
+            if _was_rate_limited(resp):
+                rate_limited = True
+            elif resp is not None and resp.status_code == 200:
+                got_clean = True
             if resp is not None and resp.status_code == 200:
                 items = resp.json().get("message", {}).get("items", [])
                 for item in items:
@@ -395,7 +424,7 @@ def check_crossref(entry: BibEntry, verbose: bool = False) -> Optional[dict]:
     except Exception as e:
         if verbose:
             print(f"  CrossRef error for '{entry.key}': {e}")
-    return None
+    return RATE_LIMITED if (rate_limited and not got_clean) else None
 
 
 def check_semantic_scholar(
@@ -410,7 +439,7 @@ def check_semantic_scholar(
         url, verbose=verbose, label="Semantic Scholar", extra_headers=extra_headers
     )
     if resp is None or resp.status_code != 200:
-        return None
+        return RATE_LIMITED if _was_rate_limited(resp) else None
     try:
         papers = resp.json().get("data", [])
     except Exception as e:
@@ -446,6 +475,8 @@ def check_openalex(entry: BibEntry, verbose: bool = False) -> Optional[dict]:
         if len(subtitle.split()) >= 4:
             search_titles.append(subtitle)
 
+    rate_limited = False
+    got_clean = False
     for search_title in search_titles:
         try:
             query = urllib.parse.quote(search_title)
@@ -458,6 +489,10 @@ def check_openalex(entry: BibEntry, verbose: bool = False) -> Optional[dict]:
                 label="OpenAlex",
                 extra_headers={"Accept": "application/json"},
             )
+            if _was_rate_limited(resp):
+                rate_limited = True
+            elif resp is not None and resp.status_code == 200:
+                got_clean = True
             if resp is not None and resp.status_code == 200:
                 results = resp.json().get("results", [])
                 for work in results:
@@ -481,7 +516,7 @@ def check_openalex(entry: BibEntry, verbose: bool = False) -> Optional[dict]:
         except Exception as e:
             if verbose:
                 print(f"  OpenAlex error for '{entry.key}': {e}")
-    return None
+    return RATE_LIMITED if (rate_limited and not got_clean) else None
 
 
 # ---------------------------------------------------------------------------
@@ -558,7 +593,11 @@ def verify_entry(entry: BibEntry, verbose: bool = False) -> VerificationResult:
             print(f"  Checking {source_name} for '{entry.key}'...")
 
         match = checker(entry, verbose=verbose)
-        if match:
+        if match is RATE_LIMITED:
+            # Source couldn't give a verdict (429/5xx) — record it so a final
+            # empty result reads as "couldn't verify", not "confirmed absent".
+            result.rate_limited_sources.append(source_name)
+        elif match:
             result.sources_found.append(source_name)
             matches.append(match)
 
@@ -600,6 +639,24 @@ def verify_entry(entry: BibEntry, verbose: bool = False) -> VerificationResult:
         result.status = "suspicious"
         result.confidence = 0.4 + (result.best_match_similarity * 0.2)
         result.notes.append("Found in only 1 source — verify manually")
+        if result.rate_limited_sources:
+            # Coverage was incomplete; a re-run may upgrade this to verified.
+            result.notes.append(
+                "Incomplete coverage — "
+                f"{', '.join(result.rate_limited_sources)} rate-limited (HTTP 429); "
+                "re-run later or add a Semantic Scholar API key"
+            )
+
+    elif result.rate_limited_sources:
+        # No source found it, but ≥1 source was never actually reached. This is
+        # "could not verify", NOT "confirmed absent" — do not cry hallucination.
+        result.status = "rate_limited"
+        result.confidence = 0.0
+        result.notes.append(
+            "COULD NOT VERIFY — "
+            f"{', '.join(result.rate_limited_sources)} rate-limited (HTTP 429); "
+            "not confirmed absent. Re-run later or add a Semantic Scholar API key."
+        )
 
     else:
         result.status = "not_found"
@@ -631,6 +688,7 @@ def verify_all(
                 "verified": " ✓",
                 "suspicious": " ?",
                 "not_found": " ✗",
+                "rate_limited": " ⏳",
                 "error": " !",
             }
             print(status_icon.get(result.status, " ?"))
@@ -652,6 +710,7 @@ def print_report(results: list[VerificationResult]) -> None:
     verified = [r for r in results if r.status == "verified"]
     suspicious = [r for r in results if r.status == "suspicious"]
     not_found = [r for r in results if r.status == "not_found"]
+    rate_limited = [r for r in results if r.status == "rate_limited"]
     with_flags = [r for r in results if r.red_flags]
 
     print("\n" + "=" * 65)
@@ -662,7 +721,19 @@ def print_report(results: list[VerificationResult]) -> None:
     print(f"  Verified (2+ sources): {len(verified)}")
     print(f"  Suspicious (1 source):  {len(suspicious)}")
     print(f"  NOT FOUND (0 sources):  {len(not_found)}")
+    if rate_limited:
+        print(f"  Could not verify (429): {len(rate_limited)}")
     print(f"  With red flags:         {len(with_flags)}")
+
+    if rate_limited:
+        print(f"\n  {'-'*60}")
+        print("  COULD NOT VERIFY — SOURCE RATE-LIMITED (not confirmed absent)")
+        print(f"  {'-'*60}")
+        for r in rate_limited:
+            print(f"\n  [{r.entry.key}] {r.entry.title}")
+            print(f"    Rate-limited: {', '.join(r.rate_limited_sources)}")
+            for note in r.notes:
+                print(f"    Note: {note}")
 
     if not_found:
         print(f"\n  {'='*60}")
@@ -715,6 +786,11 @@ def print_report(results: list[VerificationResult]) -> None:
             f"  RESULT: {len(suspicious)} SUSPICIOUS — "
             "manually verify these citations"
         )
+    elif rate_limited:
+        print(
+            f"  RESULT: {len(rate_limited)} CITATION(S) COULD NOT BE VERIFIED "
+            "due to rate limiting — re-run later (no hallucinations detected)"
+        )
     else:
         print("  RESULT: All citations verified in 2+ sources")
     print("=" * 65 + "\n")
@@ -728,6 +804,7 @@ def json_report(results: list[VerificationResult]) -> str:
             "verified": sum(1 for r in results if r.status == "verified"),
             "suspicious": sum(1 for r in results if r.status == "suspicious"),
             "not_found": sum(1 for r in results if r.status == "not_found"),
+            "rate_limited": sum(1 for r in results if r.status == "rate_limited"),
         },
         "citations": [],
     }
@@ -739,6 +816,7 @@ def json_report(results: list[VerificationResult]) -> str:
                 "status": r.status,
                 "confidence": round(r.confidence, 2),
                 "sources_found": r.sources_found,
+                "rate_limited_sources": r.rate_limited_sources,
                 "best_match_title": r.best_match_title,
                 "best_match_similarity": round(r.best_match_similarity, 2),
                 "red_flags": r.red_flags,

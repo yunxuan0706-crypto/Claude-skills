@@ -74,7 +74,11 @@ Each citation is checked against three independent databases:
 **Verification logic:**
 - Found in 2+ sources with matching title → **verified** (high confidence)
 - Found in 1 source only → **suspicious** (manual check recommended)
-- Found in 0 sources → **not_found** (likely hallucinated)
+- Found in 0 sources, all sources reachable → **not_found** (likely hallucinated)
+- Found in 0 sources *because a source was rate-limited* (HTTP 429) → **rate_limited**
+  (local addition): "could not verify", **not** "confirmed absent". Re-run later
+  (OpenAlex's shared-IP budget resets daily) or add a Semantic Scholar API key.
+  This prevents a transient 429 from falsely flagging a real citation as fabricated.
 
 ### Chimeric Detection
 

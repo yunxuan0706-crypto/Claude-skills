@@ -25,3 +25,11 @@ confidence logic is unchanged from upstream.
 Env vars are read through `_clean_env`, which discards any value still
 containing angle-bracket placeholder text (e.g. `<your-key>`) so a
 copy-pasted doc placeholder is never sent as a real credential.
+
+A `rate_limited` verification status was added (upstream has only
+verified / suspicious / not_found / error). When a citation ends up in no
+source *only because a source returned HTTP 429*, it is reported as
+"could not verify" rather than "not_found" — so a transient rate limit on
+a shared IP never mislabels a real reference as a hallucination. The
+matching / confidence thresholds are still unchanged; this only reclassifies
+the empty-result case based on whether sources were actually reachable.

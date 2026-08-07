@@ -33,3 +33,11 @@ source *only because a source returned HTTP 429*, it is reported as
 a shared IP never mislabels a real reference as a hallucination. The
 matching / confidence thresholds are still unchanged; this only reclassifies
 the empty-result case based on whether sources were actually reachable.
+
+`tests/test_citation_checker.py` now runs the **offline unit tests by
+default** and gates the live-API accuracy tests behind `--integration`
+(upstream ran the network tests by default). The integration path also does
+a short reachability probe and skips itself when the citation APIs are
+unreachable. This keeps the documented `python tests/test_citation_checker.py`
+command fast and deterministic in CI/sandboxes instead of hanging for minutes
+on ~25 rate-limited live lookups. Test data and assertions are unchanged.

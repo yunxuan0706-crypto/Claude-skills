@@ -76,7 +76,7 @@ $$
 \qquad\text{（串联／同向，}\mathcal{R}\text{-偶）}
 $$
 $$
-\alpha^{\rightleftarrows}=\bigl\langle \min\bigl(n_{HT},n_{TH}\bigr)\bigr\rangle
+\alpha^{\rightleftarrows}=\text{强互惠超边占比（定义见下）}
 \qquad\text{（互惠／反向，}\mathcal{R}\text{-偶）}
 $$
 $$
@@ -89,6 +89,27 @@ $$
 $$
 
 这就把大纲的两个记号 $\alpha^{\rightrightarrows}/\alpha^{\rightleftarrows}$ 落到了确定的可计算式上，同时暴露出**大纲遗漏的两个自由度** $\alpha^{\parallel}$ 与 $\Delta\alpha$。$\alpha^{\parallel}$ 必须在扫描 $\alpha^{\rightrightarrows}$ 时**固定住**，否则扫描把三种效应混在一起；$\Delta\alpha$ 则是下一节的主角。
+
+### 1.4 $\alpha^{\rightleftarrows}$：采用现成的强互惠定义
+
+互惠性不自己造。有向超图的互惠性已有两套独立的成熟测量：Kim 等最早给出系统的测度、真实数据发现与配套生成器 [kim2023reciprocity]，Lotito 等随后在微观组织框架中给出 exact / strong / weak 三档 [lotito2026directed]。本文**直接采用 Lotito 的 strong 档**，取
+
+$$
+\alpha^{\rightleftarrows}=\frac{\#\{e\in E:\ e\ \text{被强互惠}\}}{|E|}
+$$
+
+三档的层级为：**exact**——存在单条超边 $f$ 使 $T(f)=H(e)$ 且 $H(f)=T(e)$，即一条超边把 $e$ 完全反转；**strong**——存在一**组**超边**共同**完成反转，即它们的尾集并覆盖 $H(e)$、头集并覆盖 $T(e)$；**weak**——只要求至少一个节点参与反向交互。取 strong 是因为 exact 在真实数据中几乎恒为零（要求两个集合精确相等），weak 又过于宽松（单点即计）；strong 同时具备判别力与非平凡的经验取值。
+
+> **口径复用：** 采用 strong 档的直接好处是第 VII 部分可以复用 [lotito2026directed] 在比特币交易、代谢网络与引用数据上的现成测量口径，我们的实测值与其报告值可以直接并列，无需自证测量方式可比。[kim2023reciprocity] 的生成器还可作为互惠性维度的独立零模型来源。
+
+**必须写进正文的类型代价.** 这个选择有一处结构后果，不能含糊过去：strong 互惠是**超边级的集合覆盖判据**，而 §1.2 的 $\alpha^{ab}$ 是**超边对级的重叠深度**。因此
+
+- $\alpha^{\rightrightarrows}$、$\alpha^{\parallel}$、$\Delta\alpha$ 三者仍是同一张量的分量，共享 §2 性质 1 的退化关系；
+- $\alpha^{\rightleftarrows}$ **不是**该张量的分量，性质 1 对它不成立，它也不参与 §3 中转移算子 $\mathcal{M}$ 的权重构造。
+
+换言之，我们用"张量的三个宇称分量 + 一个外部互惠标量"这四个量刻画方向化重叠，而不是四个同类量。正文须明确写出这一点，否则读者会误以为四者可以相互换算。作为代价的补偿，$\alpha^{\rightleftarrows}$ 获得了与两套已发表测量的直接可比性——这正是取 strong 档而非 $\langle\min(n_{HT},n_{TH})\rangle$ 的理由。
+
+> **待转录：** strong 互惠的精确判据（覆盖是否要求 $f\neq e$、是否允许 $f$ 重复计入、$T(f)$ 与 $H(e)$ 是否要求相等而非包含）须从 [lotito2026directed] 正文逐字转录后再定稿。本节所述层级来自其摘要与公开描述，方向正确，但边界条件尚未逐字核对。
 
 ---
 
@@ -190,5 +211,5 @@ $$
 
 ## 5. 仍需拍板
 
-- **归一化的分母。** 上文取 $\min(|A(e)|,|B(f)|)$。同质阶数下这就是 $\tau$、$\eta$ 或 $\min(\tau,\eta)$，无歧义；异质阶数下另有取 $\sqrt{|A||B|}$（余弦型）的选项，两者在异质性强时结论可能不同。建议主线用 $\min$，附录做敏感性检查。
-- **$\alpha^{\rightleftarrows}$ 的形式。** 上文取 $\langle\min(n_{HT},n_{TH})\rangle$。另一可选形式是 Lotito 等互惠性定义下的 exact/strong/weak 三档 [lotito2026directed]。若第 VII 部分要与真实数据对照，建议直接采用其 strong 定义以便复用其测量口径。
+- **归一化的分母。** 上文取 $\min(|A(e)|,|B(f)|)$。同质阶数下这就是 $\tau$、$\eta$ 或 $\min(\tau,\eta)$，无歧义；异质阶数下另有取 $\sqrt{|A||B|}$（余弦型）的选项，两者在异质性强时结论可能不同。**主线沿用 $\min$**，附录做敏感性检查。
+- **$\alpha^{\rightleftarrows}$ 已定：** 采用 [lotito2026directed] 的 strong 互惠档（§1.4），其精确边界条件待从原文逐字转录。

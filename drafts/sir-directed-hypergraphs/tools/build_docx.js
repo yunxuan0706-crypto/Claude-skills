@@ -296,7 +296,7 @@ while (i < md.length) {
 // ---------------------------------------------------- bibliography ----
 function parseBib(src) {
   const entries = [];
-  const re = /@article\{([^,]+),([\s\S]*?)\n\}/g;
+  const re = /@(?:article|inproceedings|incollection|book)\{([^,]+),([\s\S]*?)\n\}/g;
   let m;
   while ((m = re.exec(src))) {
     const key = m[1].trim();
@@ -346,7 +346,7 @@ for (const e of bib) {
   bits.push(fmtAuthors(e.author));
   bits.push(`(${e.year})`);
   bits.push(deTeX(e.title) + ".");
-  let tail = deTeX(e.journal);
+  let tail = deTeX(e.journal || e.booktitle);
   if (e.volume) tail += ` ${e.volume}`;
   if (e.pages) tail += `, ${deTeX(e.pages).replace(/--/g, "–")}`;
   bits.push(tail + ".");

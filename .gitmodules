@@ -16,9 +16,6 @@
 [submodule "external/PaperSpine"]
 	path = external/PaperSpine
 	url = https://github.com/WUBING2023/PaperSpine.git
-[submodule "external/claude-skill-citation-checker"]
-	path = external/claude-skill-citation-checker
-	url = https://github.com/PHY041/claude-skill-citation-checker.git
 [submodule "external/claude-statistical-analysis-skill"]
 	path = external/claude-statistical-analysis-skill
 	url = https://github.com/TerryFYL/claude-statistical-analysis-skill.git

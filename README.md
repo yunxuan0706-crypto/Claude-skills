@@ -18,14 +18,14 @@
 
 ## 外部技能(External Skills,git submodule)
 
-以下是 GitHub 上与学术科研工作流相关的第三方 Claude Skill 项目,以 **git submodule** 的形式接入 `external/` 目录 —— 不复制/vendor 其源码,只保留指向对应上游仓库指定 commit 的指针,更新时可随时对齐上游最新版本。
+以下是 GitHub 上与学术科研工作流相关的第三方 Claude Skill 项目,大多以 **git submodule** 的形式接入 `external/` 目录 —— 不复制/vendor 其源码,只保留指向对应上游仓库指定 commit 的指针,更新时可随时对齐上游最新版本。其中 **引用核验** 一项因需要本地改动(限流韧性),已转为 **vendored 副本**(见其 `PROVENANCE.md`)。
 
-| 类别 | 子模块路径 | 上游仓库 | 说明 |
+| 类别 | 路径 | 上游仓库 | 说明 |
 | --- | --- | --- | --- |
 | 科研图表 | [`external/scipilot-figure-skill`](external/scipilot-figure-skill) | [Haojae/scipilot-figure-skill](https://github.com/Haojae/scipilot-figure-skill) | 发表级科研图表 copilot,先诊断数据、推荐图表类型,再产出符合 Nature/Science/IEEE 等期刊规范的图 |
 | 自动化科研工具集 | [`external/awesome-auto-research-tools`](external/awesome-auto-research-tools) | [handsome-rich/Awesome-Auto-Research-Tools](https://github.com/handsome-rich/Awesome-Auto-Research-Tools) | 自动化科研工具精选列表,涵盖文献检索、读文献、实验管理、代码生成 |
 | 学术研究全流程 | [`external/academic-research-skills`](external/academic-research-skills) | [Imbad0202/academic-research-skills](https://github.com/imbad0202/academic-research-skills) | 覆盖 研究 → 写作 → 审阅 → 修订 → 定稿 全流程的学术研究技能套件 |
-| 引用核验 | [`external/claude-skill-citation-checker`](external/claude-skill-citation-checker) | [PHY041/claude-skill-citation-checker](https://github.com/PHY041/claude-skill-citation-checker) | 将 `.bib` 引用与 CrossRef / Semantic Scholar / OpenAlex 交叉核验,检测幻觉引用 |
+| 引用核验 *(vendored, 已改)* | [`external/claude-skill-citation-checker`](external/claude-skill-citation-checker) | [PHY041/claude-skill-citation-checker](https://github.com/PHY041/claude-skill-citation-checker) | 将 `.bib` 引用与 CrossRef / Semantic Scholar / OpenAlex 交叉核验,检测幻觉引用;本地加了 429 退避 + 礼貌池 mailto + 可选 S2 key |
 | 论文 RAG 检索 | [`external/paper-rag`](external/paper-rag) | [LucasJLBraz/paper-rag](https://github.com/LucasJLBraz/paper-rag) | 本地 RAG 系统,对一整个文件夹的 PDF 论文做混合检索(向量 + BM25),无需每次重读全文 |
 | 论文主线梳理 | [`external/PaperSpine`](external/PaperSpine) | [WUBING2023/PaperSpine](https://github.com/WUBING2023/PaperSpine) | 从强论文中提炼核心论证主线,辅助论文改写与证据驱动的修订 |
 | LaTeX 写作 | [`external/latex-precision-skill`](external/latex-precision-skill) | [MagicMonkey-XK/latex-precision-skill](https://github.com/MagicMonkey-XK/latex-precision-skill) | 逐行精修的 LaTeX 技能,支持公式、表格、交叉引用、参考文献与中文排版 |

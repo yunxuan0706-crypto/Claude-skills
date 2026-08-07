@@ -246,8 +246,23 @@ def author_overlap(entry_authors: str, found_authors: str) -> float:
 #                                  dedicated S2 rate limit.
 # ---------------------------------------------------------------------------
 
-MAILTO = os.environ.get("CITATION_CHECKER_MAILTO", "").strip()
-S2_API_KEY = os.environ.get("SEMANTIC_SCHOLAR_API_KEY", "").strip()
+def _clean_env(name: str) -> str:
+    """Read an env var, treating leftover placeholder text as "unset".
+
+    Setup docs use angle-bracket placeholders like ``<your-key>`` /
+    ``<申请到的 key，可选>``. If one gets pasted in verbatim, the raw value
+    would otherwise be sent as a real credential (e.g. an invalid S2 key that
+    the API rejects, which is worse than the anonymous free tier). Any value
+    containing an unescaped ``<`` or ``>`` is discarded.
+    """
+    val = os.environ.get(name, "").strip()
+    if not val or "<" in val or ">" in val:
+        return ""
+    return val
+
+
+MAILTO = _clean_env("CITATION_CHECKER_MAILTO")
+S2_API_KEY = _clean_env("SEMANTIC_SCHOLAR_API_KEY")
 
 MAX_RETRIES = 3
 # Never block a run for longer than this on a single request, even if the

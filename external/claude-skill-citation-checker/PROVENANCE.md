@@ -21,3 +21,7 @@ converted from a submodule to a vendored copy.
 See the "LOCAL MODIFICATIONS" banner near the top of
 `scripts/citation_checker.py`. Behavioural changes only; the matching /
 confidence logic is unchanged from upstream.
+
+Env vars are read through `_clean_env`, which discards any value still
+containing angle-bracket placeholder text (e.g. `<your-key>`) so a
+copy-pasted doc placeholder is never sent as a real credential.

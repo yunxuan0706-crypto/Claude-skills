@@ -7,9 +7,9 @@ const {
   LevelFormat, convertInchesToTwip,
 } = D;
 
-const SRC = "/home/user/Claude-skills/drafts/sir-directed-hypergraphs/part1-introduction.md";
+const SRC = process.argv[2];
 const BIB = "/home/user/Claude-skills/drafts/sir-directed-hypergraphs/references.bib";
-const OUT = "/home/user/Claude-skills/drafts/sir-directed-hypergraphs/part1-introduction.docx";
+const OUT = process.argv[3];
 
 const LATIN = "Times New Roman";
 const CJK = "SimSun";
@@ -19,10 +19,39 @@ const FONT = { ascii: LATIN, hAnsi: LATIN, eastAsia: CJK, cs: LATIN };
 const SYM = {
   "\\phi": "\u03c6", "\\alpha": "\u03b1", "\\tau": "\u03c4", "\\eta": "\u03b7",
   "\\mu": "\u03bc", "\\theta": "\u03b8", "\\lambda": "\u03bb", "\\beta": "\u03b2",
-  "\\to": "\u2192", "\\ge": "\u2265", "\\le": "\u2264", "\\in": "\u2208",
+  "\\sigma": "\u03c3", "\\rho": "\u03c1", "\\Delta": "\u0394", "\\varnothing": "\u2205",
+  "\\to": "\u2192", "\\ge": "\u2265", "\\le": "\u2264", "\\geq": "\u2265", "\\leq": "\u2264",
+  "\\in": "\u2208", "\\neq": "\u2260", "\\cap": "\u2229", "\\cup": "\u222a",
   "\\rightrightarrows": "\u21c9", "\\rightleftarrows": "\u21c4",
-  "\\rightarrow": "\u2192", "\\cdot": "\u00b7", "\\times": "\u00d7",
+  "\\rightarrow": "\u2192", "\\leftrightarrow": "\u2194", "\\mapsto": "\u21a6",
+  "\\cdot": "\u00b7", "\\times": "\u00d7", "\\propto": "\u221d", "\\infty": "\u221e",
+  "\\langle": "\u27e8", "\\rangle": "\u27e9", "\\parallel": "\u2225", "\\top": "\u22a4",
+  "\\sum": "\u03a3", "\\sqrt": "\u221a", "\\pm": "\u00b1", "\\approx": "\u2248",
+  "\\mid": "|", "\\lvert": "|", "\\rvert": "|", "\\ast": "*", "\\id": "id",
 };
+
+// Flatten LaTeX constructs that a run-based renderer cannot lay out in 2D.
+// The .md source stays authoritative; this is a legible linearization.
+function linearize(s) {
+  // Substitute known symbols FIRST. Stripping a wrapper like \mathcal{H} later
+  // removes its backslash, which would weld a preceding command to the letters
+  // that follow it (\mapsto\mathcal{R} -> \mapstoR) and lose the token boundary.
+  let o = s.replace(/\\[a-zA-Z]+/g, (tok) => (SYM[tok] !== undefined ? SYM[tok] : tok));
+  o = o.replace(/\\begin\{pmatrix\}([\s\S]*?)\\end\{pmatrix\}/g, (_, b) =>
+    "[" + b.replace(/\\\\/g, " ; ").replace(/&/g, ", ").replace(/\s+/g, " ").trim() + "]");
+  o = o.replace(/\\(?:t|d)?frac\s*\{((?:[^{}]|\{[^{}]*\})*)\}\s*\{((?:[^{}]|\{[^{}]*\})*)\}/g,
+    (_, a, b) => `(${a})/(${b})`);
+  // \tfrac12 shorthand: two bare digits, no braces
+  o = o.replace(/\\(?:t|d)?frac\s*(\d)\s*(\d)/g, (_, a, b) => `${a}/${b}`);
+  o = o.replace(/\\boxed\s*\{/g, "{");
+  o = o.replace(/\\(?:Bigl|Bigr|Bigm|bigl|bigr|bigm|left|right|Big|big)\s*/g, "");
+  o = o.replace(/\\(?:qquad|quad|;|:|,|!)/g, " ");
+  o = o.replace(/\\text(?:rm|it|bf)?\s*\{([^{}]*)\}/g, "$1");
+  o = o.replace(/\\mathcal\s*\{([^{}]*)\}/g, "$1");
+  o = o.replace(/\\#/g, "#").replace(/\\%/g, "%").replace(/\\&/g, "&");
+  o = o.replace(/\\\\/g, "  ");
+  return o;
+}
 
 // Parse a $...$ body into [{text, sub, sup, italic}]
 function parseMath(src) {
@@ -88,14 +117,14 @@ function grab(src, i) {
 // ------------------------------------------------------------- inline ----
 function runs(text, base = {}) {
   const out = [];
-  // split on $math$, **bold**, `code`
-  const re = /(\$[^$]+\$)|(\*\*[^*]+\*\*)|(`[^`]+`)/g;
+  // split on $math$, **bold**, *italic*, `code`
+  const re = /(\$[^$]+\$)|(\*\*[^*]+\*\*)|(`[^`]+`)|(\*[^*]+\*)/g;
   let last = 0, m;
   const plain = (s) => { if (s) out.push(new TextRun({ text: s, font: FONT, ...base })); };
   while ((m = re.exec(text))) {
     plain(text.slice(last, m.index));
     if (m[1]) {
-      for (const p of parseMath(m[1].slice(1, -1))) {
+      for (const p of parseMath(linearize(m[1].slice(1, -1)))) {
         out.push(new TextRun({
           text: p.text, font: { ascii: "Cambria Math", hAnsi: "Cambria Math", eastAsia: CJK },
           italics: !!p.italics, subScript: !!p.sub, superScript: !!p.sup, ...base,
@@ -109,6 +138,8 @@ function runs(text, base = {}) {
         font: { ascii: "Consolas", hAnsi: "Consolas", eastAsia: CJK },
         ...base,
       }));
+    } else if (m[4]) {
+      plain2(out, m[4].slice(1, -1), { ...base, italics: true });
     }
     last = re.lastIndex;
   }
@@ -129,8 +160,16 @@ const para = (text, opts = {}) =>
   new Paragraph({ children: runs(text), spacing: SP, ...opts });
 
 function tableFrom(rows) {
-  const header = rows[0];
-  const n = header.length;
+  const n = rows[0].length;
+  // A `|` inside inline math splits a row into too many cells; a short row is a
+  // typo. Normalise to the header width so a malformed row can't corrupt the table.
+  rows = rows.map((r, ri) => {
+    if (r.length === n) return r;
+    console.warn(`  table row ${ri}: ${r.length} cells, expected ${n} -> ${r.length > n ? "merging overflow" : "padding"}`);
+    return r.length > n
+      ? [...r.slice(0, n - 1), r.slice(n - 1).join(" | ")]
+      : [...r, ...Array(n - r.length).fill("")];
+  });
   const total = convertInchesToTwip(6.5);
   const colW = Array(n).fill(Math.floor(total / n));
   colW[n - 1] = total - colW[0] * (n - 1);
@@ -167,6 +206,25 @@ while (i < md.length) {
       border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "BBBBBB", space: 1 } },
     }));
     i++; continue;
+  }
+
+  // display math: a $$ fence, its body, and a closing $$
+  if (t === "$$") {
+    const buf = [];
+    i++;
+    while (i < md.length && md[i].trim() !== "$$") { buf.push(md[i].trim()); i++; }
+    i++; // consume closing fence
+    const body = linearize(buf.join(" "));
+    children.push(new Paragraph({
+      children: parseMath(body).map((p) => new TextRun({
+        text: p.text,
+        font: { ascii: "Cambria Math", hAnsi: "Cambria Math", eastAsia: CJK },
+        italics: !!p.italics, subScript: !!p.sub, superScript: !!p.sup, size: 21,
+      })),
+      alignment: AlignmentType.CENTER,
+      spacing: { before: 180, after: 180, line: 300 },
+    }));
+    continue;
   }
 
   if (t.startsWith("#")) {

@@ -1,7 +1,7 @@
 # 第 I 部分　引言与定位
 
 > 有向超图上的 SIR 传播：方程法与渗流法的统一分析
-> 草稿版本 v2 · 对应大纲 I.1 / I.2 · 全部文献已过 cite-verify 核验（46/46 命中，0 未找到）
+> 草稿版本 v2 · 对应大纲 I.1 / I.2 · 全部文献已过 cite-verify 核验（59/59 命中，0 未找到）
 > v2 改动：定位由"填补空白"改为"改进与方法创新"；按第二轮全库检索重写与 [li2024directed] 的关系；α 定义见 `alpha-definition.md`
 
 ---
@@ -147,16 +147,18 @@ C3 现改为"有向超边重叠的可计算定义 + 以 $(r_{io},\alpha)$ 为靶
 
 **仍需老师拍板：** 目标期刊（大纲 G-3）。本稿按"物理类专业刊（PRE / Communications Physics）"的篇幅与叙事密度写；若改投 Nature 系子刊，I.1 需压到 3–4 段、去掉分点列表，并把"为什么一般读者该关心方向性"提到第一段。注意 [li2024directed] 本身发在 Communications Physics，投同刊时审稿人极可能就是该组——I.2 中对它的边界划分必须经得起原作者审阅。
 
+**若考虑数学类期刊**（Journal of Mathematical Biology 等），改动远大于换模板：C1 与 C2 须从"闭合近似 + 仿真校验"升级为大数定律与阈值定理，且群体阈值 $\theta\ge2$ 建议移出主线定理（bootstrap/k-core 型的严格结果极难 [morrison2021bootstrap]）。完整分析、所需定理清单与可依托的现成结果见 `math-journal-positioning.md`。
+
 ---
 
 ## 引用核验状态
 
-全部 46 条参考文献已通过 `cite-verify` 第二轮核验：
+全部 59 条参考文献已通过 `cite-verify` 核验（第三轮，含数学向文献）：
 
 | 状态 | 数量 |
 |---|---|
-| verified（≥2 个独立数据库命中） | 38 |
+| verified（≥2 个独立数据库命中） | 50 |
 | suspicious（仅 CrossRef 命中，因 S2/OpenAlex 限流） | 8 |
 | **not_found（疑似虚构）** | **0** |
 
-8 条 suspicious 全部为**限流造成的单源命中**，其标题在 CrossRef 中相似度均为 100%。触发的红旗全部为解析假象，已逐条手工回查 CrossRef 确认：`pastorsatorras2001` 的"作者不匹配"来自匹配到同名书籍章节的作者拼写错误版本；`boguna2005directed`、`lamataotin2025matrix`、`malizia2025overlap`、`malizia2025gbcm` 的"单字作者名"与"作者不匹配"均由 LaTeX 重音转义（如 `Bogu{\~n}{\'a}`、`Lamata-Ot{\'i}n`、`Guzm{\'a}n`）导致。参考文献见 `references.bib`。
+9 条 suspicious 全部为**限流造成的单源命中或 LaTeX 重音解析假象**，其标题在 CrossRef 中相似度均为 100%。触发的红旗全部为解析假象，已逐条手工回查 CrossRef 确认：`pastorsatorras2001` 的"作者不匹配"来自匹配到同名书籍章节的作者拼写错误版本；`boguna2005directed`、`lamataotin2025matrix`、`malizia2025overlap`、`malizia2025gbcm` 的"单字作者名"与"作者不匹配"均由 LaTeX 重音转义（如 `Bogu{\~n}{\'a}`、`Lamata-Ot{\'i}n`、`Guzm{\'a}n`）导致。参考文献见 `references.bib`。

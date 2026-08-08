@@ -350,8 +350,11 @@ function fmtAuthors(a) {
   return list.join(", ");
 }
 
-const bib = parseBib(fs.readFileSync(BIB, "utf8")).sort((a, b) => a.key.localeCompare(b.key));
+const bib = process.env.NO_AUTO_BIB
+  ? []
+  : parseBib(fs.readFileSync(BIB, "utf8")).sort((a, b) => a.key.localeCompare(b.key));
 
+if (bib.length) {
 children.push(new Paragraph({
   text: "", spacing: { before: 200, after: 200 },
   border: { bottom: { style: BorderStyle.SINGLE, size: 6, color: "BBBBBB", space: 1 } },
@@ -381,6 +384,7 @@ for (const e of bib) {
     spacing: { before: 60, after: 60, line: 280 },
     indent: { left: 420, hanging: 420 },
   }));
+}
 }
 
 // -------------------------------------------------------------- doc ----

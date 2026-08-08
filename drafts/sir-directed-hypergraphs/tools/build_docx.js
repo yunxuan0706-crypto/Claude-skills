@@ -208,6 +208,27 @@ while (i < md.length) {
     i++; continue;
   }
 
+  // fenced code block: monospace, one paragraph per line, no inline parsing
+  // (ASCII diagrams only align in a fixed-width font, and their glyphs would
+  // otherwise be eaten as markdown)
+  if (t.startsWith("```")) {
+    i++;
+    const buf = [];
+    while (i < md.length && !md[i].trim().startsWith("```")) { buf.push(md[i]); i++; }
+    i++; // consume closing fence
+    buf.forEach((b, bi) => children.push(new Paragraph({
+      children: [new TextRun({
+        text: b.replace(/\t/g, "    ") || " ",
+        font: { ascii: "Consolas", hAnsi: "Consolas", eastAsia: CJK },
+        size: 17,
+      })],
+      spacing: { before: bi === 0 ? 140 : 0, after: bi === buf.length - 1 ? 140 : 0, line: 240 },
+      shading: { type: ShadingType.CLEAR, fill: "F4F6F8" },
+      indent: { left: 200 },
+    })));
+    continue;
+  }
+
   // display math: a $$ fence, its body, and a closing $$
   if (t === "$$") {
     const buf = [];

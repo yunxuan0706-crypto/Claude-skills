@@ -145,9 +145,12 @@ C3 现改为"有向超边重叠的可计算定义 + 以 $(r_{io},\alpha)$ 为靶
 
 引用核验同步重跑：46 条全部命中，0 未找到（详见文末）。
 
-**仍需老师拍板：** 目标期刊（大纲 G-3）。本稿按"物理类专业刊（PRE / Communications Physics）"的篇幅与叙事密度写；若改投 Nature 系子刊，I.1 需压到 3–4 段、去掉分点列表，并把"为什么一般读者该关心方向性"提到第一段。注意 [li2024directed] 本身发在 Communications Physics，投同刊时审稿人极可能就是该组——I.2 中对它的边界划分必须经得起原作者审阅。
+**目标期刊已定（大纲 G-3 关闭）：物理类专业刊（PRE / Communications Physics）**，走短工期路线。本稿的篇幅与叙事密度即按此撰写，无需改写。
 
-**若考虑数学类期刊**（Journal of Mathematical Biology 等），改动远大于换模板：C1 与 C2 须从"闭合近似 + 仿真校验"升级为大数定律与阈值定理，且群体阈值 $\theta\ge2$ 建议移出主线定理（bootstrap/k-core 型的严格结果极难 [morrison2021bootstrap]）。完整分析、所需定理清单与可依托的现成结果见 `math-journal-positioning.md`。
+两点随之确定的事项：
+
+- **数学向路线不走，但保留为后续。** 升级为大数定律与阈值定理需额外 3–4 个月，且关键的局部弱收敛一步没有现成模板。分析、定理清单与可依托结果留在 `math-journal-positioning.md`，作为姊妹论文的备用方案。本稿正文因此**不需要**引入严格化谱系；`references.bib` 中的 11 条相关文献暂时保留为素材池，投稿前可压缩为一句"严格化结果在成对图上已有 [janson2014lln, decreusefond2012]"，或整体删除。
+- **审稿人风险。** [li2024directed] 本身发在 Communications Physics，投同刊时审稿人极可能就是该组——I.2 中对它的边界划分必须经得起原作者审阅。这也是 C1 必须给出"边基 vs 均场"定量对照的原因（见 `execution-plan.md` 第 1 周）。
 
 ---
 

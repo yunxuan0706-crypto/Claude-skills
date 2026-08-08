@@ -60,7 +60,7 @@ function linearize(s) {
   o = o.replace(/\\(?:qquad|quad|;|:|,|!)/g, " ");
   o = o.replace(/\\text(?:rm|it|bf)?\s*\{([^{}]*)\}/g, "$1");
   o = o.replace(/\\mathcal\s*\{([^{}]*)\}/g, "$1");
-  const BB = { P: "\u2119", E: "\u1d53c", R: "\u211d", N: "\u2115", Z: "\u2124", Q: "\u211a", C: "\u2102" };
+  const BB = { P: "\u2119", R: "\u211d", N: "\u2115", Z: "\u2124", Q: "\u211a", C: "\u2102" };
   o = o.replace(/\\mathbb\s*\{([^{}]*)\}/g, (_, x) => BB[x] || x);
   o = o.replace(/\\(?:mathrm|mathbf|mathsf|operatorname)\s*\{([^{}]*)\}/g, "$1");
   o = o.replace(/\\#/g, "#").replace(/\\%/g, "%").replace(/\\&/g, "&");

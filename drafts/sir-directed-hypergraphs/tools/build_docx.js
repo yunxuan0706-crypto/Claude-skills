@@ -4,6 +4,7 @@ const D = require("docx");
 const {
   Document, Packer, Paragraph, TextRun, HeadingLevel, AlignmentType,
   Table, TableRow, TableCell, WidthType, ShadingType, BorderStyle,
+  TabStopType,
   LevelFormat, convertInchesToTwip,
 } = D;
 
@@ -28,6 +29,14 @@ const SYM = {
   "\\langle": "\u27e8", "\\rangle": "\u27e9", "\\parallel": "\u2225", "\\top": "\u22a4",
   "\\sum": "\u03a3", "\\sqrt": "\u221a", "\\pm": "\u00b1", "\\approx": "\u2248",
   "\\mid": "|", "\\lvert": "|", "\\rvert": "|", "\\ast": "*", "\\id": "id",
+  "\\Theta": "\u0398", "\\Lambda": "\u039b", "\\Sigma": "\u03a3", "\\Omega": "\u03a9",
+  "\\Gamma": "\u0393", "\\Phi": "\u03a6", "\\Psi": "\u03a8", "\\Pi": "\u03a0",
+  "\\gamma": "\u03b3", "\\delta": "\u03b4", "\\epsilon": "\u03b5", "\\nu": "\u03bd",
+  "\\subseteq": "\u2286", "\\subset": "\u2282", "\\supseteq": "\u2287",
+  "\\forall": "\u2200", "\\exists": "\u2203", "\\emptyset": "\u2205",
+  "\\equiv": "\u2261", "\\sim": "\u223c", "\\simeq": "\u2243",
+  "\\circ": "\u2218", "\\setminus": "\u2216", "\\perp": "\u22a5",
+  "\\longmapsto": "\u27fc", "\\ne": "\u2260", "\\colon": ":",
 };
 
 // Flatten LaTeX constructs that a run-based renderer cannot lay out in 2D.
@@ -39,15 +48,21 @@ function linearize(s) {
   let o = s.replace(/\\[a-zA-Z]+/g, (tok) => (SYM[tok] !== undefined ? SYM[tok] : tok));
   o = o.replace(/\\begin\{pmatrix\}([\s\S]*?)\\end\{pmatrix\}/g, (_, b) =>
     "[" + b.replace(/\\\\/g, " ; ").replace(/&/g, ", ").replace(/\s+/g, " ").trim() + "]");
-  o = o.replace(/\\(?:t|d)?frac\s*\{((?:[^{}]|\{[^{}]*\})*)\}\s*\{((?:[^{}]|\{[^{}]*\})*)\}/g,
+  o = o.replace(/\\(?:t|d)?frac\s*\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}\s*\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}/g,
     (_, a, b) => `(${a})/(${b})`);
   // \tfrac12 shorthand: two bare digits, no braces
   o = o.replace(/\\(?:t|d)?frac\s*(\d)\s*(\d)/g, (_, a, b) => `${a}/${b}`);
+  o = o.replace(/\\begin\{cases\}([\s\S]*?)\\end\{cases\}/g, (_, b) =>
+    "\\{" + b.replace(/\\\\/g, "; ").replace(/&/g, "").replace(/\s+/g, " ").trim() + "\\}");
+  o = o.replace(/\\(?:bar|overline)\s*\{?([A-Za-z])\}?/g, "$1\u0304");
   o = o.replace(/\\boxed\s*\{/g, "{");
   o = o.replace(/\\(?:Bigl|Bigr|Bigm|bigl|bigr|bigm|left|right|Big|big)\s*/g, "");
   o = o.replace(/\\(?:qquad|quad|;|:|,|!)/g, " ");
   o = o.replace(/\\text(?:rm|it|bf)?\s*\{([^{}]*)\}/g, "$1");
   o = o.replace(/\\mathcal\s*\{([^{}]*)\}/g, "$1");
+  const BB = { P: "\u2119", E: "\u1d53c", R: "\u211d", N: "\u2115", Z: "\u2124", Q: "\u211a", C: "\u2102" };
+  o = o.replace(/\\mathbb\s*\{([^{}]*)\}/g, (_, x) => BB[x] || x);
+  o = o.replace(/\\(?:mathrm|mathbf|mathsf|operatorname)\s*\{([^{}]*)\}/g, "$1");
   o = o.replace(/\\#/g, "#").replace(/\\%/g, "%").replace(/\\&/g, "&");
   o = o.replace(/\\\\/g, "  ");
   return o;
@@ -61,6 +76,11 @@ function parseMath(src) {
   while (i < src.length) {
     const c = src[i];
     if (c === "\\") {
+      if (src[i + 1] === "{" || src[i + 1] === "}") {
+        push(src[i + 1], { italics: false });
+        i += 2;
+        continue;
+      }
       const m = /^\\[a-zA-Z]+/.exec(src.slice(i));
       if (m) {
         const tok = m[0];
@@ -152,7 +172,31 @@ function plain2(out, text, base) {
 }
 
 // -------------------------------------------------------------- blocks ----
-const md = fs.readFileSync(SRC, "utf8").split("\n");
+let md = fs.readFileSync(SRC, "utf8").split("\n");
+
+// Equation labels. Hand-written cross-references drift the moment an equation is
+// inserted; resolve \eqref{} against the numbering the renderer produces.
+const EQLABEL = {};
+{
+  let n = 0, inFence = false;
+  for (let j = 0; j < md.length; j++) {
+    const t = md[j].trim();
+    if (t.startsWith("```")) { inFence = !inFence; continue; }
+    if (inFence || t !== "$$") continue;
+    const buf = [];
+    j++;
+    while (j < md.length && md[j].trim() !== "$$") { buf.push(md[j]); j++; }
+    const body = buf.join(" ");
+    if (/\\notag/.test(body)) continue;
+    n += 1;
+    const lm = /\\label\{([^}]+)\}/.exec(body);
+    if (lm) EQLABEL[lm[1]] = n;
+  }
+}
+md = md.map((l) => l.replace(/\\eqref\{([^}]+)\}/g, (m0, name) => {
+  if (!(name in EQLABEL)) { console.warn(`  undefined \\eqref{${name}}`); return "(??)"; }
+  return "(" + EQLABEL[name] + ")";
+}));
 const children = [];
 const SP = { before: 120, after: 120, line: 320 };
 
@@ -193,6 +237,7 @@ function tableFrom(rows) {
   });
 }
 
+let eqNo = 0;
 let i = 0;
 while (i < md.length) {
   const line = md[i];
@@ -235,14 +280,30 @@ while (i < md.length) {
     i++;
     while (i < md.length && md[i].trim() !== "$$") { buf.push(md[i].trim()); i++; }
     i++; // consume closing fence
-    const body = linearize(buf.join(" "));
+    // \tag{} suppresses auto-numbering (e.g. for an unnumbered aside)
+    let body = buf.join(" ");
+    const noNum = /\\notag/.test(body);
+    body = linearize(body.replace(/\\notag/g, "").replace(/\\label\{[^}]*\}/g, ""));
+    const mathFont = { ascii: "Cambria Math", hAnsi: "Cambria Math", eastAsia: CJK };
+    const kids = parseMath(body).map((p) => new TextRun({
+      text: p.text, font: mathFont,
+      italics: !!p.italics, subScript: !!p.sub, superScript: !!p.sup, size: 21,
+    }));
+    // Centre the equation and hang its number at the right margin: a centre tab
+    // stop plus a right tab stop, so the number never rides on the equation.
+    const W = convertInchesToTwip(6.5);
+    if (!noNum) {
+      eqNo += 1;
+      kids.unshift(new TextRun({ text: "\t", font: mathFont }));
+      kids.push(new TextRun({ text: "\t(" + eqNo + ")", font: mathFont, size: 21 }));
+    }
     children.push(new Paragraph({
-      children: parseMath(body).map((p) => new TextRun({
-        text: p.text,
-        font: { ascii: "Cambria Math", hAnsi: "Cambria Math", eastAsia: CJK },
-        italics: !!p.italics, subScript: !!p.sub, superScript: !!p.sup, size: 21,
-      })),
-      alignment: AlignmentType.CENTER,
+      children: kids,
+      alignment: noNum ? AlignmentType.CENTER : AlignmentType.LEFT,
+      tabStops: noNum ? undefined : [
+        { type: TabStopType.CENTER, position: Math.floor(W / 2) },
+        { type: TabStopType.RIGHT, position: W },
+      ],
       spacing: { before: 180, after: 180, line: 300 },
     }));
     continue;

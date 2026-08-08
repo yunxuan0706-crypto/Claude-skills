@@ -3,6 +3,10 @@
 appearance, and emit the matching numbered reference list (PRE style).
 
     python3 tools/number_citations.py introduction.src.md introduction.md
+    python3 tools/number_citations.py intro.src.md section2.src.md -o manuscript.md
+
+Multiple sources are concatenated in order and share one numbering sequence,
+so sections of the same manuscript never restart at [1].
 
 Keeps manuscript numbering mechanical: hand-numbering breaks the moment a
 citation is inserted mid-draft.
@@ -11,7 +15,12 @@ import re, sys, os
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIB = os.path.join(HERE, "..", "references.bib")
-SRC, OUT = sys.argv[1], sys.argv[2]
+args = sys.argv[1:]
+if "-o" in args:
+    i = args.index("-o")
+    SRCS, OUT = args[:i], args[i + 1]
+else:
+    SRCS, OUT = args[:1], args[1]
 
 raw = open(BIB, encoding="utf-8").read()
 entries = {}
@@ -57,7 +66,8 @@ def repl(m):
         nums.append(order.index(k) + 1)
     return "[" + ", ".join(str(n) for n in sorted(nums)) + "]"
 
-body = re.sub(r"\\cite\{([^}]+)\}", repl, open(SRC, encoding="utf-8").read())
+body = re.sub(r"\\cite\{([^}]+)\}", repl,
+              "\n\n".join(open(f, encoding="utf-8").read().rstrip() for f in SRCS))
 
 lines = ["", "---", "", "## 参考文献", ""]
 for i, k in enumerate(order, 1):
@@ -70,4 +80,4 @@ for i, k in enumerate(order, 1):
     lines.append(f"{i}. " + ", ".join(bits) + f" ({e['year']}). doi:{e.get('doi', '')}")
 
 open(OUT, "w", encoding="utf-8").write(body.rstrip() + "\n" + "\n".join(lines) + "\n")
-print(f"{len(order)} references cited, numbered in order of appearance")
+print(f"{len(SRCS)} source file(s) -> {OUT}: {len(order)} references cited, numbered in order of appearance")

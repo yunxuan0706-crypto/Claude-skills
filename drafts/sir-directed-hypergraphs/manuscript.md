@@ -34,7 +34,9 @@ $$
 e=\bigl(T(e),\,H(e)\bigr),\qquad T(e),H(e)\subseteq V,\qquad T(e)\cap H(e)=\varnothing
 $$
 
-其中尾集 $T(e)$ 为施加影响的一方，头集 $H(e)$ 为接受影响的一方。尾集与头集不相交，这既排除了自作用，也是后文重叠退化关系 \eqref{eq:reduction} 成立的前提。主线取同质阶数，即对所有 $e$ 有 $|T(e)|=\tau$、$|H(e)|=\eta$；异质阶数的推广见附录。$\tau=\eta=1$ 时 $\mathcal{H}$ 退化为普通有向图；忽略尾/头之分则退化为无向超图。
+其中尾集 $T(e)$ 为施加影响的一方，头集 $H(e)$ 为接受影响的一方。二者不相交，这既排除了自作用，也是后文重叠退化关系 \eqref{eq:reduction} 成立的前提。
+
+主线取同质阶数，即对所有 $e$ 有 $|T(e)|=\tau$、$|H(e)|=\eta$；异质阶数的推广见附录。$\tau=\eta=1$ 时 $\mathcal{H}$ 退化为普通有向图；取 $T(e)\cup H(e)$ 为超边的支撑集则退化为无向超图。
 
 节点的出度与入度分别计其作为尾成员与头成员的次数，
 
@@ -49,17 +51,19 @@ $$
 \sum_{v\in V}k_{\rm out}(v)=\tau M,\qquad \sum_{v\in V}k_{\rm in}(v)=\eta M
 $$
 
-因此 $\langle k_{\rm out}\rangle/\langle k_{\rm in}\rangle=\tau/\eta$：尾集与头集基数不等时，两个平均度必然不等。本文的第一个结构参数是入出度相关
+因此 $\langle k_{\rm out}\rangle/\langle k_{\rm in}\rangle=\tau/\eta$：尾集与头集基数不等时，两个平均度必然不等。
+
+本文的第一个结构参数是入出度相关
 
 $$
 r_{io}=\frac{\langle k_{\rm in}k_{\rm out}\rangle-\langle k_{\rm in}\rangle\langle k_{\rm out}\rangle}{\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}}\label{eq:rio}
 $$
 
-即 $(k_{\rm in},k_{\rm out})$ 在节点上的 Pearson 相关系数。它刻画的是同一节点两个方向的度值关系，与相连节点之间的度—度同配性 [14] 是不同的量。
+即 $(k_{\rm in},k_{\rm out})$ 在节点上的 Pearson 相关系数——刻画同一节点两个方向的度值关系，而非相连节点之间的度值相似性 [14]。
 
 ## B. SIR 动力学
 
-每个节点在任一时刻处于易感（S）、感染（I）、康复（R）三态之一。感染只沿尾→头方向传递：一条超边的尾集成员被感染后，对其头集中的易感节点施加压力，反向不发生传递。
+每个节点在任一时刻处于易感（S）、感染（I）、康复（R）三态之一。感染只沿尾→头方向传递：超边尾集中的感染成员驱动其头集中的易感节点，反向不发生传递。
 
 记 $I(t)\subseteq V$ 为 $t$ 时刻的感染节点集，并令
 
@@ -79,7 +83,9 @@ $$
 g(n)=\Theta(n-\theta)=\begin{cases}1,& n\ge\theta\\ 0,& n<\theta\end{cases}
 $$
 
-即当尾集感染成员数 $n_e\ge\theta$ 时超边处于激活态，以恒定率向头集传递；成员康复使 $n_e$ 回落到 $\theta$ 以下时超边失活。$\theta=1$ 对应简单传播：任一尾成员处于感染态即足以激活超边。$\theta\ge2$ 则要求多个尾成员的联合状态，属于阈值型复杂传播 [21, 22]，两者的渗流对应物不同，将在第 IV 节分别处理。取线性核 $g(n)=n$ 可回收"每个感染尾成员独立传递"的情形。另一类机制把阈值放在头侧——头节点在跨超边累积的剂量超过阈值时被感染；该变体由附录的剂量核统一处理，主线不采用。
+尾集感染成员数 $n_e\ge\theta$ 时超边处于激活态，以恒定率向头集传递；成员康复使 $n_e$ 回落到 $\theta$ 以下时超边失活。$\theta=1$ 对应简单传播，任一尾成员感染即足以激活超边；$\theta\ge2$ 则要求多个尾成员的联合状态，属于阈值型复杂传播 [21, 22]。两者的渗流对应物不同，将在第 IV 节分别处理。
+
+阈值放在尾侧、且逐超边判定，是本文主线的机制选择。取线性核 $g(n)=n$ 可回收"每个感染尾成员独立传递"的情形；把阈值改放头侧、令头节点在跨超边累积的剂量超过阈值时被感染，则得到另一类机制，由附录的剂量核统一处理。
 
 易感节点 $u$ 的总感染率是它所在全部头集的贡献之和，
 
@@ -87,7 +93,9 @@ $$
 \Lambda_u(t)=\sum_{e:\,u\in H(e)}\lambda_e(t)\label{eq:rate}
 $$
 
-感染节点以恒定率 $\mu$ 独立康复，$I\to R$，康复后不再参与传递。$\{S,I,R\}^{V}$ 上的状态演化因而是一个连续时间 Markov 过程，可用 Gillespie 算法精确抽样 [42]，这是第 III 节数值校验的基础。非指数康复期分布的推广见附录。初始条件取单个均匀随机选取的种子节点感染、其余易感；有限系统几乎必然在有限时间内到达无感染者的吸收态。记吸收态中康复节点的占比为爆发规模 $S$，并记 $S[\mathcal{H}]$ 为给定 $\mathcal{H}$ 时 $S$ 对动力学随机性与种子选取的条件期望；均匀种子的分布与超边方向无关，这一点将在 II.D 用到。
+感染节点以恒定率 $\mu$ 独立康复，$I\to R$，康复后不再参与传递。$\{S,I,R\}^{V}$ 上的演化因而是连续时间 Markov 过程，可用 Gillespie 算法精确抽样 [42]——这是第 III 节数值校验的基础。非指数康复期分布的推广见附录。
+
+初始条件取单个均匀随机选取的种子节点感染、其余易感。有限系统几乎必然在有限时间内到达无感染者的吸收态；记该吸收态中康复节点的占比为爆发规模 $S$，记 $S[\mathcal{H}]$ 为给定 $\mathcal{H}$ 时 $S$ 对动力学随机性与种子选取的条件期望。种子分布均匀因而与超边方向无关，这一点 II.D 将用到。
 
 式 \eqref{eq:ne}–\eqref{eq:rate} 中方向性的作用是不对称的：节点的 $k_{\rm out}$ 决定它能把感染推给多少个头集，$k_{\rm in}$ 决定它暴露于多少个尾集。这一不对称正是 $r_{io}$ 得以进入动力学的通道。
 
@@ -107,7 +115,7 @@ $$
 \bigl|\bar e\cap\bar f\bigr|=N_{TT}+N_{TH}+N_{HT}+N_{HH}\label{eq:reduction}
 $$
 
-也就是说，对任意一对超边，四通道之和精确等于其无向重叠。本文的重叠量因而是现行定义的方向细化，而非另一套互不相容的定义，这使得后文结果可与无向文献直接对照。
+也就是说，对任意一对超边，四通道之和精确等于其无向重叠：本节的重叠量是现行定义的方向细化，因而后文结果可与无向文献直接对照。
 
 归一化到 $[0,1]$ 取
 
@@ -115,7 +123,7 @@ $$
 n_{ab}(e,f)=\frac{N_{ab}(e,f)}{\min\bigl(|A(e)|,|B(f)|\bigr)}\label{eq:norm}
 $$
 
-聚合方式需要谨慎。对固定的 $e$ 逐节点计数可得四条求和规则，例如
+聚合方式受一条硬约束限制。对固定的 $e$ 逐节点计数可得四条求和规则，例如
 
 $$
 \sum_{f\neq e}N_{TT}(e,f)=\sum_{v\in T(e)}\bigl(k_{\rm out}(v)-1\bigr),\qquad
@@ -128,7 +136,7 @@ $$
 \alpha^{ab}_{\sigma\sigma'}=\Bigl\langle\, n_{ab}(e,f)\ \Bigm|\ N_{ab}(e,f)\ge1,\ \sigma(e)=\sigma,\ \sigma(f)=\sigma' \,\Bigr\rangle\label{eq:alpha}
 $$
 
-即在确实发生重叠的超边对上取平均，其中 $\sigma(e)=(|T(e)|,|H(e)|)$ 为超边的阶。记 $m_{ab}$ 为该通道中发生重叠的超边对数，则 $\alpha^{ab}=C_{ab}/m_{ab}$，其中常数 $C_{ab}$ 仅由度序列决定；调节 $\alpha$ 等价于调节 $m_{ab}$；这决定了第 V 节重连算法的实现方式。
+即在确实发生重叠的超边对上取平均，其中 $\sigma(e)=(|T(e)|,|H(e)|)$ 为超边的阶。记 $m_{ab}$ 为该通道中发生重叠的超边对数，则 $\alpha^{ab}=C_{ab}/m_{ab}$，常数 $C_{ab}$ 仅由度序列决定。因此调节 $\alpha$ 等价于调节 $m_{ab}$，这决定了第 V 节重连算法的实现方式。
 
 式 \eqref{eq:alpha} 中阶指标取对角块（$\sigma=\sigma'$）即阶内重叠、取非对角块即阶间重叠，与无向情形下超边重叠矩阵的对角/非对角划分一致 [28]；本文只是在其每个矩阵元上再展开出四个方向通道。同质阶数下阶指标退化，以下略去并简记为 $\alpha^{ab}$。
 
@@ -154,7 +162,9 @@ $$
 \mathcal{R}:\quad \alpha^{TT}\leftrightarrow\alpha^{HH},\qquad \alpha^{HT}\leftrightarrow\alpha^{TH}
 $$
 
-注意对有序超边对恒有 $N_{TH}(e,f)=N_{HT}(f,e)$：同质阶数下聚合量 $\alpha^{HT}$ 与 $\alpha^{TH}$ 逐实现相等（异质阶数下互为阶指标的转置），串联方向只携带一个独立分量，记 $\alpha^{\rightrightarrows}=\alpha^{HT}$。四个通道在聚合层面因而携带三个独立分量，按宇称重组：$\alpha^{\rightrightarrows}$ 与并联重叠 $\alpha^{\parallel}=\tfrac12(\alpha^{TT}+\alpha^{HH})$ 在 $\mathcal{R}$ 下为偶，而极性失衡
+两个串联通道并不独立。对有序超边对恒有 $N_{TH}(e,f)=N_{HT}(f,e)$，故同质阶数下 $\alpha^{HT}$ 与 $\alpha^{TH}$ 逐实现相等（异质阶数下互为阶指标的转置），串联方向只携带一个分量，记 $\alpha^{\rightrightarrows}=\alpha^{HT}$。四个通道在聚合层面因而只有三个独立分量。
+
+按宇称重组：$\alpha^{\rightrightarrows}$ 与并联重叠 $\alpha^{\parallel}=\tfrac12(\alpha^{TT}+\alpha^{HH})$ 在 $\mathcal{R}$ 下为偶，而极性失衡
 
 $$
 \Delta\alpha=\tfrac12\bigl(\alpha^{TT}-\alpha^{HH}\bigr)
@@ -162,7 +172,9 @@ $$
 
 为奇。$\alpha^{\parallel}$ 必须在扫描 $\alpha^{\rightrightarrows}$ 或 $\Delta\alpha$ 时固定，否则三种效应混在同一条扫描线上。
 
-入出度相关 $r_{io}$ 在 $\mathcal{R}$ 下为**偶**：翻转互换每个节点的 $(k_{\rm in},k_{\rm out})$，而 \eqref{eq:rio} 的 Pearson 相关系数对其两个变量对称，故 $r_{io}(\mathcal{R}\mathcal{H})=r_{io}(\mathcal{H})$。据此可把结构量按宇称分类；本文所用结构量中，$\mathcal{R}$-奇者有三个：尾头基数之差 $\tau-\eta$、联合度分布关于对角线的反对称部分 $P(k_{\rm in},k_{\rm out})-P(k_{\rm out},k_{\rm in})$，以及极性失衡 $\Delta\alpha$。
+入出度相关 $r_{io}$ 在 $\mathcal{R}$ 下为**偶**：翻转互换每个节点的 $(k_{\rm in},k_{\rm out})$，而 \eqref{eq:rio} 的 Pearson 相关系数对其两个变量对称，故 $r_{io}(\mathcal{R}\mathcal{H})=r_{io}(\mathcal{H})$。
+
+据此可把结构量按宇称分类。本文所用结构量中，$\mathcal{R}$-奇者有三个：尾头基数之差 $\tau-\eta$、联合度分布关于对角线的反对称部分 $P(k_{\rm in},k_{\rm out})-P(k_{\rm out},k_{\rm in})$，以及极性失衡 $\Delta\alpha$。
 
 这一分类对终态有直接约束。设结构系综 $\mathbb{P}[\mathcal{H}]$ 生成随机有向超图，$S[\mathcal{H}]$ 为 II.B 定义的条件期望爆发规模；由于种子均匀选取，$S$ 的定义本身不引入方向偏好。
 
@@ -170,7 +182,11 @@ $$
 
 证明只需一次换元：$\mathcal{R}$ 是结构空间上的可测对合，故 $\sum_{\mathcal{H}}\mathbb{P}[\mathcal{H}]\,S[\mathcal{R}\mathcal{H}]=\sum_{\mathcal{H}}\mathbb{P}[\mathcal{R}\mathcal{H}]\,S[\mathcal{H}]=\sum_{\mathcal{H}}\mathbb{P}[\mathcal{H}]\,S[\mathcal{H}]$。
 
-命题 1 的逆否形式给出方向对称性破缺的必要条件：**系综层面的破缺要求生成系综本身破坏 $\mathcal{R}$-不变性**；在本文所用结构量中，能承载这一破坏的只有上述三个 $\mathcal{R}$-奇量。特别地，$\tau=\eta$ 且 $P$ 关于对角线对称的位形模型系综是 $\mathcal{R}$-不变的，而以 $\mathcal{R}$-偶量为目标的定向重连（如 $r_{io}$ 扫描）保持该不变性，故单独扫描 $r_{io}$ 不可能产生系综层面的破缺——尽管 $r_{io}$ 确实移动阈值。这一推论决定了第 VI 节破缺实验的设计：固定前两个 $\mathcal{R}$-奇量为零，只扫 $\Delta\alpha$，并以 $r_{io}$ 扫描作为无破缺的阴性对照。需要强调命题 1 是关于系综平均的陈述；对单个实现 $\mathcal{H}$，$S[\mathcal{H}]$ 与 $S[\mathcal{R}\mathcal{H}]$ 一般不等，其差为有限尺寸涨落。
+命题 1 的逆否形式给出方向对称性破缺的必要条件：**系综层面的破缺要求生成系综本身破坏 $\mathcal{R}$-不变性**。在本文所用结构量中，能承载这一破坏的只有上述三个 $\mathcal{R}$-奇量。
+
+$r_{io}$ 因而不能单独产生破缺。$\tau=\eta$ 且 $P$ 关于对角线对称的位形模型系综是 $\mathcal{R}$-不变的，而以 $\mathcal{R}$-偶量为目标的定向重连保持该不变性；$r_{io}$ 扫描正属此类，故其系综平均的爆发规模在方向翻转下必然相同——尽管 $r_{io}$ 确实移动阈值。这决定了第 VI 节破缺实验的设计：固定前两个 $\mathcal{R}$-奇量为零，只扫 $\Delta\alpha$，并以 $r_{io}$ 扫描作为无破缺的阴性对照。
+
+命题 1 是关于系综平均的陈述。对单个实现 $\mathcal{H}$，$S[\mathcal{H}]$ 与 $S[\mathcal{R}\mathcal{H}]$ 一般不等，其差为有限尺寸涨落，随 $N$ 增大而趋零。
 
 ---
 

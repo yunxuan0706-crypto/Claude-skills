@@ -10,6 +10,8 @@ construction) and machine-checks the claims the manuscript makes:
   4  channel totals                 closed forms in the degree sequence
   5  degree-preserving swaps        totals and alpha*m invariant, alpha moves
   6  reversal parity                r_io even; a^TT<->a^HH; a^HT == a^TH
+  7  r_io is NOT rewirable           degree-preserving swaps leave r_io exactly fixed
+  8  symmetric sequence => tau=eta   swap-symmetric bi-degree multisets force tau=eta
 
 Exit 0 iff every check passes.
 """
@@ -163,10 +165,38 @@ def audit(N, M, tau, eta, seed):
           abs(a1["HT"][0] - a1["TH"][0]) < 1e-12,
           "serial channels coincide pair-by-relabelling")
 
+    # 7 -- r_io is a functional of the degree sequence alone, so rewiring cannot
+    #      move it. This is why r_io is set when the sequence is built, not by
+    #      the swap chain, and why the r_io scan is a valid negative control.
+    check(f"r_io fixed by degree-preserving swaps {tag}",
+          abs(pearson(ki, ko) - pearson(ki2, ko2)) == 0.0,
+          f"exactly 0 change over {swapped} swaps")
+
+
+def audit_sequence_symmetry(trials, seed):
+    """Swap-symmetric bi-degree multisets force tau = eta, and still span r_io."""
+    rng = random.Random(seed)
+    bad, rs = 0, []
+    for _ in range(trials):
+        base = [(rng.randint(1, 5), rng.randint(1, 5)) for _ in range(rng.randint(3, 8))]
+        seq = base + [(b, a) for a, b in base]
+        ki = [a for a, _ in seq]
+        ko = [b for _, b in seq]
+        if sum(ki) != sum(ko):
+            bad += 1                      # would mean eta != tau
+        if sorted(seq) != sorted((b, a) for a, b in seq):
+            bad += 1                      # would mean R(d) is not a relabelling of d
+        if len(set(ki)) > 1 and len(set(ko)) > 1:
+            rs.append(pearson(ki, ko))
+    check("swap-symmetric sequence => tau=eta and R(d) ~ d", bad == 0, f"{trials} trials")
+    check("symmetric sequences still span r_io", max(rs) - min(rs) > 1.5,
+          f"range [{min(rs):+.2f},{max(rs):+.2f}] -> negative control feasible")
+
 
 if __name__ == "__main__":
     audit(N=120, M=90, tau=3, eta=2, seed=7)
     audit(N=150, M=120, tau=2, eta=2, seed=11)
+    audit_sequence_symmetry(trials=2000, seed=5)
     print()
     print("ALL CHECKS PASSED" if FAIL == 0 else f"{FAIL} CHECK(S) FAILED")
     sys.exit(1 if FAIL else 0)

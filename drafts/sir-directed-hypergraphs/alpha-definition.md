@@ -141,11 +141,13 @@ $$
 
 | $\mathcal{R}$-奇不变量 | 说明 |
 |---|---|
-| $\tau-\eta$ | 尾集与头集基数不等。注意 $\langle k_{\rm out}\rangle N=\tau\lvert E\rvert$、$\langle k_{\rm in}\rangle N=\eta\lvert E\rvert$，故 $\tau\neq\eta$ 自动使两个平均度不等 |
+| $\tau-\eta$ | 尾集与头集基数不等。**注意这不是独立来源**：由握手关系，双度序列互换对称蕴含 $\tau=\eta$，故 $\tau\neq\eta$ 只是序列不对称的一个充分标志 |
 | $P(k_{\rm in},k_{\rm out})-P(k_{\rm out},k_{\rm in})$ | 联合度分布关于对角线的不对称部分（如 $\langle k_{\rm in}^2k_{\rm out}\rangle-\langle k_{\rm in}k_{\rm out}^2\rangle$） |
 | $\Delta\alpha=\tfrac12(\alpha^{TT}-\alpha^{HH})$ | 共发重叠与共收重叠之差 |
 
 **一个立即可用的推论：$r_{io}$ 是 $\mathcal{R}$-偶的，因此它本身不能产生方向对称性破缺。** 理由：$\mathcal{R}$ 把每个节点的 $(k_{\rm in},k_{\rm out})$ 互换，而 Pearson 相关系数对两个变量对称，故 $r_{io}(\mathcal{R}\mathcal{H})=r_{io}(\mathcal{H})$。
+
+> **另一条独立的约束（后经数值确认）：$r_{io}$ 根本不能由保度重连调节。** 它是双度序列的函数，与超边如何连接无关，故保度双边交换下 $r_{io}$ 的变化恰好为零。调 $r_{io}$ 只能在构造双度序列的阶段进行（保两条边际、重配入/出度的节点配对），$\alpha$ 才是重连的调节对象。这意味着大纲 V.3（标签置换）与 V.2/V.4（重连）是**两个不可互换的环节**，不能合并成"以 $(r_{io},\alpha)$ 为靶的定向重连"。见 `tools/verify_section2_math.py` 第 7 项。
 
 > 这个推论直接改写大纲 V.5 与 C4 的做法：**在 $\tau=\eta$、$P$ 关于对角线对称的设定下扫描 $r_{io}$，系综平均的爆发规模必然对称**，观测到的任何差异只是有限尺寸涨落。破缺实验必须显式打开一个 $\mathcal{R}$-奇量——最干净的做法是固定 $\tau=\eta$ 与 $P$ 的对称性，只扫 $\Delta\alpha$，从而把破缺**单独归因**到 $\Delta\alpha$。这把大纲里"严格证明为拉伸目标"的部分变成了一个可证的必要条件加一个干净的数值设计。
 

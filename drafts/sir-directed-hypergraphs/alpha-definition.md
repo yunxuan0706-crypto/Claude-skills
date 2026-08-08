@@ -35,7 +35,7 @@ $$
 | 分量 | 结构含义 | 动力学含义 |
 |---|---|---|
 | $N_{TT}$ | **共发**（co-sending）：一个节点同时是 $e$ 与 $f$ 的施压方 | 源冗余；同一感染源向两个不同头集扇出 |
-| $N_{HH}$ | **共收**（co-receiving）：一个节点同时是两条超边的受压方 | 剂量汇聚；群体阈值 $\theta$ 在此累积**跨超边**的压力 |
+| $N_{HH}$ | **共收**（co-receiving）：一个节点同时是两条超边的受压方 | 感染率汇聚；两条超边的率在该节点相加（头侧剂量核推广下，跨超边剂量亦在此累积） |
 | $N_{HT}$ | **串联正向**：$e$ 的头集落入 $f$ 的尾集 | 传播链本身：$e$ 激活后经该节点驱动 $f$ |
 | $N_{TH}$ | **串联反向**：$f$ 的头集落入 $e$ 的尾集 | 反向链；与 $N_{HT}$ 同时非零即为高阶互惠 [lotito2026directed] |
 
@@ -75,6 +75,8 @@ $$
 \alpha^{\rightrightarrows}=\tfrac12\bigl(\alpha^{HT}+\alpha^{TH}\bigr)
 \qquad\text{（串联／同向，}\mathcal{R}\text{-偶）}
 $$
+
+> 注：对有序超边对恒有 $N_{TH}(e,f)=N_{HT}(f,e)$，同质阶数下 $\alpha^{HT}=\alpha^{TH}$ 逐实现相等，上式即 $\alpha^{HT}$；对称化写法只在异质阶数（二者互为阶指标转置）下才携带信息。已由 `tools/verify_section2_math.py` 数值确认。
 $$
 \alpha^{\rightleftarrows}=\text{强互惠超边占比（定义见下）}
 \qquad\text{（互惠／反向，}\mathcal{R}\text{-偶）}

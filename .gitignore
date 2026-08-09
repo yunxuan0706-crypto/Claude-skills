@@ -1,3 +1,9 @@
 node_modules/
+__pycache__/
+*.pyc
+
+# scratch renders only; the figure PDFs under figures/ are deliverables
 *.pdf
+!drafts/sir-directed-hypergraphs/figures/*.pdf
+
 *_preview.png

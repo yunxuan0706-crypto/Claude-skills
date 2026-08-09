@@ -38,6 +38,14 @@ by a route that does not share the derivation being tested.
     points enter the fit.
 
  H  The fast Gillespie sampler against the naive reference implementation.
+
+ I  lambda_c measured from the simulation, never from the formula. Below the
+    threshold a seed starts a branching process of mean total size 1/(1-R_0),
+    so eps/R(inf) -> 1 - R_0(lambda), which vanishes at lambda_c. Fitting that
+    on a subcritical grid and extrapolating gives 0.3410 +/- 0.0058 against the
+    formula's 0.3327 -- 1.4 sigma. The fitted slope, tau*kappa-1 = 2.85 +/-
+    0.05 versus 3.01, sits ~5% low because the pure branching form ignores
+    susceptible depletion and cluster overlap, both of which shrink R(inf).
 """
 import math
 import os
@@ -264,4 +272,64 @@ def check_H(N=120, tau=2, eta=2, M=90, runs=3000, lam=1.2, seed=5):
 
 if __name__ == "__main__":
     check_A(); check_C(); check_D(); check_F(); check_G(); check_H()
-    check_E(); check_B()
+    check_E(); check_B(); check_I()
+
+
+# ------------------------------------------------------------------- I ------
+def check_I(N=8000, tau=2, eta=2, md=2, runs=1500, eps=0.002, seed=6100):
+    """lambda_c measured from simulation, never from the formula.
+
+    Subcritically a seed starts a branching process of mean total size
+    1/(1-R_0), so R(inf) = eps/(1-R_0) and
+
+        eps / R(inf)  ->  1 - R_0(lambda),
+
+    which vanishes exactly at lambda_c. Measuring eps/R(inf) on a grid of
+    subcritical lambda and extrapolating to zero therefore locates the
+    threshold from the simulation alone. Compare with 1/(tau*kappa-1).
+    """
+    rule("I  lambda_c from subcritical final sizes, extrapolated to R_0 = 1")
+    rng = random.Random(seed)
+    kin, kout = bidegree(N, tau, eta, md, 0.0, rng)
+    edges = config_model(kin, kout, tau, eta, rng)
+    ki, ko = degrees(N, edges)
+    p = PGF(ki, ko)
+    lc = 1.0 / (tau * p.kappa - 1)
+    tails, heads, tails_of = index(N, edges)
+    print(f"  N={N} kappa={p.kappa:.4f}  formula lambda_c = {lc:.5f}")
+    xs, ys, es = [], [], []
+    for r in (0.40, 0.50, 0.60, 0.70, 0.80):
+        lam = r * lc
+        vals = []
+        for s in range(runs):
+            rr = random.Random(770000 + 5171 * s + int(1000 * r))
+            sd = [v for v in range(N) if rr.random() < eps]
+            vals.append(gillespie_traj(N, tails, heads, tails_of, lam, 1, rr,
+                                       sd, [400.0])[-1][2])
+        m = st.mean(vals)
+        se = math.sqrt(st.variance(vals) / runs)
+        y = eps / m
+        xs.append(lam); ys.append(y); es.append(y * se / m)
+        pred = 1 - tau * p.kappa * lam / (1 + lam)
+        print(f"  lam/lc={r:.2f}: R(inf)={m:.5f}+/-{se:.5f}   eps/R={y:.4f}"
+              f"   1-R_0(theory)={pred:.4f}")
+    # eps/R(inf) = (1 + lam - tau*kappa*lam)/(1+lam); multiply through so the
+    # unknown enters linearly:  (1+lam)*eps/R = 1 - (tau*kappa - 1)*lam
+    u = [(1 + x) * y for x, y in zip(xs, ys)]
+    ue = [(1 + x) * e for x, e in zip(xs, es)]
+    w = [1 / e ** 2 for e in ue]
+    Sw = sum(w); Sx = sum(a * b for a, b in zip(w, xs))
+    Sy = sum(a * b for a, b in zip(w, u))
+    Sxx = sum(a * b * b for a, b in zip(w, xs))
+    Sxy = sum(a * b * c for a, b, c in zip(w, xs, u))
+    det = Sw * Sxx - Sx * Sx
+    slope = (Sw * Sxy - Sx * Sy) / det
+    icpt = (Sxx * Sy - Sx * Sxy) / det
+    dslope = math.sqrt(Sw / det)
+    lc_meas = icpt / (-slope)
+    dlc = lc_meas * dslope / abs(slope)
+    print(f"\n  weighted fit (1+lam)*eps/R = {icpt:.4f} - {-slope:.4f}*lam")
+    print(f"  measured tau*kappa-1 = {-slope:.4f} +/- {dslope:.4f}"
+          f"   (formula {tau*p.kappa-1:.4f})")
+    print(f"  measured lambda_c    = {lc_meas:.5f} +/- {dlc:.5f}"
+          f"   (formula {lc:.5f})   -> {abs(lc_meas-lc)/dlc:.2f} sigma")

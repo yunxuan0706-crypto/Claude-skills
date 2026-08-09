@@ -74,7 +74,7 @@ V.1/V.2 生成器 ✅ ──┬─→ 均场基线 ──┐
 - **序参量必须取爆发概率 $\Pi$ 与条件爆发规模 $\bar S$，不能取 $\langle S\rangle$**——已数值确认 $\langle S\rangle$ 在任何结构上都不破缺（命题 2），用它做实验会得到一片零信号；
 - **主实验改为驱动分支结构的不对称**（阶数 $\tau\neq\eta$、双度序列不对称）——预跑确认这是破缺的实际来源，$\Delta\alpha$ 不是；
 - **$\Delta\alpha$ 降为上界测量**：在互换对称序列上扫 $\Delta\alpha$，报告 $|\mathrm{d}\Pi|$ 的置信上界。这是一个有内容的负面结果——它说明宇称分类只给候选集合，不能预测哪一个真正起作用；
-- 同时报告 $\langle S\rangle$ 不变作为内部一致性检查；**补偿关系须按全期望公式 $\langle S\rangle=\Pi\bar S+(1-\Pi)s_<$ 逐项核算**——预跑实测自限爆发项在 $\lambda=\lambda_c$ 处占 $\langle S\rangle$ 的 47%，简化成 $\langle S\rangle\approx\Pi\bar S$ 会在最需要它的阈值邻域失效；
+- 同时报告 $\langle S\rangle$ 的**残余不对称**（预跑测得约 $-2\%$，$5\sigma$，源于超边级激活破坏命题 2 的假设 (ii)）——它不是零，须作为已知系统项与 $\Pi$ 的破缺幅度并列；**补偿关系须按全期望公式 $\langle S\rangle=\Pi\bar S+(1-\Pi)s_<$ 逐项核算**——预跑实测自限爆发项在 $\lambda=\lambda_c$ 处占 $\langle S\rangle$ 的 47%，简化成 $\langle S\rangle\approx\Pi\bar S$ 会在最需要它的阈值邻域失效；
 - 作为阴性对照：在同一设定下扫 $r_{io}$，验证 $\Pi$ 不破缺——**注意对照必须做在 $\Pi$ 上，做在 $\langle S\rangle$ 上则毫无信息量**；
 - **设计简化（预跑确认）**：$\alpha^{\parallel}$ 是 $\mathcal{R}$-偶的，成对 H-vs-$\mathcal{R}$H 比较不受其漂移干扰，故不需要钉住 $\alpha^{\parallel}$；
 - **$S_{\rm cut}$**：阈值邻域用 $S_{\rm cut}=0.02$ 已足够干净（$N=400$ 预跑），深超临界区双峰间隙才变脏；生产运行仍建议 $N\ge10^3$ 并报告对 $S_{\rm cut}$ 的敏感性；

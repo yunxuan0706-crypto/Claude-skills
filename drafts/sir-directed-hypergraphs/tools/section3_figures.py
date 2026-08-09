@@ -153,7 +153,7 @@ def figure2(d, cn):
     xs = np.logspace(math.log10(N[0]), math.log10(N[-1]), 50)
     ax.plot(xs, np.exp(icpt) * xs ** slope, color=C_REF, ls="-.", lw=0.7,
             zorder=1,
-            label=L(f"$\\propto N^{{{slope:.2f}}}$", f"$\\propto N^{{{slope:.2f}}}$", cn))
+            label=L(f"$\\propto N^{{{slope:.1f}}}$", f"$\\propto N^{{{slope:.1f}}}$", cn))
     print(f"  [fit] EBCM residual ~ N^({slope:.3f} +/- {dslope:.3f})")
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xticks(N)
@@ -239,5 +239,6 @@ def main(cn=True, tag="zh"):
 
 
 if __name__ == "__main__":
+    # One set of files. Pass cn=False for the English submission version; the
+    # labels are the only thing that changes.
     main(cn=True, tag="zh")
-    main(cn=False, tag="en")

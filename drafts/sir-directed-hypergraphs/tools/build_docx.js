@@ -210,28 +210,38 @@ let md = fs.readFileSync(SRC, "utf8").split("\n");
 // Equation labels. Hand-written cross-references drift the moment an equation is
 // inserted; resolve \eqref{} against the numbering the renderer produces.
 const EQLABEL = {};
-{
-  let n = 0, inFence = false;
-  for (let j = 0; j < md.length; j++) {
-    const t = md[j].trim();
+function scanEquations(lines, start) {
+  let n = start, inFence = false;
+  for (let j = 0; j < lines.length; j++) {
+    const t = lines[j].trim();
     if (t.startsWith("```")) { inFence = !inFence; continue; }
     if (inFence || t !== "$$") continue;
     const buf = [];
     j++;
-    while (j < md.length && md[j].trim() !== "$$") { buf.push(md[j]); j++; }
+    while (j < lines.length && lines[j].trim() !== "$$") { buf.push(lines[j]); j++; }
     const body = buf.join(" ");
     if (/\\notag/.test(body)) continue;
     n += 1;
     const lm = /\\label\{([^}]+)\}/.exec(body);
     if (lm) EQLABEL[lm[1]] = n;
   }
+  return n;
 }
+// A section built on its own still has to agree with the manuscript's numbering
+// and resolve cross-references into earlier sections. EQ_PRESCAN names the
+// sources that precede this one: they contribute labels and advance the count
+// without being rendered.
+let EQ_START = 0;
+for (const f of (process.env.EQ_PRESCAN || "").split(",").filter(Boolean)) {
+  EQ_START = scanEquations(fs.readFileSync(f.trim(), "utf8").split("\n"), EQ_START);
+}
+scanEquations(md, EQ_START);
 md = md.map((l) => l.replace(/\\eqref\{([^}]+)\}/g, (m0, name) => {
   if (!(name in EQLABEL)) { console.warn(`  undefined \\eqref{${name}}`); return "(??)"; }
   return "(" + EQLABEL[name] + ")";
 }));
 const children = [];
-const SP = { before: 120, after: 120, line: 320 };
+const SP = { before: 120, after: 120, line: 320, lineRule: "auto" };
 
 const para = (text, opts = {}) =>
   new Paragraph({ children: runs(text), spacing: SP, ...opts });
@@ -270,13 +280,47 @@ function tableFrom(rows) {
   });
 }
 
-let eqNo = 0;
+let eqNo = EQ_START;
 let i = 0;
 while (i < md.length) {
   const line = md[i];
   const t = line.trim();
 
   if (!t) { i++; continue; }
+
+  // figure: ![caption](path){width=inches}
+  const im = /^!\[([^\]]*)\]\(([^)]+)\)(?:\{width=([\d.]+)\})?$/.exec(t);
+  if (im) {
+    const p = path.isAbsolute(im[2]) ? im[2] : path.join(path.dirname(SRC), im[2]);
+    if (!fs.existsSync(p)) {
+      console.error("MISSING FIGURE:", p);
+      process.exitCode = 2;
+    } else {
+      const wIn = im[3] ? parseFloat(im[3]) : 6.5;
+      const png = require("zlib"); // only to keep require list stable
+      const buf = fs.readFileSync(p);
+      // PNG header: width/height are big-endian uint32 at bytes 16 and 20
+      const pw = buf.readUInt32BE(16), ph = buf.readUInt32BE(20);
+      children.push(new Paragraph({
+        alignment: AlignmentType.CENTER,
+        // An omitted lineRule is read as "exact" by some renderers, which
+        // clips an inline image to one line height. Say "auto" explicitly.
+        spacing: { before: 200, after: 60, line: 240, lineRule: "auto" },
+        children: [new D.ImageRun({
+          data: buf, type: "png",
+          transformation: { width: wIn * 96, height: wIn * 96 * ph / pw },
+        })],
+      }));
+      if (im[1]) {
+        children.push(new Paragraph({
+          alignment: AlignmentType.LEFT,
+          spacing: { before: 0, after: 200 },
+          children: runs(im[1], { size: 19 }),
+        }));
+      }
+    }
+    i++; continue;
+  }
 
   if (/^---+$/.test(t)) {
     children.push(new Paragraph({
@@ -487,7 +531,7 @@ const doc = new Document({
   title: "第 I 部分　引言与定位",
   styles: {
     default: {
-      document: { run: { font: FONT, size: 21 }, paragraph: { spacing: { line: 320 } } },
+      document: { run: { font: FONT, size: 21 }, paragraph: { spacing: { line: 320, lineRule: "auto" } } },
     },
   },
   numbering: {

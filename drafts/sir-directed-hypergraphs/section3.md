@@ -2,7 +2,7 @@
 
 ## A. 空腔构造与闭合假设
 
-成对网络上的边基房室模型（EBCM）以"沿一条边尚未传来感染"的概率为核心变量，把 SIR 的含时演化压缩到少数常微分方程 \cite{volz2008,miller2012ebcm}。移到有向超图上有两重并发需要处理：一个头节点同时暴露于 $k_{\rm in}$ 条超边，而每条超边内又有 $\tau$ 个尾成员同时向它施压。前一重可以因子化，后一重不能——本小节说明界线在哪里。
+成对网络上的边基房室模型（EBCM）以"沿一条边尚未传来感染"的概率为核心变量，把 SIR 的含时演化压缩到少数常微分方程 [1, 2]。移到有向超图上有两重并发需要处理：一个头节点同时暴露于 $k_{\rm in}$ 条超边，而每条超边内又有 $\tau$ 个尾成员同时向它施压。前一重可以因子化，后一重不能——本小节说明界线在哪里。
 
 固定一个**检验节点** $u$，人为令其永久保持易感（空腔节点），并取一条以 $u$ 为头成员的超边 $e$，即 $u\in H(e)$。定义边基变量
 
@@ -96,7 +96,7 @@ $$
 \dot x_{001}=\mu\,x_{010}\label{eq:tau1}
 $$
 
-这正是成对 EBCM 的 $(\theta_S,\theta_I,\theta_R)$ 三元组 \cite{miller2012ebcm}，唯一的替换是把余度生成函数换成 \eqref{eq:psitail} 的 $\psi_{\rm tail}$。
+这正是成对 EBCM 的 $(\theta_S,\theta_I,\theta_R)$ 三元组 [2]，唯一的替换是把余度生成函数换成 \eqref{eq:psitail} 的 $\psi_{\rm tail}$。
 
 **一条精确恒等式。** 全部尾成员易感蕴含 $e$ 从未激活，因而必未传递，故
 
@@ -139,7 +139,7 @@ $$
 
 两种数法给出同一个 $R_0$，且 $R_0=1$ 与 \eqref{eq:lc} 等价。
 
-**$\tau=\eta=1$ 的退化。** \eqref{eq:lc} 化为 $\lambda_c=\bigl[\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle-1\bigr]^{-1}$，即有向随机图上 SIR 的已知阈值 \cite{boguna2005directed,meyers2006directed}。需要强调，令 $k_{\rm in}=k_{\rm out}$ 并**不**回到无向网络的结果：无向情形的余度相减源于"来路那条边不可再用"，而有向情形下来路超边根本不在 $v$ 的入超边之列。\eqref{eq:lc} 分母中的 $-1$ 来自 $T=\beta/(\beta+\mu)$ 里的 $\beta$，与余度无关。两者是不同的结构，不应混为一谈。
+**$\tau=\eta=1$ 的退化。** \eqref{eq:lc} 化为 $\lambda_c=\bigl[\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle-1\bigr]^{-1}$，即有向随机图上 SIR 的已知阈值 [3, 4]。需要强调，令 $k_{\rm in}=k_{\rm out}$ 并**不**回到无向网络的结果：无向情形的余度相减源于"来路那条边不可再用"，而有向情形下来路超边根本不在 $v$ 的入超边之列。\eqref{eq:lc} 分母中的 $-1$ 来自 $T=\beta/(\beta+\mu)$ 里的 $\beta$，与余度无关。两者是不同的结构，不应混为一谈。
 
 **阈值对 $r_{io}$ 的依赖。** 由 $\langle k_{\rm in}k_{\rm out}\rangle=\langle k_{\rm in}\rangle\langle k_{\rm out}\rangle+r_{io}\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}$ 与握手关系 \eqref{eq:handshake}，
 
@@ -178,13 +178,13 @@ $$
 \frac{\lambda_c}{\lambda_c^{\rm MF}}=\frac{\tau\kappa}{\tau\kappa-1}\label{eq:gain}
 $$
 
-在 $\tau\kappa\to1^{+}$ 时发散：**均场的误差在阈值邻域最大**，而这正是最需要理论的区域。这与成对网络上 EBCM 相对均场的增益同源 \cite{volz2008,miller2012ebcm}，本文把它推广到有向超图并给出闭式。
+在 $\tau\kappa\to1^{+}$ 时发散：**均场的误差在阈值邻域最大**，而这正是最需要理论的区域。这与成对网络上 EBCM 相对均场的增益同源 [1, 2]，本文把它推广到有向超图并给出闭式。
 
-需要说明，\eqref{eq:mf} 是我们为本模型构造的均场对照，而非 \cite{li2024directed} 中模型的复述——后者是社会传播而非 SIR，其方向性由单一标量强度参数调节。此处比较的是**闭合层级**，不是两项工作的模型。
+需要说明，\eqref{eq:mf} 是我们为本模型构造的均场对照，而非 [5] 中模型的复述——后者是社会传播而非 SIR，其方向性由单一标量强度参数调节。此处比较的是**闭合层级**，不是两项工作的模型。
 
 ## E. 数值校验
 
-校验分三层：闭合内部的自洽、闭合对精确仿真的复现、以及结构预言。脚本见 `tools/ebcm_directed.py` 与 `tools/section3_data.py`；仿真为 II.B 所定义连续时间 Markov 过程的精确 Gillespie 抽样 \cite{gillespie1977}，取 $\mu=1$。
+校验分三层：闭合内部的自洽、闭合对精确仿真的复现、以及结构预言。脚本见 `tools/ebcm_directed.py` 与 `tools/section3_data.py`；仿真为 II.B 所定义连续时间 Markov 过程的精确 Gillespie 抽样 [6]，取 $\mu=1$。
 
 **内部自洽。** 恒等式 \eqref{eq:identity} 的残差随 Euler 步长线性收敛：$\mathrm{d}t$ 由 $0.008$ 逐次减半至 $0.001$ 时，最大残差由 $7.13\times10^{-4}$ 降至 $8.89\times10^{-5}$，相邻比值三次均为 $2.00$。残差因而是积分误差而非闭合的破缺。两种分支计数 \eqref{eq:twocounts} 在 $(\tau,\eta)=(2,2),(3,1),(1,3),(2,3)$ 上的相对差不超过 $2\times10^{-16}$；\eqref{eq:lcrio} 与 \eqref{eq:lc} 在全部 $45$ 个位形模型实现上的相对差不超过 $3\times10^{-16}$，即经由 $r_{io}$ 的改写是恒等的。$\kappa$ 在 $4000$ 次保度双边交换下的改变量恰为零，与本节的否定性推论一致。
 
@@ -205,3 +205,14 @@ $$
 同一张图也暴露出 EBCM 自身的限度，须如实报告。深超临界区（$\lambda\ge1.6\lambda_c$）与深亚临界区的偏差在 $0.7\%$ 以内，但在 $\lambda=\lambda_c$ 与 $1.1\lambda_c$ 处 EBCM 系统性高估约 $18\%$–$19\%$（分别为 $6.9\sigma$ 与 $8.4\sigma$）。这与 \eqref{eq:S}–\eqref{eq:master} 是 $N\to\infty$ 理论一致：阈值邻域关联长度发散，有限系统的偏离在此最大，且方向为理论高估。生产运行须在阈值邻域做有限尺寸标度外推，不能直接引用有限 $N$ 的 EBCM 值。
 
 图 2(c) 给出阈值对结构的依赖。保持两条边际度序列不变、只重新配置 $k_{\rm in}$ 与 $k_{\rm out}$ 在节点上的配对，$\lambda_c$ 在 $r_{io}\in[-0.89,+0.89]$ 上从 $0.803$ 降到 $0.209$，变动近四倍，与 \eqref{eq:lcrio} 逐点吻合。需要说明，图 2(c) 的纵轴由 \eqref{eq:lc} 经 $\kappa$ 算得，因而它检验的是"$r_{io}$ 能把阈值推到多远"以及改写 \eqref{eq:lcrio} 的恒等性，而非对阈值的独立测量；对 $\lambda_c(r_{io})$ 的仿真检验属于第 VI 节。同时须记住 II.D 的宇称结论——$r_{io}$ 移动阈值，却不产生方向对称性破缺，二者并不矛盾。
+
+---
+
+## 参考文献
+
+1. E. Volz, *Journal of Mathematical Biology*, **56**, 293–310 (2008). doi:10.1007/s00285-007-0116-4
+2. J. C. Miller, A. C. Slim, E. M. Volz, *Journal of the Royal Society Interface*, **9**, 890–906 (2012). doi:10.1098/rsif.2011.0403
+3. M. Boguñá, M. Á. Serrano, *Physical Review E*, **72**, 016106 (2005). doi:10.1103/PhysRevE.72.016106
+4. L. A. Meyers, M. E. J. Newman, B. Pourbohloul, *Journal of Theoretical Biology*, **240**, 400–418 (2006). doi:10.1016/j.jtbi.2005.10.004
+5. J. Li, X. Wu, J. Lü, L. Lei, *Communications Physics*, **7** (2024). doi:10.1038/s42005-024-01614-9
+6. D. T. Gillespie, *The Journal of Physical Chemistry*, **81**, 2340–2361 (1977). doi:10.1021/j100540a008

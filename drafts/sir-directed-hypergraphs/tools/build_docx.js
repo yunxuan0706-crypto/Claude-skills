@@ -45,7 +45,11 @@ function linearize(s) {
   // Substitute known symbols FIRST. Stripping a wrapper like \mathcal{H} later
   // removes its backslash, which would weld a preceding command to the letters
   // that follow it (\mapsto\mathcal{R} -> \mapstoR) and lose the token boundary.
-  let o = s.replace(/\\[a-zA-Z]+/g, (tok) => (SYM[tok] !== undefined ? SYM[tok] : tok));
+  // A TeX control word swallows the whitespace that terminates it, so "\langle S"
+  // is "<S", not "< S". Eat that separator when the token resolves to a symbol;
+  // keep it otherwise, or an unresolved token would weld to what follows.
+  let o = s.replace(/\\[a-zA-Z]+( ?)/g,
+    (m, sp, off, str) => (SYM[m.trimEnd()] !== undefined ? SYM[m.trimEnd()] : m));
   o = o.replace(/\\begin\{pmatrix\}([\s\S]*?)\\end\{pmatrix\}/g, (_, b) =>
     "[" + b.replace(/\\\\/g, " ; ").replace(/&/g, ", ").replace(/\s+/g, " ").trim() + "]");
   o = o.replace(/\\(?:t|d)?frac\s*\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}\s*\{((?:[^{}]|\{(?:[^{}]|\{[^{}]*\})*\})*)\}/g,

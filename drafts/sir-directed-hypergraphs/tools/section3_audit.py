@@ -39,6 +39,15 @@ by a route that does not share the derivation being tested.
 
  H  The fast Gillespie sampler against the naive reference implementation.
 
+ J  End-to-end invariants: S+I+R=1, S non-increasing, R non-decreasing, no
+    negative compartment, absorption by the time the final size is read, and
+    whether ebcm()'s max(0,.) guard ever fires. Zero violations over 300 runs
+    x 81 grid points; the guard never fires.
+
+ K  The mean-field uses forward Euler while only RK4 had been checked. At the
+    dt the figures use it is converged to ~0.05%, three orders below the
+    mean-field's own 4-5x discrepancy with simulation.
+
  I  lambda_c measured from the simulation, never from the formula. Below the
     threshold a seed starts a branching process of mean total size 1/(1-R_0),
     so eps/R(inf) -> 1 - R_0(lambda), which vanishes at lambda_c. Fitting that
@@ -272,7 +281,7 @@ def check_H(N=120, tau=2, eta=2, M=90, runs=3000, lam=1.2, seed=5):
 
 if __name__ == "__main__":
     check_A(); check_C(); check_D(); check_F(); check_G(); check_H()
-    check_E(); check_B(); check_I()
+    check_E(); check_B(); check_I(); check_J(); check_K()
 
 
 # ------------------------------------------------------------------- I ------
@@ -333,3 +342,94 @@ def check_I(N=8000, tau=2, eta=2, md=2, runs=1500, eps=0.002, seed=6100):
           f"   (formula {tau*p.kappa-1:.4f})")
     print(f"  measured lambda_c    = {lc_meas:.5f} +/- {dlc:.5f}"
           f"   (formula {lc:.5f})   -> {abs(lc_meas-lc)/dlc:.2f} sigma")
+
+
+# ------------------------------------------------------------------- J ------
+def check_J(N=1500, tau=2, eta=2, md=2, runs=300, eps=0.01, seed=3):
+    """End-to-end invariants of the sampler and of the ODE.
+
+    A bug in the bookkeeping -- a missed activate/deactivate, a double count in
+    `pressure` -- would show up as S+I+R drifting off 1, S rising, R falling, or
+    a negative compartment, none of which any earlier check would have caught.
+    The ODE side also checks whether the max(0, 1-S-R) guard in ebcm() is ever
+    doing anything: if it fires, the closure is producing a negative infected
+    fraction and the guard is hiding it.
+    """
+    rule("J  conservation and monotonicity, sampler and ODE")
+    rng = random.Random(seed)
+    kin, kout = bidegree(N, tau, eta, md, 0.0, rng)
+    E = config_model(kin, kout, tau, eta, rng)
+    ki, ko = degrees(N, E)
+    p = PGF(ki, ko)
+    lc = 1.0 / (tau * p.kappa - 1)
+    tails, heads, tails_of = index(N, E)
+    grid = [0.25 * k for k in range(81)]
+    v = {"sum": 0, "S_up": 0, "R_down": 0, "I_neg": 0}
+    for s in range(runs):
+        rr = random.Random(4000 + s)
+        sd = [w for w in range(N) if rr.random() < eps]
+        tr = gillespie_traj(N, tails, heads, tails_of, 1.6 * lc, 1, rr, sd, grid)
+        pS = pR = None
+        for (S, I, R) in tr:
+            if abs(S + I + R - 1) > 1e-12: v["sum"] += 1
+            if I < -1e-15: v["I_neg"] += 1
+            if pS is not None and S > pS + 1e-12: v["S_up"] += 1
+            if pR is not None and R < pR - 1e-12: v["R_down"] += 1
+            pS, pR = S, R
+    print(f"  sampler, {runs} runs x {len(grid)} grid points: {v}")
+
+    # absorption at the time the final size is read off
+    left = 0
+    for s in range(200):
+        rr = random.Random(7000 + s)
+        sd = [w for w in range(N) if rr.random() < 0.005]
+        if gillespie_traj(N, tails, heads, tails_of, 1.6 * lc, 1, rr, sd, [400.0])[-1][1] > 0:
+            left += 1
+    print(f"  still infected at t=400 (the final-size read-out): {left}/200")
+
+    # does the max(0,.) guard in ebcm() ever fire?
+    from ebcm_directed import states
+    worst = 0.0
+    for lam in (0.9 * lc, lc, 1.6 * lc, 3 * lc):
+        beta, mu, e0 = lam, 1.0, 0.01
+        S_ = states(tau); idx = {s: i for i, s in enumerate(S_)}
+        x = [0.0] * len(S_)
+        for a in range(tau + 1):
+            x[idx[(a, tau - a, 0)]] = math.comb(tau, a) * (1 - e0) ** a * e0 ** (tau - a)
+        R, dt = 0.0, 0.005
+        for _ in range(int(30 / dt)):
+            Phi = sum(x); Sf = (1 - e0) * p.psi_in(Phi); I_raw = 1 - Sf - R
+            worst = min(worst, I_raw)
+            PhiA = sum(w for s, w in zip(S_, x) if s[1] >= 1)
+            h = beta * PhiA * p.dpsi_tail(Phi) / p.psi_tail(Phi)
+            dx = [0.0] * len(S_)
+            for (a, b, c), w in zip(S_, x):
+                i = idx[(a, b, c)]
+                if a: dx[i] -= h * a * w; dx[idx[(a - 1, b + 1, c)]] += h * a * w
+                if b: dx[i] -= mu * b * w; dx[idx[(a, b - 1, c + 1)]] += mu * b * w
+                if b >= 1: dx[i] -= beta * w
+            x = [q + dt * y for q, y in zip(x, dx)]; R += dt * mu * I_raw
+    print(f"  ODE: most negative unclamped I over four lambda = {worst:.3e}"
+          f"  -> the guard {'never fires' if worst >= 0 else 'IS hiding something'}")
+
+
+# ------------------------------------------------------------------- K ------
+def check_K(N=1500, tau=2, eta=2, md=2, seed=23):
+    """Mean-field uses forward Euler; only RK4 had ever been checked."""
+    rule("K  mean-field integrator convergence (forward Euler, O(dt))")
+    rng = random.Random(seed)
+    kin, kout = bidegree(N, tau, eta, md, 0.0, rng)
+    E = config_model(kin, kout, tau, eta, rng)
+    ki, ko = degrees(N, E)
+    p = PGF(ki, ko)
+    lc = 1.0 / (tau * p.kappa - 1)
+    for lab, lam in (("lambda_c", lc), ("1.6 lambda_c", 1.6 * lc)):
+        vals = []
+        for dt in (0.02, 0.01, 0.005, 0.0025):
+            vals.append((dt, meanfield(N, E, ki, ko, tau, lam, eps=0.005,
+                                       tmax=250.0, dt=dt)[-1][3]))
+        # Richardson for a first-order method
+        lim = vals[-1][1] - (vals[-2][1] - vals[-1][1])
+        err = abs(vals[1][1] - lim) / lim          # error at the dt used in the figures
+        print(f"  {lab}: R(inf) at dt=0.01 is {vals[1][1]:.6f}, extrapolated limit"
+              f" {lim:.6f}, relative error {err:.2%}")

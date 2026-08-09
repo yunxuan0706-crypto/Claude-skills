@@ -17,6 +17,8 @@ const CJK = "SimSun";
 const FONT = { ascii: LATIN, hAnsi: LATIN, eastAsia: CJK, cs: LATIN };
 
 // ---------------------------------------------------------------- math ----
+const UNRESOLVED = new Map();
+
 const SYM = {
   "\\phi": "\u03c6", "\\alpha": "\u03b1", "\\tau": "\u03c4", "\\eta": "\u03b7",
   "\\mu": "\u03bc", "\\theta": "\u03b8", "\\lambda": "\u03bb", "\\beta": "\u03b2",
@@ -37,7 +39,25 @@ const SYM = {
   "\\equiv": "\u2261", "\\sim": "\u223c", "\\simeq": "\u2243",
   "\\circ": "\u2218", "\\setminus": "\u2216", "\\perp": "\u22a5",
   "\\longmapsto": "\u27fc", "\\ne": "\u2260", "\\colon": ":",
+  "\\kappa": "\u03ba", "\\psi": "\u03c8", "\\varepsilon": "\u03b5",
+  "\\varphi": "\u03c6", "\\omega": "\u03c9", "\\pi": "\u03c0", "\\xi": "\u03be",
+  "\\zeta": "\u03b6", "\\chi": "\u03c7", "\\iota": "\u03b9", "\\upsilon": "\u03c5",
+  "\\wedge": "\u2227", "\\vee": "\u2228", "\\int": "\u222b", "\\partial": "\u2202",
+  "\\Pr": "Pr", "\\exp": "exp", "\\ln": "ln", "\\log": "log", "\\max": "max",
+  "\\min": "min", "\\lim": "lim", "\\det": "det", "\\deg": "deg",
+  "\\prod": "\u220f", "\\cdots": "\u22ef", "\\dots": "\u2026", "\\ldots": "\u2026",
+  "\\gg": "\u226b", "\\ll": "\u226a", "\\notin": "\u2209", "\\subsetneq": "\u228a",
 };
+
+// Macros the linearizer resolves structurally rather than through SYM; listing
+// them here keeps the unresolved-token audit from flagging them.
+const STRUCTURAL = new Set([
+  "frac", "tfrac", "dfrac", "binom", "bar", "overline", "dot", "boxed",
+  "Bigl", "Bigr", "Bigm", "bigl", "bigr", "bigm", "Big", "big", "left", "right",
+  "qquad", "quad", "text", "textrm", "textit", "textbf", "mathcal", "mathbb",
+  "mathrm", "mathbf", "mathsf", "operatorname", "begin", "end", "label",
+  "eqref", "cite", "hline", "rm",
+]);
 
 // Flatten LaTeX constructs that a run-based renderer cannot lay out in 2D.
 // The .md source stays authoritative; this is a legible linearization.
@@ -59,6 +79,9 @@ function linearize(s) {
   o = o.replace(/\\begin\{cases\}([\s\S]*?)\\end\{cases\}/g, (_, b) =>
     "\\{" + b.replace(/\\\\/g, "; ").replace(/&/g, "").replace(/\s+/g, " ").trim() + "\\}");
   o = o.replace(/\\(?:bar|overline)\s*\{?([A-Za-z])\}?/g, "$1\u0304");
+  o = o.replace(/\\dot\s*\{?([A-Za-z\u0370-\u03ff])\}?/g, "$1\u0307");
+  o = o.replace(/\\binom\s*\{((?:[^{}]|\{[^{}]*\})*)\}\s*\{((?:[^{}]|\{[^{}]*\})*)\}/g,
+    (_, a, b) => `C(${a}, ${b})`);
   o = o.replace(/\\boxed\s*\{/g, "{");
   o = o.replace(/\\(?:Bigl|Bigr|Bigm|bigl|bigr|bigm|left|right|Big|big)\s*/g, "");
   o = o.replace(/\\(?:qquad|quad|;|:|,|!)/g, " ");
@@ -69,6 +92,12 @@ function linearize(s) {
   o = o.replace(/\\(?:mathrm|mathbf|mathsf|operatorname)\s*\{([^{}]*)\}/g, "$1");
   o = o.replace(/\\#/g, "#").replace(/\\%/g, "%").replace(/\\&/g, "&");
   o = o.replace(/\\\\/g, "  ");
+  // Anything still carrying a backslash would be silently degraded to a bare
+  // word downstream ("\kappa" -> "kappa"), which is how unhandled macros used
+  // to reach the page unnoticed. Record them so the build can report them.
+  for (const m of o.matchAll(/\\([a-zA-Z]+)/g)) {
+    if (!STRUCTURAL.has(m[1])) UNRESOLVED.set(m[1], (UNRESOLVED.get(m[1]) || 0) + 1);
+  }
   return o;
 }
 
@@ -493,4 +522,10 @@ const doc = new Document({
 Packer.toBuffer(doc).then((b) => {
   fs.writeFileSync(OUT, b);
   console.log("wrote", OUT, b.length, "bytes;", bib.length, "references");
+  if (UNRESOLVED.size) {
+    const list = [...UNRESOLVED.entries()].sort((a, b) => b[1] - a[1])
+      .map(([k, n]) => `\\${k}(${n})`).join(" ");
+    console.error("UNRESOLVED LATEX -> rendered as bare words:", list);
+    process.exitCode = 2;
+  }
 });

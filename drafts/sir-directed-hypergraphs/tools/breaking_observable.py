@@ -2,10 +2,17 @@
 
 Result (see Section II.D, Propositions 1 and 2):
 
-  * the MEAN outbreak size from a uniform seed does NOT break, on any
-    structure -- sum_v |out(v)| = sum_v |in(v)| counts the same ordered
-    reachable pairs, and reversal only transposes them. Measured: <= 1.4
-    sigma even at tau=3, eta=1, and even with Delta-alpha driven to 0.114;
+  * the MEAN outbreak size from a uniform seed is very nearly blind to
+    reversal -- sum_v |out(v)| = sum_v |in(v)| counts the same ordered
+    reachable pairs, and reversal only transposes them. That argument is
+    exact only under pairwise-independent transmission (Prop. 2, hypothesis
+    (ii)); hyperedge-level activation makes the head members share one
+    activation window and breaks it, leaving a residual of -2.24% +/- 0.44%
+    (5.05 sigma) at tau=3, eta=1. The residual is physics, not a code
+    asymmetry: on swap-symmetric sequences, where Prop. 1 forbids breaking,
+    the same sampler gives +0.12% +/- 0.26% (0.47 sigma). Either way <S> is
+    a poor probe -- the residual is an order of magnitude below Pi's break,
+    and Delta-alpha driven to 0.114 does not move it;
   * the epidemic PROBABILITY and the CONDITIONAL final size break hard and
     in opposite directions, their product staying pinned to the invariant
     mean. Measured at tau=3, eta=1, lambda=2.4:

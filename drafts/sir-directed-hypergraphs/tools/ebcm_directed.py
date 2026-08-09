@@ -16,7 +16,10 @@ edge-based variable, and the whole system is C(tau+2,2)+1 ODEs.
 Checks, and what each one actually established:
 
   1  the two branching counts of kappa agree to 2e-16 on four (tau,eta);
-  2  tau=eta=1 reproduces the known directed-network SIR threshold exactly;
+  2  tau=eta=1 reproduces the known directed-network SIR threshold. Compared
+     against the form the literature states -- a critical transmissibility
+     T_c = <k_in>/<k_in k_out> -- rather than against our own restatement,
+     which would have been circular. Agreement 1.6e-16;
   3  bisecting on the closure's OWN final size -- kappa never used -- lands on
      1/(tau*kappa-1); the residual is 1% at tmax=400 and 4.8e-5 at tmax=6400
      (CHECK 8), so it is the finite integration window, not the formula;
@@ -355,11 +358,19 @@ def check_pairwise_limit():
     edges = config_model(kin, kout, 1, 1, rng)
     ki, ko = degrees(4000, edges)
     p = PGF(ki, ko)
+    # Compare against the form the literature actually states -- a critical
+    # TRANSMISSIBILITY T_c = <k_in>/<k_in k_out> (Meyers-Newman-Pourbohloul).
+    # Restating our own lambda_c in our own notation and calling it agreement
+    # would be circular; converting through T = lambda/(1+lambda) is not.
     ours = 1.0 / (1 * p.kappa - 1)
-    known = 1.0 / (sum(a * b for a, b in zip(ki, ko)) / sum(ko) - 1)
-    print(f"  1/(tau*kappa-1)            = {ours:.6f}")
-    print(f"  1/(<k_in k_out>/<k_out>-1) = {known:.6f}   [Boguna-Serrano / Meyers]")
-    print(f"  identical: {abs(ours-known) < 1e-12}")
+    Tc_ours = ours / (1 + ours)
+    Tc_lit = sum(ki) / sum(a * b for a, b in zip(ki, ko))
+    print(f"  lambda_c = 1/(tau*kappa-1) = {ours:.6f}")
+    print(f"  -> T_c = lam/(1+lam)       = {Tc_ours:.9f}")
+    print(f"  literature T_c = <k_in>/<k_in k_out> = {Tc_lit:.9f}")
+    print(f"  relative difference: {abs(Tc_ours-Tc_lit)/Tc_lit:.2e}")
+    print(f"  (<k_in> = {sum(ki)/len(ki):.6f}, <k_out> = {sum(ko)/len(ko):.6f};"
+          f" equal because tau = eta)")
 
 
 def ode_threshold(pgf, tau, theta=1, eps=1e-9, lo=1e-3, hi=50.0, tol=1e-4):

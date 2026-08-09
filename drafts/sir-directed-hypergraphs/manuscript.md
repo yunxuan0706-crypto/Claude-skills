@@ -208,7 +208,7 @@ $$
 
 这一违背是真实的，不能当作可忽略的小量。第 VI 节在 $\tau=3,\eta=1$ 的最不对称构型上测得 $\langle S\rangle$ 的翻转残余约为 $-2\%$（阈值邻域，四个独立结构符号一致，合并 $5\sigma$）。它并非仿真器对 $\mathcal{H}$ 与 $\mathcal{R}\mathcal{H}$ 处理不均所致。在互换对称的双度序列上，命题 1 直接禁止破缺，而同一协议只给出 $-0.36\%\pm0.28\%$，与零相容；即便保守地把这一数值当作仪器基线扣除，剩余部分仍有 $-1.88\%\pm0.52\%$（$3.6\sigma$）。该效应为超边级激活所特有，成对情形与线性核下均不出现。因此命题 2 对本文主线只是**近似**结论，$\langle S\rangle$ 并非严格不变量。
 
-即便如此，命题 2 的结论在量级上仍然成立：$\langle S\rangle$ **是一个极差的破缺序参量**。同一批构型上 $\Pi$ 在翻转下由 $0.67$ 变为 $0.39$，相对其均值的差异约 $53\%$，比 $\langle S\rangle$ 的 $2\%$ 残余大二十余倍。破缺出现在可达对**如何分布**，而非其总数。按 [5]，大爆发的**概率**由巨入分支的相对规模决定，而爆发的**终态规模**由巨出分支决定；$\mathcal{R}$ 恰好交换这两者。因此本文取
+即便如此，命题 2 的结论在量级上仍然成立：$\langle S\rangle$ **是一个极差的破缺序参量**。同一批构型上 $\Pi$ 在翻转下由 $0.67$ 变为 $0.39$，相对其均值的差异约 $53\%$，比 $\langle S\rangle$ 的 $2\%$ 残余大二十余倍。破缺出现在可达对**如何分布**，而非其总数。按 [5]，大爆发的**概率**由巨入分支的相对规模决定，而爆发的**终态规模**由巨出分支决定；$\mathcal{R}$ 恰好交换这两者。成对有向图上这一分离已有明确表述：爆发概率由沿出边的前向分支过程给出，爆发规模由沿入边的后向分支过程给出，后者等价于时间反演模型中的前向计算 [46]。本文的命题 2 正是该结构在有向超图上的推论。因此本文取
 
 $$
 \Pi=\Pr\bigl(S>S_{\rm cut}\bigr),\qquad \bar S=\mathbb{E}\bigl[S\mid S>S_{\rm cut}\bigr]
@@ -378,7 +378,7 @@ $$
 
 $\tau\kappa\le1$ 时不存在有限阈值。
 
-**分支解释自洽。** 一个感染的尾成员使其超边激活，超边在该成员的感染期内以速率 $\beta$ 向每个头成员施压，故对给定头成员的传递概率为 $T=\beta/(\beta+\mu)$。从尾侧计数得 $R_0=\tau\kappa T$；从头侧计数，新感染节点的出度按 $k_{\rm in}$ 偏置，得 $R_0=\eta T\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$。由握手关系 \eqref{eq:handshake} 有 $\langle k_{\rm out}\rangle/\langle k_{\rm in}\rangle=\tau/\eta$，两式因而恒等：
+**分支解释自洽。** 一个感染的尾成员使其超边激活，超边在该成员的感染期内以速率 $\beta$ 向每个头成员施压，故对给定头成员的传递概率为 $T=\beta/(\beta+\mu)$。从尾侧计数得 $R_0=\tau\kappa T$；从头侧计数，新感染节点沿入边到达、其出度因而按 $k_{\rm in}$ 偏置，得 $R_0=\eta T\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$——成对情形下 $\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 正是有向图中"后继节点的平均出度"，亦即其再生数 [46]。由握手关系 \eqref{eq:handshake} 有 $\langle k_{\rm out}\rangle/\langle k_{\rm in}\rangle=\tau/\eta$，两式因而恒等：
 
 $$
 \tau\,\frac{\langle k_{\rm in}k_{\rm out}\rangle}{\langle k_{\rm out}\rangle}
@@ -387,7 +387,7 @@ $$
 
 两种数法给出同一个 $R_0$，且 $R_0=1$ 与 \eqref{eq:lc} 等价。
 
-**$\tau=\eta=1$ 的退化。** \eqref{eq:lc} 化为 $\lambda_c=\bigl[\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle-1\bigr]^{-1}$，即有向随机图上 SIR 的已知阈值 [11, 12]。文献以临界传播率给出该结果，$T_c=\langle k_{\rm in}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$；由 $T=\lambda/(1+\lambda)$ 代入 \eqref{eq:lc} 得 $T_c=1/\kappa=\langle k_{\rm out}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，而 $\tau=\eta$ 时握手关系 \eqref{eq:handshake} 给出 $\langle k_{\rm in}\rangle=\langle k_{\rm out}\rangle$，两式因而恒等。需要强调，令 $k_{\rm in}=k_{\rm out}$ 并**不**回到无向网络的结果：无向情形的余度相减源于"来路那条边不可再用"，而有向情形下来路超边根本不在 $v$ 的入超边之列。\eqref{eq:lc} 分母中的 $-1$ 来自 $T=\beta/(\beta+\mu)$ 里的 $\beta$，与余度无关。两者是不同的结构，不应混为一谈。
+**$\tau=\eta=1$ 的退化。** \eqref{eq:lc} 化为 $\lambda_c=\bigl[\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle-1\bigr]^{-1}$，即有向随机图上 SIR 的已知阈值 [11, 12, 46]。[12] 的半有向阈值条件在纯有向极限下化为临界传播率 $T_c=\langle k_{\rm in}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，[46] 亦以再生数 $R_0=\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 给出同一结果；由 $T=\lambda/(1+\lambda)$ 代入 \eqref{eq:lc} 得 $T_c=1/\kappa=\langle k_{\rm out}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，而 $\tau=\eta$ 时握手关系 \eqref{eq:handshake} 给出 $\langle k_{\rm in}\rangle=\langle k_{\rm out}\rangle$，两式因而恒等。需要强调，令 $k_{\rm in}=k_{\rm out}$ 并**不**回到无向网络的结果：无向情形的余度相减源于"来路那条边不可再用"，而有向情形下来路超边根本不在 $v$ 的入超边之列。\eqref{eq:lc} 分母中的 $-1$ 来自 $T=\beta/(\beta+\mu)$ 里的 $\beta$，与余度无关。两者是不同的结构，不应混为一谈。
 
 **阈值对 $r_{io}$ 的依赖。** 由 $\langle k_{\rm in}k_{\rm out}\rangle=\langle k_{\rm in}\rangle\langle k_{\rm out}\rangle+r_{io}\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}$ 与握手关系 \eqref{eq:handshake}，
 
@@ -401,7 +401,7 @@ $$
 \lambda_c=\Bigl[\tau\langle k_{\rm in}\rangle+\tfrac{N}{M}\,r_{io}\,\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}-1\Bigr]^{-1}\label{eq:lcrio}
 $$
 
-在两条边际度序列固定时 $\lambda_c$ 是 $r_{io}$ 的严格减函数：正的入出度相关促进传播。这是第 VI 节 $r_{io}$ 扫描的定量预言。
+在两条边际度序列固定时 $\lambda_c$ 是 $r_{io}$ 的严格减函数：正的入出度相关促进传播。这一方向与成对有向图一致——那里 $R_0$ 同样经 $\langle k_{\rm in}k_{\rm out}\rangle$ 依赖于入出度的协方差 [46]；\eqref{eq:lcrio} 把该依赖推广到有向超图，并显式给出 $\tau$ 与 $N/M$ 的系数。这是第 VI 节 $r_{io}$ 扫描的定量预言。
 
 **一个否定性推论。** \eqref{eq:lc} 只依赖于阶数 $\tau$ 与双度序列（经由 $\kappa$）。II.C 的重叠 $\alpha^{ab}$ 在双度序列固定时仍可自由调节，因而**在树状闭合内 $\lambda_c$ 与 $\alpha$ 无关**。这不是疏漏而是可检验的预言：重叠恰好度量超边之间共享节点的程度，也就是 (H1) 所排除的短回路。第 VI 节若测得阈值随 $\alpha$ 移动，其幅度即为树状闭合失效的定量刻度；若测不到，则 $\alpha$ 的作用只体现在阈值以外的量上。无论哪一种结果，都是有内容的。
 
@@ -515,3 +515,4 @@ $$
 43. S. N. Dorogovtsev, A. V. Goltsev, J. F. F. Mendes, *Physical Review Letters*, **96**, 040601 (2006). doi:10.1103/PhysRevLett.96.040601
 44. G. J. Baxter, S. N. Dorogovtsev, A. V. Goltsev, J. F. F. Mendes, *Physical Review E*, **82**, 011103 (2010). doi:10.1103/PhysRevE.82.011103
 45. H. Sun, G. Bianconi, *Physical Review E*, **104**, 034306 (2021). doi:10.1103/PhysRevE.104.034306
+46. A. Allard, C. Moore, S. V. Scarpino, B. M. Althouse, L. Hébert-Dufresne, *SIAM Review*, **65**, 471–492 (2023). doi:10.1137/20M1383811

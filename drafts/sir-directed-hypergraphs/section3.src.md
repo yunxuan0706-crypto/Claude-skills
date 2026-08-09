@@ -122,6 +122,8 @@ $$
 
 对一切 $t$ 成立。\eqref{eq:identity} 不是额外假设，而是 \eqref{eq:master} 的推论：对右端求导得 $-\tau h\,x_{\tau00}$，与 \eqref{eq:master} 在 $(a,b,c)=(\tau,0,0)$ 处逐项相同。它为数值积分提供了一条无需仿真的自检。
 
+**求解到什么程度。** 有必要把"求解"的含义说清楚。$\theta=1$ 时，\eqref{eq:S} 与 \eqref{eq:master}–\eqref{eq:phidot} 构成一个封闭的低维系统，其积分给出完整的 $S(t)$、$I(t)$、$R(t)$ 与终态规模，精度由 III.E 逐项校验；爆发阈值 \eqref{eq:lc} 是闭式，$\tau=1$ 时终态亦有闭式 \eqref{eq:finalsize}。但 $\tau\ge2$ 时终态**没有**闭式，原因是结构性的而非技术性的：$\Phi_\infty$ 取决于各尾成员感染期之**并**的长度；$\tau=1$ 时这个并只有一段，其长度服从 $\mathrm{Exp}(\mu)$ 且与起始时刻无关，故可只用终态量闭合，而 $\tau\ge2$ 时并的长度依赖于各感染时刻的相对先后，终态量不足以确定它。这与 \eqref{eq:noprod} 是同一个障碍。取线性核 $g(n)=n$ 时传播事件逐（尾成员，头成员）对独立，闭式重新出现。$\theta\ge2$ 的爆发条件不属本节范围。
+
 **$\theta\ge2$。** \eqref{eq:master} 中只有湮灭项的指示函数依赖于 $\theta$，故方程组对任意 $\theta$ 形式不变。但下一小节的阈值分析不再适用：$\theta\ge2$ 时单个感染尾成员不足以激活超边，\eqref{eq:master} 在无病定态附近的线性化没有增长模式，这与 II.B 所述 bootstrap 图像一致，须按第 IV 节的 $k$-core 途径处理。
 
 ## C. 爆发阈值

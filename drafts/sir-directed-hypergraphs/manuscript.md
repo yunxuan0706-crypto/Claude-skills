@@ -1,30 +1,36 @@
+# 摘要
+
+现实中的高阶交互往往是有向的：施加影响的一方与接受影响的一方并不对称。我们在有向超图上建立并求解 SIR 传播模型。每条超边分为尾集与头集（二者不相交）；尾集中被感染的成员数达到群体阈值 $\theta$ 时超边激活，以速率 $\beta$ 向头集中每个易感节点传递，感染者以速率 $\mu$ 康复，控制参数为 $\lambda=\beta/\mu$。
+
+对简单传播（$\theta=1$）我们给出完整的含时解。技术困难在于一条超边只有一个激活时钟，却由 $\tau$ 个尾成员共同驱动：激活时长是各成员感染期之并，不能逐成员相乘，朴素的乘积闭合失效。以尾集中易感、感染、康复的成员计数为状态，可把"尚未传递"重新写成一条带湮灭的 Markov 链，得到 $\binom{\tau+2}{2}+1$ 维的闭方程组，维数与系统规模无关。
+
+线性化给出爆发阈值
+
+$$
+\lambda_c=\frac{1}{\tau\kappa-1},\qquad \kappa=\frac{\langle k_{\rm in}k_{\rm out}\rangle}{\langle k_{\rm out}\rangle}\notag
+$$
+
+$\tau=\eta=1$ 时它退化为有向随机图上 SIR 的已知结果。阈值经 $\kappa$ 依赖于入出度相关 $r_{io}$，却与超边重叠无关——后者是树状闭合的一条可证伪推论。与精确 Gillespie 仿真比较，闭合的偏差随系统规模趋零（$N=4000$ 时终态误差 $0.8\%$），而同一模型的度均场把阈值压低到 $0.75\lambda_c$，在真实的亚临界区就给出宏观爆发，其误差不随规模消失。阈值本身亦由亚临界终态外推独立测得，与解析值相差 $1.4\sigma$。
+
+模型还给出两个与直觉相反的结构结论：均匀单种子下的平均爆发规模几乎不能探测方向对称性破缺，破缺须以爆发概率与条件爆发规模为序参量；而方向翻转下的奇宇称是破缺的必要而远非充分条件。
+
 # I. 引言
 
-在成对接触网络上，SIR 传播的理论已沿两条彼此独立的路径发展成熟。终态一侧由渗流承担：任意度分布随机图的连通结构可由生成函数方法解析给出 [1]，而键渗流映射把最终感染规模化归为占据概率 $\phi$ 下的巨簇规模 [2]；这一思路可上溯至一般流行过程与动力学渗流的等价性 [3]。度分布异质性的作用由此可直接读出：临界占据概率为 $\phi_c=\langle k\rangle/(\langle k^2\rangle-\langle k\rangle)$，二阶矩发散时阈值趋于零；无标度网络上的 SIS 模型给出过同一结论 [4]。Kenah 与 Robins 随后指出，SIR 与键渗流之间并非严格同构：与之精确同构的是一个半有向的"流行渗流网络"，其中爆发规模分布对应出分支、阈值对应巨强连通分支的出现、终态规模对应巨出分支 [5]。值得注意的是，方向性由此已经内在地进入了 SIR 的渗流表述，尽管接触网络本身是无向的。
+许多传染并非沿边逐个发生，而是在一个群体内集体发生 [1, 2]，这类高阶交互在真实数据中普遍存在 [3]。但群体交互往往是**有向**的：施加影响的一方与接受影响的一方并不对称。代谢反应把一组底物转化为一组产物 [4]，比特币交易与引用数据同样是一组主体指向另一组 [5]。有向超图正是为刻画这种不对称而设的形式化——每条超边分为施加影响的尾集与接受影响的头集（二者不相交），这一结构在算法与运筹领域已使用三十余年 [6]。
 
-含时一侧由方程法承担。Volz 用成对近似给出随机网络上 SIR 的低维闭合 [6]，Miller 等将其整理为边基房室模型（EBCM），以"沿一条边尚未传来感染"的概率为核心变量，用少数常微分方程同时容纳异质接触率与伙伴关系的有限持续时间 [7]。传染与康复过程的分布形式并非细节：偏离马尔可夫假设会显著改变流行阈值 [8]。两条路径分工明确——渗流给出阈值与终态，方程给出峰值与时间演化——并可相互印证 [9]。
+已有的理论工具恰好绕开了这个交叉点。成对网络上的 SIR 已由两条彼此独立的路径解决：渗流给出阈值与终态 [7, 8, 9]——度分布二阶矩发散时阈值趋零 [10]，方程给出峰值与时间演化——Volz 的低维闭合 [11] 经 Miller 等整理为边基房室模型（EBCM），以"沿一条边尚未传来感染"的概率为核心变量 [12]；二者可相互印证 [13]。方向性作为**成对**网络的属性也已处理成熟：有向随机图各巨分支的规模由入出度联合分布决定 [14]，阈值与分支规模可解析求出 [15, 16]，且再生数经 $\langle k_{\rm in}k_{\rm out}\rangle$ 依赖于入出度的相关 [17]。高阶交互一侧同样成果丰富：单纯复形与超图上的传播可出现不连续相变与双稳 [18, 19, 20]，结构的影响也已刻画——链接度异质性抑制爆炸式相变 [21]，超核分解给出局域化的中心性 [22]，高阶连通分支的巨分支是单种子全局爆发的必要条件 [23]，最佳种子群体已被刻画 [24]，而超边重叠决定转变是否爆炸式且方向与直觉相反 [25, 26, 27]，超图渗流理论亦已建立 [28, 29]。这些工作共享同一前提：超边是无向的。
 
-方向性作为接触网络本身的属性也早已被处理，且入出度相关从一开始就是其中的关键量。有向随机图各巨分支的规模由入出度联合分布 $P(k_{\rm in},k_{\rm out})$ 决定；当该分布不可分解——即入度与出度相关时——巨强连通分支的规模会偏离巨入分支与巨出分支规模之积 [10]。在任意两点度相关与双向边同时存在的一般情形下，有向渗流的阈值与各巨分支规模已可解析求出 [11]，这套机制并已直接用于有向接触网络上的流行预测 [12]。入出度相关对动力学的影响亦有直接证据：在有向网络上的阈值型传播中，正的入出度相关在较宽的平均入度范围内提高系统稳健性，负相关则相反 [13]。它与无向网络中的度—度同配性 [14] 并非同一件事——后者刻画相连节点之间度值的相似性，前者刻画同一节点两个方向的度值关系。
+有向超图上，结构刻画的工具近年已迅速成型——真实数据的微观组织与高阶互惠性 [5, 30]、重叠测度 [31]、位形模型与保度随机化 [32, 33]、保入出度序列的均匀采样 [34, 35]。动力学一侧则只有 Li 等一项：他们在有向超图上建立社会传播模型，发现双稳区间随有向强度减弱而收缩 [36]。该工作采用均场闭合，方向性由单一标量参数调节。均场忽略邻域相关，误差在阈值邻域最大；成对网络上正是 EBCM 补上了这一层 [11, 12]。因此，有向超图上的传播阈值如何依赖于结构，目前既无超出均场的含时理论，也无可供解析扫描的渗流理论。
 
-与此同时，传播研究的重心转向高阶交互——许多传染并非沿边逐个发生，而是在一个群体内集体发生 [15, 16]；这类高阶交互在真实数据中普遍存在 [17]。单纯复形上的高阶影响与强化机制可诱导不连续相变，并出现健康态与流行态共存的双稳区 [18]；超图上的社会传播已有适用于任意超图的解析框架，展现一阶与二阶相变、双稳与滞后 [19]；而把异质暴露与最小感染剂量结合，会导出一个普适的非线性感染核，并随之出现不连续相变与超指数增长 [20]——这与经典的阈值型复杂传播 [21, 22] 一脉相承。
+本文建立并求解有向超图上的 SIR 模型。第 II 节定义模型：尾集中被感染的成员数达到群体阈值 $\theta$ 时超边激活，以速率 $\beta$ 向头集中每个易感节点传递，感染者以速率 $\mu$ 康复，控制参数为 $\lambda=\beta/\mu$；非指数康复期会显著改变成对网络的流行阈值 [37]，其推广见附录。第 III 节给出 $\theta=1$ 的并发型 EBCM 方程。技术困难在于一条超边只有一个激活时钟却由 $\tau$ 个尾成员共同驱动——激活时长是各成员感染期之并，因而闭合变量不能逐成员相乘。以尾集中易感、感染、康复的成员计数为状态，可把"尚未传递"重新写成一条带湮灭的 Markov 链，得到 $\binom{\tau+2}{2}+1$ 维、与系统规模无关的闭方程组。爆发条件由线性化给出，$\lambda_c=1/(\tau\kappa-1)$，$\kappa=\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle$；$\tau=\eta=1$ 时退化为有向随机图的已知阈值 [16, 17]。阈值经 $\kappa$ 依赖于入出度相关 $r_{io}$，却与超边重叠无关——这不是疏漏，而是树状闭合的一条可证伪推论。入出度相关影响传播已有独立证据：有向网络的阈值型传播中，正的入出度相关在较宽的平均入度范围内改变系统稳健性 [38]。与精确 Gillespie 仿真 [39] 比较，闭合的偏差随系统规模趋零，均场的不然：它把阈值压低四分之一，在真实的亚临界区就给出宏观爆发。
 
-结构对高阶传播的影响同样明确。链接度分布的异质性可抑制爆炸式相变 [23]；超核分解给出一种中心性，传播过程局域于中心超核 [24]；由超边之间共享节点数定义的高阶连通分支，其巨分支的存在是单一种子实现全局爆发的必要条件 [25]；哪些群体最适合作为种子也已被刻画 [26]。尤为关键的是超边之间的重叠：它决定转变是否为爆炸式，且作用方向与直觉相反——只有在阶内重叠较低时才出现爆炸性与双稳 [27]。重叠的组织方式可由一个超边重叠矩阵刻画，其对角元与非对角元分别对应阶内与阶间重叠 [28]，而阶间相关驱动系统沿不同路径走向爆炸式传播 [29]。超图上的渗流理论亦已建立 [30]，相关进展见综述 [31]。这些工作共享同一前提：超边是无向的，一条超边内的所有节点对称地相互施加影响。
+第 IV 节转向渗流一侧，把成对网络上的 SIR–渗流映射及其半有向修正 [8, 40] 与有向渗流的生成函数机制 [14, 15] 推广到有向超图。两条路径互不依赖，因而可互为验证；我们进一步证明二者的自洽方程在 $\mu\to0$ 极限下同构。$\theta\ge2$ 时激活不再是单条超边的独立事件，模型转入 bootstrap 与 $k$-core 型渗流，其相变结构不同于普通渗流 [41, 42, 43]，亦在该节处理。
 
-然而现实中的高阶交互往往是有向的——施加影响的一方与接受影响的一方并不对称。有向超图正是为刻画这种不对称而设的形式化：每条超边分为施加影响的尾集与接受影响的头集（二者不相交），这一结构在算法与运筹领域已使用三十余年 [32]。代谢与化学反应把一组底物转化为一组产物，是其典型实例 [33]；比特币交易与引用数据亦已按有向超图分析 [34]。针对有向超图的结构测度近年迅速成型：真实数据的微观组织、高阶互惠性与 motif 已被系统刻画 [34, 35]；无向超图中超边重叠的测度与生成器已给出 [36]，位形模型与保度随机化亦有成熟实现 [37, 38]；而保入出度序列的均匀采样与非退化零模型在有向超图上也已可用 [39, 40]。
+为使结构依赖可被受控地检验，第 II 节给出有向超边重叠的可计算定义：对每一对有序超边构造 $2\times2$ 列联矩阵，四个通道分别对应共享节点同为尾成员、同为头成员、或一为头一为尾。四通道之和精确等于无向重叠，因而结果可与无向文献直接对照 [25, 26]；互惠方向另采用文献中的强互惠判据 [5]。入出度相关 $r_{io}$ 与重叠 $\alpha$ 作用在生成流程的不同环节，因而可独立扫描；零模型基线取自已有的均匀采样器 [34, 35]。
 
-动力学一侧则由 Li 等开启。他们在有向超图上建立社会传播模型，发现不连续相变的双稳区间随有向强度减弱而收缩，表明方向性确实改变高阶传播的相变结构 [41]。该工作采用均场闭合，不涉及渗流，其方向性由单一标量强度参数调节。均场忽略邻域相关，误差在阈值邻域最大；在成对网络上，正是 EBCM 补上了这一层 [6, 7]。因此，对于有向超图上的传播阈值如何依赖于结构相关这一问题，目前既没有超出均场的含时理论，也没有可供解析扫描的渗流理论。
+方向对称性破缺的分析（第 II、VI 节）给出两个与直觉相反的结果。其一，均匀单种子下的平均爆发规模几乎不能用来探测破缺：可达有序对的总数在方向翻转下近乎守恒，翻转真正改变的是这些可达对如何分配——大爆发的概率由巨入分支决定、终态规模由巨出分支决定，而翻转恰好交换二者 [17, 40]。我们因而以爆发概率与条件爆发规模为序参量。其二，翻转奇是破缺的必要条件却远非充分：双度序列的不对称驱动的破缺是数十个标准差的效应，而同样翻转奇的重叠极性 $\Delta\alpha$ 效应始终不可分辨，我们只能给出上界。破缺因而由分支结构的不对称驱动，而非由重叠的极性驱动。
 
-本文沿方程与渗流两条路径推进这一问题，并证明二者在同一极限下相合。方程一侧，我们提出有向超图 SIR 的并发型 EBCM 方程；其技术困难在于一个头节点同时承受多条超边、多个尾成员的并发压力，闭合变量不能简单相乘。我们给出闭合方案，在尾集基数 $\tau=1,2$ 的可控情形下手推验证，并以精确 Gillespie 仿真 [42] 在阈值邻域校验，从而定量给出边基闭合相对均场的增益。渗流一侧，我们把成对网络上的 SIR–渗流映射及其半有向修正 [2, 5] 与有向渗流的生成函数机制 [10, 11] 推广到有向超图，得到爆发阈值随结构参数变化的半解析依赖。两条路径互不依赖，因而可互为验证；我们进一步证明二者的自洽方程在 $\mu\to0$ 极限下同构，给出同一阈值。
-
-为使结构依赖可被受控地检验，我们给出有向超边重叠的可计算定义。对每一对有序超边构造 $2\times2$ 重叠列联矩阵，其四个通道分别对应共享节点在两条超边中同为尾成员、同为头成员、或一为头一为尾（两个方向各一个通道）。按阶聚合后得到一个张量，其阶对角块与非对角块分别对应已有的阶内与阶间重叠 [27, 28]；对任意一对超边，四个通道之和精确等于无向情形下的重叠，因此本文结果可与无向文献直接对照。互惠通道直接采用文献中的强互惠判据 [34]。两个结构参数在生成流程的不同环节起作用。入出度相关 $r_{io}$ 是双度序列的函数，故在构造该序列的阶段设定（保持两条边际度序列不变，重新配置入度与出度在节点上的配对）；重叠 $\alpha$ 则在序列固定之后，由严格保持逐节点入出度的定向重排调节。二者因而可以独立扫描，互不牵动。零模型基线取自已有的均匀采样器 [39, 40]。
-
-方向对称性破缺的分析给出两个与直觉相反的结果。其一，平均爆发规模是极差的序参量。设终态可表示为某个种子无关的随机结构上的可达性——逐对独立传播下这一表示严格成立——则可达有序对的总数在方向翻转下逐实现守恒，均匀单种子下的 $\langle S\rangle$ 因而对**任意**有向超图保持不变，无论其结构多么不对称。超边级激活使同一超边的各头成员共享一个激活区间，该表示随之失效：$\langle S\rangle$ 在翻转下出现约 $2\%$ 的残余不对称，但这比爆发概率的破缺幅度仍小二十余倍。破缺真正出现在这些可达对如何分配：大爆发的概率由巨入分支决定，爆发的终态规模由巨出分支决定，而翻转恰好交换二者 [5]。我们因而以爆发概率与条件爆发规模为序参量。二者若破缺则必反向，其组合须把 $\langle S\rangle$ 补偿至上述残余以内——这一补偿关系本身即是一项可证伪的预言。
-
-其二，翻转奇是破缺的必要条件，却远非充分条件。本文所用结构量中翻转奇的来源只有两个：双度序列关于入/出分量互换的不对称性，以及共发重叠与共收重叠之差 $\Delta\alpha$。二者的实际作用截然不同：前者驱动的破缺在爆发概率上是数十个标准差的效应；而 $\Delta\alpha$ 尽管同样翻转奇，在同一协议下把它推到量程上限，效应始终不可分辨，我们只能给出上界。破缺因而由分支结构的不对称驱动，而非由重叠的极性驱动——宇称分类能划出候选集合，选出其中哪一个起作用则是动力学问题。作为阴性对照，入出度相关 $r_{io}$ 在翻转下是偶的（翻转互换每个节点的入度与出度，而相关系数对其两个变量对称），故单独调节它不可能产生破缺，尽管它确实移动阈值。
-
-最后需说明一点。当群体阈值 $\theta\ge2$ 时，激活规则不再是单条超边的独立事件，模型转而落入 bootstrap 与 $k$-core 型渗流，其相变结构不同于普通渗流——$k$-core 的出现是混合型相变 [43]，bootstrap 渗流则可能同时存在一个连续阈值与一个更高的混合型阈值，且后者在二阶矩发散时消失 [44]；高阶渗流与 $K$-core 渗流之间的联系在多重超图上已被建立 [45]。本文对 $\theta=1$ 与 $\theta\ge2$ 分别处理。
-
-本文余下部分安排如下。第 II 节给出有向超图与 SIR 动力学的定义、有向超边重叠的可计算形式，以及结构量在方向翻转下的宇称分类。第 III 节推导并发型 EBCM 方程并给出仿真校验。第 IV 节建立 SIR 到有向超图渗流的映射与生成函数阈值理论。第 V 节介绍保度生成与定向重连工具。第 VI 节给出阈值对结构参数的依赖、方向对称性破缺，以及两方法的交叉验证。第 VII 节在真实有向超图数据上检验模型。第 VIII 节为讨论与结论。
+本文余下部分安排如下。第 II 节给出模型定义、有向超边重叠的可计算形式，以及结构量在方向翻转下的宇称分类。第 III 节推导并发型 EBCM 方程并给出仿真校验。第 IV 节建立渗流映射与生成函数阈值理论。第 V 节介绍保度生成与定向重连工具。第 VI 节给出阈值对结构参数的依赖、方向对称性破缺，以及两方法的交叉验证。第 VII 节在真实有向超图数据上检验模型。第 VIII 节为讨论与结论。
 
 # II. 模型与结构量
 
@@ -63,7 +69,7 @@ $$
 r_{io}=\frac{\langle k_{\rm in}k_{\rm out}\rangle-\langle k_{\rm in}\rangle\langle k_{\rm out}\rangle}{\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}}\label{eq:rio}
 $$
 
-即 $(k_{\rm in},k_{\rm out})$ 在节点上的 Pearson 相关系数——刻画同一节点两个方向的度值关系，而非相连节点之间的度值相似性 [14]。
+即 $(k_{\rm in},k_{\rm out})$ 在节点上的 Pearson 相关系数——刻画同一节点两个方向的度值关系，而非相连节点之间的度值相似性 [44]。
 
 必须强调 $r_{io}$ 是**双度序列 $d$ 的函数**，与超边如何连接无关。因此它由系综的输入决定，一经给定即不再随超边的重排而改变：调节 $r_{io}$ 只能在构造 $d$ 的阶段进行，即在两条边际度序列固定的前提下重新配置 $k_{\rm in}$ 与 $k_{\rm out}$ 在节点上的配对。下一小节的重叠 $\alpha$ 恰好相反：它在 $d$ 固定之后，才由超边的重排调节。两个结构参数因而作用在生成流程的不同环节，互不干扰——这一分离正是第 V 节两套工具的分工依据。
 
@@ -89,7 +95,7 @@ $$
 g(n)=\Theta(n-\theta)=\begin{cases}1,& n\ge\theta\\ 0,& n<\theta\end{cases}
 $$
 
-尾集感染成员数 $n_e\ge\theta$ 时超边处于激活态，以恒定率向头集传递；成员康复使 $n_e$ 回落到 $\theta$ 以下时超边失活。$\theta=1$ 对应简单传播，任一尾成员感染即足以激活超边；$\theta\ge2$ 则要求多个尾成员的联合状态，属于阈值型复杂传播 [21, 22]。两者的渗流对应物不同，将在第 IV 节分别处理。
+尾集感染成员数 $n_e\ge\theta$ 时超边处于激活态，以恒定率向头集传递；成员康复使 $n_e$ 回落到 $\theta$ 以下时超边失活。$\theta=1$ 对应简单传播，任一尾成员感染即足以激活超边；$\theta\ge2$ 则要求多个尾成员的联合状态，属于阈值型复杂传播 [45, 46]。两者的渗流对应物不同，将在第 IV 节分别处理。
 
 阈值放在尾侧、且逐超边判定，是本文主线的机制选择。取线性核 $g(n)=n$ 可回收"每个感染尾成员独立传递"的情形；把阈值改放头侧、令头节点在跨超边累积的剂量超过阈值时被感染，则得到另一类机制，由附录的剂量核统一处理。
 
@@ -105,9 +111,9 @@ $$
 \lambda\equiv\beta/\mu
 $$
 
-故给定感染核后，$\lambda$ 是唯一的连续动力学控制参数，爆发阈值指其临界值 $\lambda_c$；后文所称"阈值随结构参数变化"即指 $\lambda_c$ 对 $r_{io}$、$\alpha$ 等量的依赖。$\{S,I,R\}^{V}$ 上的演化因而是连续时间 Markov 过程，可用 Gillespie 算法精确抽样 [42]——这是第 III 节数值校验的基础。非指数康复期分布的推广见附录。
+故给定感染核后，$\lambda$ 是唯一的连续动力学控制参数，爆发阈值指其临界值 $\lambda_c$；后文所称"阈值随结构参数变化"即指 $\lambda_c$ 对 $r_{io}$、$\alpha$ 等量的依赖。$\{S,I,R\}^{V}$ 上的演化因而是连续时间 Markov 过程，可用 Gillespie 算法精确抽样 [39]——这是第 III 节数值校验的基础。非指数康复期分布的推广见附录。
 
-初始条件需随 $\theta$ 而变。$\theta=1$ 时取单个均匀随机选取的种子节点感染即可。$\theta\ge2$ 时单个种子无法激活任何超边——任一超边的感染尾成员数至多为 $1<\theta$——过程立即停在初态，爆发规模恒为 $1/N$；因此必须取一个规模不小于 $\theta$ 的种子集，我们取均匀随机的初始感染比例 $f$。这与 bootstrap 渗流以初始激活比例为控制参数的做法一致 [44]，$f$ 因而是 $\theta\ge2$ 分支的第二个控制参数。
+初始条件需随 $\theta$ 而变。$\theta=1$ 时取单个均匀随机选取的种子节点感染即可。$\theta\ge2$ 时单个种子无法激活任何超边——任一超边的感染尾成员数至多为 $1<\theta$——过程立即停在初态，爆发规模恒为 $1/N$；因此必须取一个规模不小于 $\theta$ 的种子集，我们取均匀随机的初始感染比例 $f$。这与 bootstrap 渗流以初始激活比例为控制参数的做法一致 [42]，$f$ 因而是 $\theta\ge2$ 分支的第二个控制参数。
 
 有限系统几乎必然在有限时间内到达无感染者的吸收态。记该吸收态中康复节点的占比为爆发规模 $S$，记 $S[\mathcal{H}]$ 为给定 $\mathcal{H}$ 时 $S$ 对动力学随机性与种子选取的条件期望。两种初始条件下种子分布都均匀，因而与超边方向无关，这一点 II.D 将用到。
 
@@ -115,7 +121,7 @@ $$
 
 ## C. 有向超边重叠
 
-第二个结构参数刻画超边之间如何共享节点。在无向超图中，两条超边的重叠只有"共享几个节点"一个自由度 [27, 28]；引入尾/头之分后，共享节点在两条超边中各自扮演的角色也成为信息。
+第二个结构参数刻画超边之间如何共享节点。在无向超图中，两条超边的重叠只有"共享几个节点"一个自由度 [25, 26]；引入尾/头之分后，共享节点在两条超边中各自扮演的角色也成为信息。
 
 对任意有序超边对 $(e,f)$，$e\neq f$，定义重叠列联矩阵的四个分量
 
@@ -152,9 +158,9 @@ $$
 
 即在确实发生重叠的超边对上取平均，其中 $\sigma(e)=(|T(e)|,|H(e)|)$ 为超边的阶；该通道无重叠时 $\alpha^{ab}$ 不定义。记 $m_{ab}$ 为该通道中发生重叠的超边对数，则 $\alpha^{ab}=C_{ab}/m_{ab}$，常数 $C_{ab}$ 仅由度序列决定。因此调节 $\alpha$ 等价于调节 $m_{ab}$，这决定了第 V 节重连算法的实现方式。
 
-式 \eqref{eq:alpha} 中阶指标取对角块（$\sigma=\sigma'$）即阶内重叠、取非对角块即阶间重叠，与无向情形下超边重叠矩阵的对角/非对角划分一致 [28]；本文只是在其每个矩阵元上再展开出四个方向通道。同质阶数下阶指标退化，以下略去并简记为 $\alpha^{ab}$；第 VII 节的真实数据阶数异质，届时阶指标重新生效。
+式 \eqref{eq:alpha} 中阶指标取对角块（$\sigma=\sigma'$）即阶内重叠、取非对角块即阶间重叠，与无向情形下超边重叠矩阵的对角/非对角划分一致 [26]；本文只是在其每个矩阵元上再展开出四个方向通道。同质阶数下阶指标退化，以下略去并简记为 $\alpha^{ab}$；第 VII 节的真实数据阶数异质，届时阶指标重新生效。
 
-互惠方向不由上述张量刻画。两条超边是否互相指回，取决于一组超边能否共同完成反向覆盖，这是超边级而非超边对级的判据。本文直接采用已有的强互惠定义 [34]：若存在一组超边，其尾集之并覆盖 $H(e)$ 且头集之并覆盖 $T(e)$，则称 $e$ 被强互惠；取
+互惠方向不由上述张量刻画。两条超边是否互相指回，取决于一组超边能否共同完成反向覆盖，这是超边级而非超边对级的判据。本文直接采用已有的强互惠定义 [5]：若存在一组超边，其尾集之并覆盖 $H(e)$ 且头集之并覆盖 $T(e)$，则称 $e$ 被强互惠；取
 
 $$
 \alpha^{\rightleftarrows}=\frac{\bigl|\{e\in E:\ e\ \text{被强互惠}\}\bigr|}{M}
@@ -200,7 +206,7 @@ $$
 
 但即便必要条件被满足，破缺也未必能在 $\langle S\rangle$ 上看到。存在一条更强的不变性，它与系综是否 $\mathcal{R}$-不变无关：
 
-> **命题 2.** 设 (i) 终态可表示为某个随机结构 $\mathcal{G}(\mathcal{H})$ 上的可达性，即从种子 $v$ 出发的最终感染集为 $v$ 在 $\mathcal{G}$ 中的出分支 $\mathrm{out}(v)$，如 [5] 的半有向流行渗流网络所给出；且 (ii) $\mathcal{G}(\mathcal{R}\mathcal{H})$ 与 $\mathcal{G}(\mathcal{H})$ 的转置同分布。则对**任意**有向超图 $\mathcal{H}$，均匀单种子下的平均爆发规模在方向翻转下不变。
+> **命题 2.** 设 (i) 终态可表示为某个随机结构 $\mathcal{G}(\mathcal{H})$ 上的可达性，即从种子 $v$ 出发的最终感染集为 $v$ 在 $\mathcal{G}$ 中的出分支 $\mathrm{out}(v)$，如 [40] 的半有向流行渗流网络所给出；且 (ii) $\mathcal{G}(\mathcal{R}\mathcal{H})$ 与 $\mathcal{G}(\mathcal{H})$ 的转置同分布。则对**任意**有向超图 $\mathcal{H}$，均匀单种子下的平均爆发规模在方向翻转下不变。
 
 证明只需一次计数：$\sum_v|\mathrm{out}(v)|=\#\{(v,u):u\ \text{自}\ v\ \text{可达}\}=\sum_v|\mathrm{in}(v)|$。转置把每个可达有序对 $(v,u)$ 换成 $(u,v)$，可达对的**总数**因而逐实现不变；除以 $N^2$ 即得 $\langle S\rangle$ 不变。
 
@@ -208,7 +214,7 @@ $$
 
 这一违背是真实的，不能当作可忽略的小量。第 VI 节在 $\tau=3,\eta=1$ 的最不对称构型上测得 $\langle S\rangle$ 的翻转残余约为 $-2\%$（阈值邻域，四个独立结构符号一致，合并 $5\sigma$）。它并非仿真器对 $\mathcal{H}$ 与 $\mathcal{R}\mathcal{H}$ 处理不均所致。在互换对称的双度序列上，命题 1 直接禁止破缺，而同一协议只给出 $-0.36\%\pm0.28\%$，与零相容；即便保守地把这一数值当作仪器基线扣除，剩余部分仍有 $-1.88\%\pm0.52\%$（$3.6\sigma$）。该效应为超边级激活所特有，成对情形与线性核下均不出现。因此命题 2 对本文主线只是**近似**结论，$\langle S\rangle$ 并非严格不变量。
 
-即便如此，命题 2 的结论在量级上仍然成立：$\langle S\rangle$ **是一个极差的破缺序参量**。同一批构型上 $\Pi$ 在翻转下由 $0.67$ 变为 $0.39$，相对其均值的差异约 $53\%$，比 $\langle S\rangle$ 的 $2\%$ 残余大二十余倍。破缺出现在可达对**如何分布**，而非其总数。按 [5]，大爆发的**概率**由巨入分支的相对规模决定，而爆发的**终态规模**由巨出分支决定；$\mathcal{R}$ 恰好交换这两者。成对有向图上这一分离已有明确表述：爆发概率由沿出边的前向分支过程给出，爆发规模由沿入边的后向分支过程给出，后者等价于时间反演模型中的前向计算 [46]。本文的命题 2 正是该结构在有向超图上的推论。因此本文取
+即便如此，命题 2 的结论在量级上仍然成立：$\langle S\rangle$ **是一个极差的破缺序参量**。同一批构型上 $\Pi$ 在翻转下由 $0.67$ 变为 $0.39$，相对其均值的差异约 $53\%$，比 $\langle S\rangle$ 的 $2\%$ 残余大二十余倍。破缺出现在可达对**如何分布**，而非其总数。按 [40]，大爆发的**概率**由巨入分支的相对规模决定，而爆发的**终态规模**由巨出分支决定；$\mathcal{R}$ 恰好交换这两者。成对有向图上这一分离已有明确表述：爆发概率由沿出边的前向分支过程给出，爆发规模由沿入边的后向分支过程给出，后者等价于时间反演模型中的前向计算 [17]。本文的命题 2 正是该结构在有向超图上的推论。因此本文取
 
 $$
 \Pi=\Pr\bigl(S>S_{\rm cut}\bigr),\qquad \bar S=\mathbb{E}\bigl[S\mid S>S_{\rm cut}\bigr]
@@ -234,7 +240,7 @@ $r_{io}$ 的角色由此成为一个可直接检验的推论：它不能单独�
 
 ## A. 空腔构造与闭合假设
 
-成对网络上的边基房室模型（EBCM）以"沿一条边尚未传来感染"的概率为核心变量，把 SIR 的含时演化压缩到少数常微分方程 [6, 7]。移到有向超图上有两重并发需要处理：一个头节点同时暴露于 $k_{\rm in}$ 条超边，而每条超边内又有 $\tau$ 个尾成员同时向它施压。前一重可以因子化，后一重不能——本小节说明界线在哪里。
+成对网络上的边基房室模型（EBCM）以"沿一条边尚未传来感染"的概率为核心变量，把 SIR 的含时演化压缩到少数常微分方程 [11, 12]。移到有向超图上有两重并发需要处理：一个头节点同时暴露于 $k_{\rm in}$ 条超边，而每条超边内又有 $\tau$ 个尾成员同时向它施压。前一重可以因子化，后一重不能——本小节说明界线在哪里。
 
 固定一个**检验节点** $u$，人为令其永久保持易感（空腔节点），并取一条以 $u$ 为头成员的超边 $e$，即 $u\in H(e)$。定义边基变量
 
@@ -328,7 +334,7 @@ $$
 \dot x_{001}=\mu\,x_{010}\label{eq:tau1}
 $$
 
-这正是成对 EBCM 的三元组 $(\Phi_S,\Phi_I,\Phi_R)$ [7]——依次为伙伴处于易感、已感染但尚未传递、已康复且未曾传递的概率——唯一的实质替换是把余度生成函数换成 \eqref{eq:psitail} 的 $\psi_{\rm tail}$。需注意记号差异：本文的 $\Phi$ 对应该文中三者之和 $\Theta$，而本文的 $x_{abc}$ 对应其 $\Phi$ 分量。
+这正是成对 EBCM 的三元组 $(\Phi_S,\Phi_I,\Phi_R)$ [12]——依次为伙伴处于易感、已感染但尚未传递、已康复且未曾传递的概率——唯一的实质替换是把余度生成函数换成 \eqref{eq:psitail} 的 $\psi_{\rm tail}$。需注意记号差异：本文的 $\Phi$ 对应该文中三者之和 $\Theta$，而本文的 $x_{abc}$ 对应其 $\Phi$ 分量。
 
 **$\tau=2$ 的显式形式。** 六个状态按 $(a,b,c)$ 记为 $x_{200},x_{110},x_{101},x_{020},x_{011},x_{002}$，\eqref{eq:master} 展开为
 
@@ -354,6 +360,8 @@ $$
 
 对一切 $t$ 成立。\eqref{eq:identity} 不是额外假设，而是 \eqref{eq:master} 的推论：对右端求导得 $-\tau h\,x_{\tau00}$，与 \eqref{eq:master} 在 $(a,b,c)=(\tau,0,0)$ 处逐项相同。它为数值积分提供了一条无需仿真的自检。
 
+**求解到什么程度。** 有必要把"求解"的含义说清楚。$\theta=1$ 时，\eqref{eq:S} 与 \eqref{eq:master}–\eqref{eq:phidot} 构成一个封闭的低维系统，其积分给出完整的 $S(t)$、$I(t)$、$R(t)$ 与终态规模，精度由 III.E 逐项校验；爆发阈值 \eqref{eq:lc} 是闭式，$\tau=1$ 时终态亦有闭式 \eqref{eq:finalsize}。但 $\tau\ge2$ 时终态**没有**闭式，原因是结构性的而非技术性的：$\Phi_\infty$ 取决于各尾成员感染期之**并**的长度；$\tau=1$ 时这个并只有一段，其长度服从 $\mathrm{Exp}(\mu)$ 且与起始时刻无关，故可只用终态量闭合，而 $\tau\ge2$ 时并的长度依赖于各感染时刻的相对先后，终态量不足以确定它。这与 \eqref{eq:noprod} 是同一个障碍。取线性核 $g(n)=n$ 时传播事件逐（尾成员，头成员）对独立，闭式重新出现。$\theta\ge2$ 的爆发条件不属本节范围。
+
 **$\theta\ge2$。** \eqref{eq:master} 中只有湮灭项的指示函数依赖于 $\theta$，故方程组对任意 $\theta$ 形式不变。但下一小节的阈值分析不再适用：$\theta\ge2$ 时单个感染尾成员不足以激活超边，\eqref{eq:master} 在无病定态附近的线性化没有增长模式，这与 II.B 所述 bootstrap 图像一致，须按第 IV 节的 $k$-core 途径处理。
 
 ## C. 爆发阈值
@@ -378,7 +386,7 @@ $$
 
 $\tau\kappa\le1$ 时不存在有限阈值。
 
-**分支解释自洽。** 一个感染的尾成员使其超边激活，超边在该成员的感染期内以速率 $\beta$ 向每个头成员施压，故对给定头成员的传递概率为 $T=\beta/(\beta+\mu)$。从尾侧计数得 $R_0=\tau\kappa T$；从头侧计数，新感染节点沿入边到达、其出度因而按 $k_{\rm in}$ 偏置，得 $R_0=\eta T\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$——成对情形下 $\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 正是有向图中"后继节点的平均出度"，亦即其再生数 [46]。由握手关系 \eqref{eq:handshake} 有 $\langle k_{\rm out}\rangle/\langle k_{\rm in}\rangle=\tau/\eta$，两式因而恒等：
+**分支解释自洽。** 一个感染的尾成员使其超边激活，超边在该成员的感染期内以速率 $\beta$ 向每个头成员施压，故对给定头成员的传递概率为 $T=\beta/(\beta+\mu)$。从尾侧计数得 $R_0=\tau\kappa T$；从头侧计数，新感染节点沿入边到达、其出度因而按 $k_{\rm in}$ 偏置，得 $R_0=\eta T\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$——成对情形下 $\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 正是有向图中"后继节点的平均出度"，亦即其再生数 [17]。由握手关系 \eqref{eq:handshake} 有 $\langle k_{\rm out}\rangle/\langle k_{\rm in}\rangle=\tau/\eta$，两式因而恒等：
 
 $$
 \tau\,\frac{\langle k_{\rm in}k_{\rm out}\rangle}{\langle k_{\rm out}\rangle}
@@ -387,7 +395,7 @@ $$
 
 两种数法给出同一个 $R_0$，且 $R_0=1$ 与 \eqref{eq:lc} 等价。
 
-**$\tau=\eta=1$ 的退化。** \eqref{eq:lc} 化为 $\lambda_c=\bigl[\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle-1\bigr]^{-1}$，即有向随机图上 SIR 的已知阈值 [11, 12, 46]。[12] 的半有向阈值条件在纯有向极限下化为临界传播率 $T_c=\langle k_{\rm in}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，[46] 亦以再生数 $R_0=\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 给出同一结果；由 $T=\lambda/(1+\lambda)$ 代入 \eqref{eq:lc} 得 $T_c=1/\kappa=\langle k_{\rm out}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，而 $\tau=\eta$ 时握手关系 \eqref{eq:handshake} 给出 $\langle k_{\rm in}\rangle=\langle k_{\rm out}\rangle$，两式因而恒等。需要强调，令 $k_{\rm in}=k_{\rm out}$ 并**不**回到无向网络的结果：无向情形的余度相减源于"来路那条边不可再用"，而有向情形下来路超边根本不在 $v$ 的入超边之列。\eqref{eq:lc} 分母中的 $-1$ 来自 $T=\beta/(\beta+\mu)$ 里的 $\beta$，与余度无关。两者是不同的结构，不应混为一谈。
+**$\tau=\eta=1$ 的退化。** \eqref{eq:lc} 化为 $\lambda_c=\bigl[\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle-1\bigr]^{-1}$，即有向随机图上 SIR 的已知阈值 [15, 16, 17]。[16] 的半有向阈值条件在纯有向极限下化为临界传播率 $T_c=\langle k_{\rm in}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，[17] 亦以再生数 $R_0=\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 给出同一结果；由 $T=\lambda/(1+\lambda)$ 代入 \eqref{eq:lc} 得 $T_c=1/\kappa=\langle k_{\rm out}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，而 $\tau=\eta$ 时握手关系 \eqref{eq:handshake} 给出 $\langle k_{\rm in}\rangle=\langle k_{\rm out}\rangle$，两式因而恒等。需要强调，令 $k_{\rm in}=k_{\rm out}$ 并**不**回到无向网络的结果：无向情形的余度相减源于"来路那条边不可再用"，而有向情形下来路超边根本不在 $v$ 的入超边之列。\eqref{eq:lc} 分母中的 $-1$ 来自 $T=\beta/(\beta+\mu)$ 里的 $\beta$，与余度无关。两者是不同的结构，不应混为一谈。
 
 **阈值对 $r_{io}$ 的依赖。** 由 $\langle k_{\rm in}k_{\rm out}\rangle=\langle k_{\rm in}\rangle\langle k_{\rm out}\rangle+r_{io}\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}$ 与握手关系 \eqref{eq:handshake}，
 
@@ -401,7 +409,7 @@ $$
 \lambda_c=\Bigl[\tau\langle k_{\rm in}\rangle+\tfrac{N}{M}\,r_{io}\,\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}-1\Bigr]^{-1}\label{eq:lcrio}
 $$
 
-在两条边际度序列固定时 $\lambda_c$ 是 $r_{io}$ 的严格减函数：正的入出度相关促进传播。这一方向与成对有向图一致——那里 $R_0$ 同样经 $\langle k_{\rm in}k_{\rm out}\rangle$ 依赖于入出度的协方差 [46]；\eqref{eq:lcrio} 把该依赖推广到有向超图，并显式给出 $\tau$ 与 $N/M$ 的系数。这是第 VI 节 $r_{io}$ 扫描的定量预言。
+在两条边际度序列固定时 $\lambda_c$ 是 $r_{io}$ 的严格减函数：正的入出度相关促进传播。这一方向与成对有向图一致——那里 $R_0$ 同样经 $\langle k_{\rm in}k_{\rm out}\rangle$ 依赖于入出度的协方差 [17]；\eqref{eq:lcrio} 把该依赖推广到有向超图，并显式给出 $\tau$ 与 $N/M$ 的系数。这是第 VI 节 $r_{io}$ 扫描的定量预言。
 
 **一个否定性推论。** \eqref{eq:lc} 只依赖于阶数 $\tau$ 与双度序列（经由 $\kappa$）。II.C 的重叠 $\alpha^{ab}$ 在双度序列固定时仍可自由调节，因而**在树状闭合内 $\lambda_c$ 与 $\alpha$ 无关**。这不是疏漏而是可检验的预言：重叠恰好度量超边之间共享节点的程度，也就是 (H1) 所排除的短回路。第 VI 节若测得阈值随 $\alpha$ 移动，其幅度即为树状闭合失效的定量刻度；若测不到，则 $\alpha$ 的作用只体现在阈值以外的量上。无论哪一种结果，都是有内容的。
 
@@ -426,13 +434,13 @@ $$
 \frac{\lambda_c}{\lambda_c^{\rm MF}}=\frac{\tau\kappa}{\tau\kappa-1}\label{eq:gain}
 $$
 
-在 $\tau\kappa\to1^{+}$ 时发散：**均场的误差在阈值邻域最大**，而这正是最需要理论的区域。这与成对网络上 EBCM 相对均场的增益同源 [6, 7]，本文把它推广到有向超图并给出闭式。
+在 $\tau\kappa\to1^{+}$ 时发散：**均场的误差在阈值邻域最大**，而这正是最需要理论的区域。这与成对网络上 EBCM 相对均场的增益同源 [11, 12]，本文把它推广到有向超图并给出闭式。
 
-需要说明，\eqref{eq:mf} 是我们为本模型构造的均场对照，而非 [41] 中模型的复述——后者是社会传播而非 SIR，其方向性由单一标量强度参数调节。此处比较的是**闭合层级**，不是两项工作的模型。
+需要说明，\eqref{eq:mf} 是我们为本模型构造的均场对照，而非 [36] 中模型的复述——后者是社会传播而非 SIR，其方向性由单一标量强度参数调节。此处比较的是**闭合层级**，不是两项工作的模型。
 
 ## E. 数值校验
 
-校验分三层：闭合内部的自洽、闭合对精确仿真的复现、以及结构预言。脚本见 `tools/ebcm_directed.py` 与 `tools/section3_data.py`；仿真为 II.B 所定义连续时间 Markov 过程的精确 Gillespie 抽样 [42]，取 $\mu=1$。
+校验分三层：闭合内部的自洽、闭合对精确仿真的复现、以及结构预言。脚本见 `tools/ebcm_directed.py` 与 `tools/section3_data.py`；仿真为 II.B 所定义连续时间 Markov 过程的精确 Gillespie 抽样 [39]，取 $\mu=1$。
 
 **内部自洽。** 恒等式 \eqref{eq:identity} 的残差随 Euler 步长线性收敛：$\mathrm{d}t$ 由 $0.008$ 逐次减半至 $0.001$ 时，最大残差由 $7.13\times10^{-4}$ 降至 $8.89\times10^{-5}$，相邻比值三次均为 $2.00$。残差因而是积分误差而非闭合的破缺。两种分支计数 \eqref{eq:twocounts} 在 $(\tau,\eta)=(2,2),(3,1),(1,3),(2,3)$ 上的相对差不超过 $2\times10^{-16}$；\eqref{eq:lcrio} 与 \eqref{eq:lc} 在全部 $45$ 个位形模型实现上的相对差不超过 $4\times10^{-16}$，即经由 $r_{io}$ 的改写是恒等的。$\kappa$ 在 $4000$ 次保度双边交换下的改变量恰为零，与本节的否定性推论一致。
 
@@ -470,49 +478,49 @@ $$
 
 ## 参考文献
 
-1. M. E. J. Newman, S. H. Strogatz, D. J. Watts, *Physical Review E*, **64**, 026118 (2001). doi:10.1103/PhysRevE.64.026118
-2. M. E. J. Newman, *Physical Review E*, **66**, 016128 (2002). doi:10.1103/PhysRevE.66.016128
-3. P. Grassberger, *Mathematical Biosciences*, **63**, 157–172 (1983). doi:10.1016/0025-5564(82)90036-0
-4. R. Pastor-Satorras, A. Vespignani, *Physical Review Letters*, **86**, 3200–3203 (2001). doi:10.1103/PhysRevLett.86.3200
-5. E. Kenah, J. M. Robins, *Physical Review E*, **76**, 036113 (2007). doi:10.1103/PhysRevE.76.036113
-6. E. Volz, *Journal of Mathematical Biology*, **56**, 293–310 (2008). doi:10.1007/s00285-007-0116-4
-7. J. C. Miller, A. C. Slim, E. M. Volz, *Journal of the Royal Society Interface*, **9**, 890–906 (2012). doi:10.1098/rsif.2011.0403
-8. P. Van Mieghem, R. van de Bovenkamp, *Physical Review Letters*, **110**, 108701 (2013). doi:10.1103/PhysRevLett.110.108701
-9. R. Pastor-Satorras, C. Castellano, P. Van Mieghem, A. Vespignani, *Reviews of Modern Physics*, **87**, 925–979 (2015). doi:10.1103/RevModPhys.87.925
-10. S. N. Dorogovtsev, J. F. F. Mendes, A. N. Samukhin, *Physical Review E*, **64**, 025101 (2001). doi:10.1103/PhysRevE.64.025101
-11. M. Boguñá, M. Á. Serrano, *Physical Review E*, **72**, 016106 (2005). doi:10.1103/PhysRevE.72.016106
-12. L. A. Meyers, M. E. J. Newman, B. Pourbohloul, *Journal of Theoretical Biology*, **240**, 400–418 (2006). doi:10.1016/j.jtbi.2005.10.004
-13. X. J. Xu, J. Y. Li, X. Fu, L. J. Zhang, *Scientific Reports*, **8** (2018). doi:10.1038/s41598-018-22508-1
-14. M. E. J. Newman, *Physical Review Letters*, **89**, 208701 (2002). doi:10.1103/PhysRevLett.89.208701
-15. F. Battiston, G. Cencetti, I. Iacopini, V. Latora, M. Lucas, A. Patania, J. G. Young, G. Petri, *Physics Reports*, **874**, 1–92 (2020). doi:10.1016/j.physrep.2020.05.004
-16. F. Battiston, E. Amico, A. Barrat, G. Bianconi, G. Ferraz de Arruda, B. Franceschiello, I. Iacopini, S. Kéfi et al., *Nature Physics*, **17**, 1093–1098 (2021). doi:10.1038/s41567-021-01371-4
-17. A. R. Benson, R. Abebe, M. T. Schaub, A. Jadbabaie, J. Kleinberg, *Proceedings of the National Academy of Sciences*, **115**, E11221–E11230 (2018). doi:10.1073/pnas.1800683115
+1. F. Battiston, G. Cencetti, I. Iacopini, V. Latora, M. Lucas, A. Patania, J. G. Young, G. Petri, *Physics Reports*, **874**, 1–92 (2020). doi:10.1016/j.physrep.2020.05.004
+2. F. Battiston, E. Amico, A. Barrat, G. Bianconi, G. Ferraz de Arruda, B. Franceschiello, I. Iacopini, S. Kéfi et al., *Nature Physics*, **17**, 1093–1098 (2021). doi:10.1038/s41567-021-01371-4
+3. A. R. Benson, R. Abebe, M. T. Schaub, A. Jadbabaie, J. Kleinberg, *Proceedings of the National Academy of Sciences*, **115**, E11221–E11230 (2018). doi:10.1073/pnas.1800683115
+4. S. Klamt, U. U. Haus, F. Theis, *PLoS Computational Biology*, **5**, e1000385 (2009). doi:10.1371/journal.pcbi.1000385
+5. Q. F. Lotito, A. Vendramini, A. Montresor, F. Battiston, *Communications Physics*, **9** (2026). doi:10.1038/s42005-025-02472-9
+6. G. Gallo, G. Longo, S. Pallottino, S. Nguyen, *Discrete Applied Mathematics*, **42**, 177–201 (1993). doi:10.1016/0166-218X(93)90045-P
+7. M. E. J. Newman, S. H. Strogatz, D. J. Watts, *Physical Review E*, **64**, 026118 (2001). doi:10.1103/PhysRevE.64.026118
+8. M. E. J. Newman, *Physical Review E*, **66**, 016128 (2002). doi:10.1103/PhysRevE.66.016128
+9. P. Grassberger, *Mathematical Biosciences*, **63**, 157–172 (1983). doi:10.1016/0025-5564(82)90036-0
+10. R. Pastor-Satorras, A. Vespignani, *Physical Review Letters*, **86**, 3200–3203 (2001). doi:10.1103/PhysRevLett.86.3200
+11. E. Volz, *Journal of Mathematical Biology*, **56**, 293–310 (2008). doi:10.1007/s00285-007-0116-4
+12. J. C. Miller, A. C. Slim, E. M. Volz, *Journal of the Royal Society Interface*, **9**, 890–906 (2012). doi:10.1098/rsif.2011.0403
+13. R. Pastor-Satorras, C. Castellano, P. Van Mieghem, A. Vespignani, *Reviews of Modern Physics*, **87**, 925–979 (2015). doi:10.1103/RevModPhys.87.925
+14. S. N. Dorogovtsev, J. F. F. Mendes, A. N. Samukhin, *Physical Review E*, **64**, 025101 (2001). doi:10.1103/PhysRevE.64.025101
+15. M. Boguñá, M. Á. Serrano, *Physical Review E*, **72**, 016106 (2005). doi:10.1103/PhysRevE.72.016106
+16. L. A. Meyers, M. E. J. Newman, B. Pourbohloul, *Journal of Theoretical Biology*, **240**, 400–418 (2006). doi:10.1016/j.jtbi.2005.10.004
+17. A. Allard, C. Moore, S. V. Scarpino, B. M. Althouse, L. Hébert-Dufresne, *SIAM Review*, **65**, 471–492 (2023). doi:10.1137/20M1383811
 18. I. Iacopini, G. Petri, A. Barrat, V. Latora, *Nature Communications*, **10**, 2485 (2019). doi:10.1038/s41467-019-10431-6
 19. G. Ferraz de Arruda, G. Petri, Y. Moreno, *Physical Review Research*, **2**, 023032 (2020). doi:10.1103/PhysRevResearch.2.023032
 20. G. St-Onge, H. Sun, A. Allard, L. Hébert-Dufresne, G. Bianconi, *Physical Review Letters*, **127**, 158301 (2021). doi:10.1103/PhysRevLett.127.158301
-21. D. J. Watts, *Proceedings of the National Academy of Sciences*, **99**, 5766–5771 (2002). doi:10.1073/pnas.082090499
-22. D. Centola, M. Macy, *American Journal of Sociology*, **113**, 702–734 (2007). doi:10.1086/521848
-23. N. W. Landry, J. G. Restrepo, *Chaos*, **30**, 103117 (2020). doi:10.1063/5.0020034
-24. M. Mancastroppa, I. Iacopini, G. Petri, A. Barrat, *Nature Communications*, **14**, 6223 (2023). doi:10.1038/s41467-023-41887-2
-25. J. H. Kim, K. I. Goh, *Physical Review Letters*, **132**, 087401 (2024). doi:10.1103/PhysRevLett.132.087401
-26. G. St-Onge, I. Iacopini, V. Latora, A. Barrat, G. Petri, A. Allard, L. Hébert-Dufresne, *Communications Physics*, **5**, 25 (2022). doi:10.1038/s42005-021-00788-w
-27. F. Malizia, S. Lamata-Otín, M. Frasca, V. Latora, J. Gómez-Gardeñes, *Nature Communications*, **16** (2025). doi:10.1038/s41467-024-55506-1
-28. S. Lamata-Otín, F. Malizia, V. Latora, M. Frasca, J. Gómez-Gardeñes, *Physical Review E*, **111**, 034302 (2025). doi:10.1103/PhysRevE.111.034302
-29. F. Malizia, A. Guzmán, I. Iacopini, I. Z. Kiss, *Physical Review Letters* (2025). doi:10.1103/z3d5-94zb
-30. G. Bianconi, S. N. Dorogovtsev, *Physical Review E*, **109**, 014306 (2024). doi:10.1103/PhysRevE.109.014306
-31. G. Ferraz de Arruda, A. Aleta, Y. Moreno, *Nature Reviews Physics*, **6**, 468–482 (2024). doi:10.1038/s42254-024-00733-0
-32. G. Gallo, G. Longo, S. Pallottino, S. Nguyen, *Discrete Applied Mathematics*, **42**, 177–201 (1993). doi:10.1016/0166-218X(93)90045-P
-33. S. Klamt, U. U. Haus, F. Theis, *PLoS Computational Biology*, **5**, e1000385 (2009). doi:10.1371/journal.pcbi.1000385
-34. Q. F. Lotito, A. Vendramini, A. Montresor, F. Battiston, *Communications Physics*, **9** (2026). doi:10.1038/s42005-025-02472-9
-35. S. Kim, M. Choe, J. Yoo, K. Shin, *Data Mining and Knowledge Discovery* (2023). doi:10.1007/s10618-023-00955-3
-36. G. Lee, M. Choe, K. Shin, *Proceedings of the Web Conference 2021* (2021). doi:10.1145/3442381.3450010
-37. P. S. Chodrow, *Journal of Complex Networks*, **8**, cnaa018 (2020). doi:10.1093/comnet/cnaa018
-38. K. Nakajima, K. Shudo, N. Masuda, *IEEE Transactions on Network Science and Engineering*, **9**, 1139–1153 (2022). doi:10.1109/TNSE.2021.3133380
-39. Y. J. Kraakman, C. Stegehuis, *Discrete Mathematics*, **349**, 114961 (2026). doi:10.1016/j.disc.2025.114961
-40. M. Abuissa, M. Riondato, E. Upfal, *Data Mining and Knowledge Discovery*, **40** (2026). doi:10.1007/s10618-026-01209-8
-41. J. Li, X. Wu, J. Lü, L. Lei, *Communications Physics*, **7** (2024). doi:10.1038/s42005-024-01614-9
-42. D. T. Gillespie, *The Journal of Physical Chemistry*, **81**, 2340–2361 (1977). doi:10.1021/j100540a008
-43. S. N. Dorogovtsev, A. V. Goltsev, J. F. F. Mendes, *Physical Review Letters*, **96**, 040601 (2006). doi:10.1103/PhysRevLett.96.040601
-44. G. J. Baxter, S. N. Dorogovtsev, A. V. Goltsev, J. F. F. Mendes, *Physical Review E*, **82**, 011103 (2010). doi:10.1103/PhysRevE.82.011103
-45. H. Sun, G. Bianconi, *Physical Review E*, **104**, 034306 (2021). doi:10.1103/PhysRevE.104.034306
-46. A. Allard, C. Moore, S. V. Scarpino, B. M. Althouse, L. Hébert-Dufresne, *SIAM Review*, **65**, 471–492 (2023). doi:10.1137/20M1383811
+21. N. W. Landry, J. G. Restrepo, *Chaos*, **30**, 103117 (2020). doi:10.1063/5.0020034
+22. M. Mancastroppa, I. Iacopini, G. Petri, A. Barrat, *Nature Communications*, **14**, 6223 (2023). doi:10.1038/s41467-023-41887-2
+23. J. H. Kim, K. I. Goh, *Physical Review Letters*, **132**, 087401 (2024). doi:10.1103/PhysRevLett.132.087401
+24. G. St-Onge, I. Iacopini, V. Latora, A. Barrat, G. Petri, A. Allard, L. Hébert-Dufresne, *Communications Physics*, **5**, 25 (2022). doi:10.1038/s42005-021-00788-w
+25. F. Malizia, S. Lamata-Otín, M. Frasca, V. Latora, J. Gómez-Gardeñes, *Nature Communications*, **16** (2025). doi:10.1038/s41467-024-55506-1
+26. S. Lamata-Otín, F. Malizia, V. Latora, M. Frasca, J. Gómez-Gardeñes, *Physical Review E*, **111**, 034302 (2025). doi:10.1103/PhysRevE.111.034302
+27. F. Malizia, A. Guzmán, I. Iacopini, I. Z. Kiss, *Physical Review Letters* (2025). doi:10.1103/z3d5-94zb
+28. G. Bianconi, S. N. Dorogovtsev, *Physical Review E*, **109**, 014306 (2024). doi:10.1103/PhysRevE.109.014306
+29. G. Ferraz de Arruda, A. Aleta, Y. Moreno, *Nature Reviews Physics*, **6**, 468–482 (2024). doi:10.1038/s42254-024-00733-0
+30. S. Kim, M. Choe, J. Yoo, K. Shin, *Data Mining and Knowledge Discovery* (2023). doi:10.1007/s10618-023-00955-3
+31. G. Lee, M. Choe, K. Shin, *Proceedings of the Web Conference 2021* (2021). doi:10.1145/3442381.3450010
+32. P. S. Chodrow, *Journal of Complex Networks*, **8**, cnaa018 (2020). doi:10.1093/comnet/cnaa018
+33. K. Nakajima, K. Shudo, N. Masuda, *IEEE Transactions on Network Science and Engineering*, **9**, 1139–1153 (2022). doi:10.1109/TNSE.2021.3133380
+34. Y. J. Kraakman, C. Stegehuis, *Discrete Mathematics*, **349**, 114961 (2026). doi:10.1016/j.disc.2025.114961
+35. M. Abuissa, M. Riondato, E. Upfal, *Data Mining and Knowledge Discovery*, **40** (2026). doi:10.1007/s10618-026-01209-8
+36. J. Li, X. Wu, J. Lü, L. Lei, *Communications Physics*, **7** (2024). doi:10.1038/s42005-024-01614-9
+37. P. Van Mieghem, R. van de Bovenkamp, *Physical Review Letters*, **110**, 108701 (2013). doi:10.1103/PhysRevLett.110.108701
+38. X. J. Xu, J. Y. Li, X. Fu, L. J. Zhang, *Scientific Reports*, **8** (2018). doi:10.1038/s41598-018-22508-1
+39. D. T. Gillespie, *The Journal of Physical Chemistry*, **81**, 2340–2361 (1977). doi:10.1021/j100540a008
+40. E. Kenah, J. M. Robins, *Physical Review E*, **76**, 036113 (2007). doi:10.1103/PhysRevE.76.036113
+41. S. N. Dorogovtsev, A. V. Goltsev, J. F. F. Mendes, *Physical Review Letters*, **96**, 040601 (2006). doi:10.1103/PhysRevLett.96.040601
+42. G. J. Baxter, S. N. Dorogovtsev, A. V. Goltsev, J. F. F. Mendes, *Physical Review E*, **82**, 011103 (2010). doi:10.1103/PhysRevE.82.011103
+43. H. Sun, G. Bianconi, *Physical Review E*, **104**, 034306 (2021). doi:10.1103/PhysRevE.104.034306
+44. M. E. J. Newman, *Physical Review Letters*, **89**, 208701 (2002). doi:10.1103/PhysRevLett.89.208701
+45. D. J. Watts, *Proceedings of the National Academy of Sciences*, **99**, 5766–5771 (2002). doi:10.1073/pnas.082090499
+46. D. Centola, M. Macy, *American Journal of Sociology*, **113**, 702–734 (2007). doi:10.1086/521848

@@ -178,6 +178,44 @@ def check_text_overlap(fig, pad=0.5):
         raise SystemExit("overlapping labels:\n  " + "\n  ".join(clashes))
 
 
+def check_text_over_data(fig, pad=1.0, samples=24):
+    """Fail if a label or legend sits on top of a plotted curve.
+
+    check_text_overlap only compares text with text. English labels are far
+    wider than their Chinese counterparts, so a legend that cleared the curves
+    in one language can land squarely on them in the other -- which is exactly
+    what happened to figure 1.
+    """
+    import numpy as _np
+    fig.canvas.draw()
+    boxes = []
+    for i, ax in enumerate(fig.axes):
+        for t in ax.texts:
+            if t.get_text().strip() and t.get_visible():
+                boxes.append((ax, f"panel{i} text {t.get_text()[:18]}",
+                              t.get_window_extent()))
+        lg = ax.get_legend()
+        if lg is not None:
+            boxes.append((ax, f"panel{i} legend", lg.get_window_extent()))
+    hits = []
+    for ax, name, bb in boxes:
+        for ln in ax.lines:
+            xy = ln.get_xydata()
+            if len(xy) < 2:
+                continue                      # axvline/axhline: guides, not data
+            pix = ax.transData.transform(xy)
+            # sample along each segment: a curve can cross a box between vertices
+            a, b = pix[:-1], pix[1:]
+            ts = _np.linspace(0, 1, samples)[:, None, None]
+            pts = (a[None] + ts * (b - a)[None]).reshape(-1, 2)
+            inside = ((pts[:, 0] > bb.x0 + pad) & (pts[:, 0] < bb.x1 - pad)
+                      & (pts[:, 1] > bb.y0 + pad) & (pts[:, 1] < bb.y1 - pad))
+            if inside.any():
+                hits.append(f"{name} <-> {ln.get_label() or 'curve'}")
+    if hits:
+        raise SystemExit("text over data:\n  " + "\n  ".join(sorted(set(hits))))
+
+
 # --------------------------------------------------------------- figure 1 ----
 def figure1(d, cn):
     tr = d["trajectory"]
@@ -205,7 +243,7 @@ def figure1(d, cn):
         ax.margins(y=0.06)
 
     axes[1].set_ylim(bottom=0)
-    axes[0].legend(loc="lower left", handlelength=2.2)
+    axes[0].legend(loc="upper right", handlelength=2.0)
     txt = L(f"$N={tr['N']}$, $\\tau=\\eta=2$, $\\lambda={tr['ratio']}\\lambda_c$",
             f"$N={tr['N']}$, $\\tau=\\eta=2$, $\\lambda={tr['ratio']}\\lambda_c$", cn)
     axes[1].text(0.97, 0.93, txt, transform=axes[1].transAxes,
@@ -215,7 +253,7 @@ def figure1(d, cn):
 
 # --------------------------------------------------------------- figure 2 ----
 def figure2(d, cn):
-    fig, axes = plt.subplots(1, 3, figsize=(WIDTH, 2.35))
+    fig, axes = plt.subplots(1, 3, figsize=(WIDTH, 2.0))
 
     # (a) closure residual versus N
     ax = axes[0]
@@ -251,8 +289,13 @@ def figure2(d, cn):
     ax.set_xticklabels([f"{int(v)}" for v in N])
     ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())
     ax.set_xlabel(L("系统规模 $N$", "System size $N$", cn))
-    ax.set_ylabel(L("$S(t)$ 平均绝对偏差", "Mean absolute error in $S(t)$", cn))
-    ax.legend(loc="lower left", handlelength=2.0)
+    ax.set_ylabel(L("$S(t)$ 平均绝对偏差", "Mean abs. error in $S(t)$", cn))
+    # Log axes make a reserved strip cheap: dropping the lower limit below the
+    # smallest datum opens a band no curve can enter, which is the only way a
+    # three-row English legend fits this panel without covering the fit line.
+    ax.set_ylim(bottom=9e-4)
+    ax.legend(loc="lower left", handlelength=1.8, labelspacing=0.3,
+              borderpad=0.3)
 
     # (b) final size across the threshold
     ax = axes[1]
@@ -271,6 +314,10 @@ def figure2(d, cn):
             label=L("均场闭合", "Mean field", cn))
     ax.set_xlabel(L("$\\lambda/\\lambda_c$", "$\\lambda/\\lambda_c$", cn))
     ax.set_ylabel(L("终态规模 $R(\\infty)$", "Final size $R(\\infty)$", cn))
+    ax.set_xlim(0.45, 2.5)
+    # Widening the range let matplotlib fall back to integer ticks; keep the
+    # half-integer grid, which is what the text quotes.
+    ax.set_xticks([0.5, 1.0, 1.5, 2.0, 2.5])
     ax.set_ylim(0, 0.78)
     # Carrying the two verticals in the legend made it five rows deep, which in
     # a panel this narrow forced a blank band over a quarter of the axes. Name
@@ -308,8 +355,8 @@ def figure2(d, cn):
                 capsize=1.8, elinewidth=0.6, capthick=0.6, zorder=5,
                 label=L("位形模型实现", "Realisations", cn))
     ax.set_xlabel(L("入出度相关 $r_{io}$",
-                    "In-out degree correlation $r_{io}$", cn))
-    ax.set_ylabel(L("爆发阈值 $\\lambda_c$", "Epidemic threshold $\\lambda_c$", cn))
+                    "In-out correlation $r_{io}$", cn))
+    ax.set_ylabel(L("爆发阈值 $\\lambda_c$", "Threshold $\\lambda_c$", cn))
     ax.legend(loc="upper right", handlelength=1.8)
     return fig
 
@@ -326,6 +373,7 @@ def main(cn=True, tag="zh"):
         add_panel_labels(fig, style="nature")
         check_legends(fig)
         check_text_overlap(fig)
+        check_text_over_data(fig)
         base = os.path.join(FIGS, f"{name}_{tag}")
         prev = visual_qa.render_preview(fig, base + "_preview.png", dpi=220)
         issues = visual_qa.audit_layout(fig)

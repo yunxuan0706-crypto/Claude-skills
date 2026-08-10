@@ -22,7 +22,7 @@ const UNRESOLVED = new Map();
 const SYM = {
   "\\phi": "\u03c6", "\\alpha": "\u03b1", "\\tau": "\u03c4", "\\eta": "\u03b7",
   "\\mu": "\u03bc", "\\theta": "\u03b8", "\\lambda": "\u03bb", "\\beta": "\u03b2",
-  "\\sigma": "\u03c3", "\\rho": "\u03c1", "\\Delta": "\u0394", "\\varnothing": "\u2205",
+  "\\sigma": "\u03c3", "\\rho": "\u03c1", "\\Delta": "\u0394", "\\varnothing": "\u2205", "\\square": "\u25a1",
   "\\to": "\u2192", "\\ge": "\u2265", "\\le": "\u2264", "\\geq": "\u2265", "\\leq": "\u2264",
   "\\in": "\u2208", "\\neq": "\u2260", "\\cap": "\u2229", "\\cup": "\u222a",
   "\\rightrightarrows": "\u21c9", "\\rightleftarrows": "\u21c4",
@@ -209,13 +209,23 @@ let md = fs.readFileSync(SRC, "utf8").split("\n");
 
 // Equation labels. Hand-written cross-references drift the moment an equation is
 // inserted; resolve \eqref{} against the numbering the renderer produces.
+// SIAM numbers equations within the section — (3.1), (3.2), … — so a section
+// built on its own already carries the numbering it will have in the manuscript.
 const EQLABEL = {};
-function scanEquations(lines, start) {
-  let n = start, inFence = false;
+// `# 3. 标题` sets the section; equations restart at 1 inside it.
+function sectionOf(line) {
+  const m = /^#\s+(\d+)\.\s/.exec(line.trim());
+  return m ? Number(m[1]) : null;
+}
+function scanEquations(lines) {
+  let sec = 0, n = 0, inFence = false;
   for (let j = 0; j < lines.length; j++) {
     const t = lines[j].trim();
     if (t.startsWith("```")) { inFence = !inFence; continue; }
-    if (inFence || t !== "$$") continue;
+    if (inFence) continue;
+    const s = sectionOf(t);
+    if (s !== null) { sec = s; n = 0; continue; }
+    if (t !== "$$") continue;
     const buf = [];
     j++;
     while (j < lines.length && lines[j].trim() !== "$$") { buf.push(lines[j]); j++; }
@@ -223,19 +233,17 @@ function scanEquations(lines, start) {
     if (/\\notag/.test(body)) continue;
     n += 1;
     const lm = /\\label\{([^}]+)\}/.exec(body);
-    if (lm) EQLABEL[lm[1]] = n;
+    if (lm) EQLABEL[lm[1]] = sec ? `${sec}.${n}` : String(n);
   }
-  return n;
 }
-// A section built on its own still has to agree with the manuscript's numbering
-// and resolve cross-references into earlier sections. EQ_PRESCAN names the
-// sources that precede this one: they contribute labels and advance the count
-// without being rendered.
-let EQ_START = 0;
+// A section built on its own still has to resolve cross-references into earlier
+// sections. EQ_PRESCAN names the sources that precede this one: they contribute
+// labels without being rendered. Section-scoped numbering means they no longer
+// have to advance any counter.
 for (const f of (process.env.EQ_PRESCAN || "").split(",").filter(Boolean)) {
-  EQ_START = scanEquations(fs.readFileSync(f.trim(), "utf8").split("\n"), EQ_START);
+  scanEquations(fs.readFileSync(f.trim(), "utf8").split("\n"));
 }
-scanEquations(md, EQ_START);
+scanEquations(md);
 md = md.map((l) => l.replace(/\\eqref\{([^}]+)\}/g, (m0, name) => {
   if (!(name in EQLABEL)) { console.warn(`  undefined \\eqref{${name}}`); return "(??)"; }
   return "(" + EQLABEL[name] + ")";
@@ -280,7 +288,7 @@ function tableFrom(rows) {
   });
 }
 
-let eqNo = EQ_START;
+let eqSec = 0, eqNo = 0;
 let i = 0;
 while (i < md.length) {
   const line = md[i];
@@ -371,8 +379,9 @@ while (i < md.length) {
     const W = convertInchesToTwip(6.5);
     if (!noNum) {
       eqNo += 1;
+      const tag = eqSec ? `${eqSec}.${eqNo}` : String(eqNo);
       kids.unshift(new TextRun({ text: "\t", font: mathFont }));
-      kids.push(new TextRun({ text: "\t(" + eqNo + ")", font: mathFont, size: 21 }));
+      kids.push(new TextRun({ text: "\t(" + tag + ")", font: mathFont, size: 21 }));
     }
     children.push(new Paragraph({
       children: kids,
@@ -389,6 +398,8 @@ while (i < md.length) {
   if (t.startsWith("#")) {
     const lvl = t.match(/^#+/)[0].length;
     const txt = t.replace(/^#+\s*/, "");
+    const s = sectionOf(t);
+    if (s !== null) { eqSec = s; eqNo = 0; }
     const map = { 1: HeadingLevel.HEADING_1, 2: HeadingLevel.HEADING_2, 3: HeadingLevel.HEADING_3 };
     children.push(new Paragraph({
       children: runs(txt, { bold: true, size: lvl === 1 ? 32 : lvl === 2 ? 26 : 23, color: "1A1A1A" }),

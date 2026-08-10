@@ -1,10 +1,11 @@
 #!/usr/bin/env python3
-"""Section III figures, to APS/REVTeX (Phys. Rev. E) specification.
+"""Section 3 figures, to SIAM Review specification.
 
-Layout follows the target journal rather than a generic preset: APS двух-column
-width is 7.0 in (17.8 cm), single column 3.375 in (8.6 cm), body face Times, and
-figure text must stay legible at 8 pt in print. 7.0 in also fits inside
-Communications Physics's 7.2 in, so one set of files serves both submissions.
+Layout follows the target journal rather than a generic preset. SIAM Review sets
+a single 5.57 in text column (measured from the journal PDF: 486 x 720 pt page,
+text block 58.9-459.7 pt), body face Times, and figure text must stay legible at
+8 pt in print. Figures are drawn at 5.5 in so they sit at 100% scale in that
+column -- a figure that has to be shrunk to fit loses its type size with it.
 
 Two figures rather than one four-panel block, because they make two different
 arguments:
@@ -20,6 +21,7 @@ deficiency.
 import json
 import math
 import os
+import re
 import sys
 
 import matplotlib
@@ -43,7 +45,27 @@ C_EBCM = "#0072B2"    # blue
 C_MF = "#D55E00"      # vermillion
 C_REF = "#999999"
 
-APS = {
+def eq_number(label, src=os.path.join(HERE, "..", "section3.src.md"), sec=3):
+    """Resolve \\label{...} to the number the manuscript build gives it.
+
+    A hard-coded "Eq. (38)" in a legend goes stale the moment an equation is
+    inserted upstream -- and unlike a \\eqref in the text, nothing checks it.
+    """
+    n = 0
+    for m in re.finditer(r"^\$\$\n(.*?)^\$\$", open(src, encoding="utf-8").read(),
+                         re.S | re.M):
+        if "\\notag" in m.group(1):
+            continue
+        n += 1
+        lm = re.search(r"\\label\{([^}]+)\}", m.group(1))
+        if lm and lm.group(1) == label:
+            return f"{sec}.{n}"
+    raise SystemExit(f"figure legend references an unknown label: {label}")
+
+
+WIDTH = 5.5          # SIAM Review text column is 5.57 in
+
+SIREV = {
     "font.family": "serif",
     "font.serif": ["Liberation Serif", "DejaVu Serif"],
     "font.size": 8,
@@ -91,7 +113,7 @@ def L(zh, en, cn):
 def figure1(d, cn):
     tr = d["trajectory"]
     t = np.array(tr["t"])
-    fig, axes = plt.subplots(1, 2, figsize=(7.0, 2.5))
+    fig, axes = plt.subplots(1, 2, figsize=(WIDTH, 2.1))
 
     for ax, key, ylab in (
         (axes[0], "S", L("易感比例 $S(t)$", "Susceptible fraction $S(t)$", cn)),
@@ -124,7 +146,7 @@ def figure1(d, cn):
 
 # --------------------------------------------------------------- figure 2 ----
 def figure2(d, cn):
-    fig, axes = plt.subplots(1, 3, figsize=(7.0, 2.3))
+    fig, axes = plt.subplots(1, 3, figsize=(WIDTH, 2.45))
 
     # (a) closure residual versus N
     ax = axes[0]
@@ -180,20 +202,22 @@ def figure2(d, cn):
             label=L("均场闭合", "Mean field", cn))
     ax.set_xlabel(L("$\\lambda/\\lambda_c$", "$\\lambda/\\lambda_c$", cn))
     ax.set_ylabel(L("终态规模 $R(\\infty)$", "Final size $R(\\infty)$", cn))
-    ax.set_ylim(0, 0.74)
+    ax.set_ylim(0, 0.98)
     # Name the two verticals in the legend. Placing the labels in the axes ran
-    # them into the y-axis on the left and into the legend on the right; the
-    # legend has room and cannot collide.
+    # them into the y-axis on the left and into the data on the right. In a
+    # 1.8 in panel a four-row legend spans the full width whatever its corner,
+    # so the y-limit reserves a blank band above the curves for it to sit in.
     from matplotlib.lines import Line2D
     handles, labels = ax.get_legend_handles_labels()
     handles += [Line2D([], [], color=C_MF, ls=":", lw=0.8),
                 Line2D([], [], color=C_REF, ls="-", lw=0.8)]
     labels += [L("均场阈值 $\\lambda_c^{\\rm MF}$", "MF threshold $\\lambda_c^{\\rm MF}$", cn),
                L("真实阈值 $\\lambda_c$", "True threshold $\\lambda_c$", cn)]
-    ax.legend(handles, labels, loc="lower right", handlelength=1.9,
+    ax.legend(handles, labels, loc="upper left", handlelength=1.9,
               labelspacing=0.32, borderpad=0.3)
 
     # (c) threshold versus in-out degree correlation
+    LCRIO = eq_number("eq:lcrio")
     ax = axes[2]
     ri = d["rio"]
     x = np.array([q["rio"] for q in ri])
@@ -206,7 +230,7 @@ def figure2(d, cn):
     so = np.mean([q["so"] for q in ri])
     nm = np.mean([q["NoverM"] for q in ri])
     ax.plot(xs, 1.0 / (2 * ki + nm * xs * si * so - 1), color=C_EBCM, lw=1.0,
-            label=L("式 (38)", "Eq. (38)", cn))
+            label=L(f"式 ({LCRIO})", f"Eq. ({LCRIO})", cn))
     ax.errorbar(x, y, xerr=xe, yerr=ye, color=C_SIM, marker="D", ls="none",
                 capsize=1.8, elinewidth=0.6, capthick=0.6, zorder=5,
                 label=L("位形模型实现", "Configuration-model realisations", cn))
@@ -220,7 +244,7 @@ def figure2(d, cn):
 def main(cn=True, tag="zh"):
     d = json.load(open(DATA))
     os.makedirs(FIGS, exist_ok=True)
-    plt.rcParams.update(APS)
+    plt.rcParams.update(SIREV)
     use_cjk(cn)
 
     for name, builder in (("fig1_trajectory", figure1), ("fig2_validation", figure2)):

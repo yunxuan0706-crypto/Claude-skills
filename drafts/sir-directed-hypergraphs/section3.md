@@ -1,8 +1,8 @@
-# III. 并发型边基房室方程
+# 3. 并发型边基房室方程
 
-## A. 空腔构造与闭合假设
+## 3.1. 空腔构造与闭合假设
 
-成对网络上的边基房室模型（EBCM）以"沿一条边尚未传来感染"的概率为核心变量，把 SIR 的含时演化压缩到少数常微分方程 [1, 2]。移到有向超图上有两重并发需要处理：一个头节点同时暴露于 $k_{\rm in}$ 条超边，而每条超边内又有 $\tau$ 个尾成员同时向它施压。前一重可以因子化，后一重不能——本小节说明界线在哪里。
+成对网络上的边基房室模型（EBCM）以"沿一条边尚未传来感染"的概率为核心变量，把 SIR 的含时演化压缩到少数常微分方程 [6, 7]。移到有向超图上有两重并发需要处理：一个头节点同时暴露于 $k_{\rm in}$ 条超边，而每条超边内又有 $\tau$ 个尾成员同时向它施压。前一重可以因子化，后一重不能——本小节说明界线在哪里。
 
 固定一个检验节点 $u$，人为令其永久保持易感（空腔节点），并取一条以 $u$ 为头成员的超边 $e$，即 $u\in H(e)$。定义边基变量
 
@@ -10,7 +10,7 @@ $$
 \Phi(t)=\Pr\bigl[e\ \text{到}\ t\ \text{时刻尚未向}\ u\ \text{传递感染}\bigr]\label{eq:phi}
 $$
 
-由 II.B 的速率规则，$e$ 在时刻 $s$ 以速率 $\beta g(n_e(s))$ 向 $u$ 施压，故
+由 2.2 的速率规则，$e$ 在时刻 $s$ 以速率 $\beta g(n_e(s))$ 向 $u$ 施压，故
 
 $$
 \Phi(t)=\Bigl\langle\exp\Bigl[-\beta\int_0^{t}g\bigl(n_e(s)\bigr)\,\mathrm{d}s\Bigr]\Bigr\rangle\label{eq:phiexp}
@@ -22,7 +22,7 @@ $$
 \Phi(t)\neq\prod_{v\in T(e)}\Phi_v(t)\label{eq:noprod}
 $$
 
-朴素的逐成员乘积闭合在此失效。这与 II.D 中破坏命题 2 假设 (ii) 的是同一件事——超边级激活：一条超边只有一个激活时钟，它由全体尾成员共同驱动，又被全体头成员共享。
+朴素的逐成员乘积闭合在此失效。这与 2.4 中破坏命题 2.2 假设 (ii) 的是同一件事——超边级激活：一条超边只有一个激活时钟，它由全体尾成员共同驱动，又被全体头成员共享。
 
 闭合建立在两条假设上。
 
@@ -45,9 +45,9 @@ $$
 \psi_{\rm tail}(x)=\frac{1}{\langle k_{\rm out}\rangle}\sum_{k_{\rm in},k_{\rm out}}k_{\rm out}\,P(k_{\rm in},k_{\rm out})\,x^{k_{\rm in}}\label{eq:psitail}
 $$
 
-$\psi_{\rm tail}$ 显式依赖于联合分布 $P(k_{\rm in},k_{\rm out})$，而 \eqref{eq:S} 的 $\psi_{\rm in}$ 只依赖于其边际。这是 II.A 的入出度相关 $r_{io}$ 进入动力学的解析通道，也是下文阈值公式中唯一承载 $r_{io}$ 的位置。
+$\psi_{\rm tail}$ 显式依赖于联合分布 $P(k_{\rm in},k_{\rm out})$，而 \eqref{eq:S} 的 $\psi_{\rm in}$ 只依赖于其边际。这是 2.1 的入出度相关 $r_{io}$ 进入动力学的解析通道，也是下文阈值公式中唯一承载 $r_{io}$ 的位置。
 
-## B. 方程组
+## 3.2. 方程组
 
 由 (H2)，$e$ 的 $\tau$ 个尾成员相互独立，其联合状态可由计数 $(a,b,c)$ 概括：$a$ 个易感、$b$ 个感染、$c$ 个康复，$a+b+c=\tau$。定义未传递子概率
 
@@ -96,7 +96,7 @@ $$
 \dot x_{001}=\mu\,x_{010}\label{eq:tau1}
 $$
 
-这正是成对 EBCM 的三元组 $(\Phi_S,\Phi_I,\Phi_R)$ [2]——依次为伙伴处于易感、已感染但尚未传递、已康复且未曾传递的概率——唯一的实质替换是把余度生成函数换成 \eqref{eq:psitail} 的 $\psi_{\rm tail}$。需注意记号差异：本文的 $\Phi$ 对应该文中三者之和 $\Theta$，而本文的 $x_{abc}$ 对应其 $\Phi$ 分量。
+这正是成对 EBCM 的三元组 $(\Phi_S,\Phi_I,\Phi_R)$ [6]——依次为伙伴处于易感、已感染但尚未传递、已康复且未曾传递的概率——唯一的实质替换是把余度生成函数换成 \eqref{eq:psitail} 的 $\psi_{\rm tail}$。需注意记号差异：本文的 $\Phi$ 对应该文中三者之和 $\Theta$，而本文的 $x_{abc}$ 对应其 $\Phi$ 分量。
 
 **$\tau=2$ 的显式形式。** 六个状态按 $(a,b,c)$ 记为 $x_{200},x_{110},x_{101},x_{020},x_{011},x_{002}$，\eqref{eq:master} 展开为
 
@@ -122,11 +122,11 @@ $$
 
 对一切 $t$ 成立。\eqref{eq:identity} 不是额外假设，而是 \eqref{eq:master} 的推论：对右端求导得 $-\tau h\,x_{\tau00}$，与 \eqref{eq:master} 在 $(a,b,c)=(\tau,0,0)$ 处逐项相同。它为数值积分提供了一条无需仿真的自检。
 
-**求解到什么程度。** 有必要把"求解"的含义说清楚。$\theta=1$ 时，\eqref{eq:S} 与 \eqref{eq:master}–\eqref{eq:phidot} 构成一个封闭的低维系统，其积分给出完整的 $S(t)$、$I(t)$、$R(t)$ 与终态规模，精度由 III.E 逐项校验；爆发阈值 \eqref{eq:lc} 是闭式，$\tau=1$ 时终态亦有闭式 \eqref{eq:finalsize}。但 $\tau\ge2$ 时终态没有闭式，原因是结构性的而非技术性的：$\Phi_\infty$ 取决于各尾成员感染期之并的长度；$\tau=1$ 时这个并只有一段，其长度服从 $\mathrm{Exp}(\mu)$ 且与起始时刻无关，故可只用终态量闭合，而 $\tau\ge2$ 时并的长度依赖于各感染时刻的相对先后，终态量不足以确定它。这与 \eqref{eq:noprod} 是同一个障碍。取线性核 $g(n)=n$ 时传播事件逐（尾成员，头成员）对独立，闭式重新出现。$\theta\ge2$ 的爆发条件不属本节范围。
+**求解到什么程度。** 有必要把"求解"的含义说清楚。$\theta=1$ 时，\eqref{eq:S} 与 \eqref{eq:master}–\eqref{eq:phidot} 构成一个封闭的低维系统，其积分给出完整的 $S(t)$、$I(t)$、$R(t)$ 与终态规模，精度由 3.5 逐项校验；爆发阈值 \eqref{eq:lc} 是闭式，$\tau=1$ 时终态亦有闭式 \eqref{eq:finalsize}。但 $\tau\ge2$ 时终态没有闭式，原因是结构性的而非技术性的：$\Phi_\infty$ 取决于各尾成员感染期之并的长度；$\tau=1$ 时这个并只有一段，其长度服从 $\mathrm{Exp}(\mu)$ 且与起始时刻无关，故可只用终态量闭合，而 $\tau\ge2$ 时并的长度依赖于各感染时刻的相对先后，终态量不足以确定它。这与 \eqref{eq:noprod} 是同一个障碍。取线性核 $g(n)=n$ 时传播事件逐（尾成员，头成员）对独立，闭式重新出现。$\theta\ge2$ 的爆发条件不属本节范围。
 
-**$\theta\ge2$。** \eqref{eq:master} 中只有消灭项的指示函数依赖于 $\theta$，故方程组对任意 $\theta$ 形式不变。但下一小节的阈值分析不再适用：$\theta\ge2$ 时单个感染尾成员不足以激活超边，\eqref{eq:master} 在无病定态附近的线性化没有增长模式，这与 II.B 所述 bootstrap 图像一致，须按第 IV 节的 $k$-core 途径处理。
+**$\theta\ge2$。** \eqref{eq:master} 中只有消灭项的指示函数依赖于 $\theta$，故方程组对任意 $\theta$ 形式不变。但下一小节的阈值分析不再适用：$\theta\ge2$ 时单个感染尾成员不足以激活超边，\eqref{eq:master} 在无病定态附近的线性化没有增长模式，这与 2.2 所述 bootstrap 图像一致，须按第 4 节的 $k$-core 途径处理。
 
-## C. 爆发阈值
+## 3.3. 爆发阈值
 
 令
 
@@ -148,7 +148,7 @@ $$
 
 $\tau\kappa\le1$ 时不存在有限阈值。
 
-**分支解释自洽。** 一个感染的尾成员使其超边激活，超边在该成员的感染期内以速率 $\beta$ 向每个头成员施压，故对给定头成员的传递概率为 $T=\beta/(\beta+\mu)$。从尾侧计数得 $R_0=\tau\kappa T$；从头侧计数，新感染节点沿入边到达、其出度因而按 $k_{\rm in}$ 偏置，得 $R_0=\eta T\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$——成对情形下 $\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 正是有向图中"后继节点的平均出度"，亦即其再生数 [3]。由握手关系 \eqref{eq:handshake} 有 $\langle k_{\rm out}\rangle/\langle k_{\rm in}\rangle=\tau/\eta$，两式因而恒等：
+**分支解释自洽。** 一个感染的尾成员使其超边激活，超边在该成员的感染期内以速率 $\beta$ 向每个头成员施压，故对给定头成员的传递概率为 $T=\beta/(\beta+\mu)$。从尾侧计数得 $R_0=\tau\kappa T$；从头侧计数，新感染节点沿入边到达、其出度因而按 $k_{\rm in}$ 偏置，得 $R_0=\eta T\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$——成对情形下 $\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 正是有向图中"后继节点的平均出度"，亦即其再生数 [1]。由握手关系 \eqref{eq:handshake} 有 $\langle k_{\rm out}\rangle/\langle k_{\rm in}\rangle=\tau/\eta$，两式因而恒等：
 
 $$
 \tau\,\frac{\langle k_{\rm in}k_{\rm out}\rangle}{\langle k_{\rm out}\rangle}
@@ -157,7 +157,7 @@ $$
 
 两种数法给出同一个 $R_0$，且 $R_0=1$ 与 \eqref{eq:lc} 等价。
 
-**$\tau=\eta=1$ 的退化。** \eqref{eq:lc} 化为 $\lambda_c=\bigl[\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle-1\bigr]^{-1}$，即有向随机图上 SIR 的已知阈值 [3, 4, 5]。[4] 的半有向阈值条件在纯有向极限下化为临界传播率 $T_c=\langle k_{\rm in}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，[3] 亦以再生数 $R_0=\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 给出同一结果；由 $T=\lambda/(1+\lambda)$ 代入 \eqref{eq:lc} 得 $T_c=1/\kappa=\langle k_{\rm out}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，而 $\tau=\eta$ 时握手关系 \eqref{eq:handshake} 给出 $\langle k_{\rm in}\rangle=\langle k_{\rm out}\rangle$，两式因而恒等。需要强调，令 $k_{\rm in}=k_{\rm out}$ 并不回到无向网络的结果：无向情形的余度相减源于"来路那条边不可再用"，而有向情形下来路超边根本不在 $v$ 的入超边之列。\eqref{eq:lc} 分母中的 $-1$ 来自 $T=\beta/(\beta+\mu)$ 里的 $\beta$，与余度无关。两者是不同的结构，不应混为一谈。
+**$\tau=\eta=1$ 的退化。** \eqref{eq:lc} 化为 $\lambda_c=\bigl[\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle-1\bigr]^{-1}$，即有向随机图上 SIR 的已知阈值 [1, 2, 5]。[5] 的半有向阈值条件在纯有向极限下化为临界传播率 $T_c=\langle k_{\rm in}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，[1] 亦以再生数 $R_0=\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 给出同一结果；由 $T=\lambda/(1+\lambda)$ 代入 \eqref{eq:lc} 得 $T_c=1/\kappa=\langle k_{\rm out}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，而 $\tau=\eta$ 时握手关系 \eqref{eq:handshake} 给出 $\langle k_{\rm in}\rangle=\langle k_{\rm out}\rangle$，两式因而恒等。需要强调，令 $k_{\rm in}=k_{\rm out}$ 并不回到无向网络的结果：无向情形的余度相减源于"来路那条边不可再用"，而有向情形下来路超边根本不在 $v$ 的入超边之列。\eqref{eq:lc} 分母中的 $-1$ 来自 $T=\beta/(\beta+\mu)$ 里的 $\beta$，与余度无关。两者是不同的结构，不应混为一谈。
 
 **阈值对 $r_{io}$ 的依赖。** 由 $\langle k_{\rm in}k_{\rm out}\rangle=\langle k_{\rm in}\rangle\langle k_{\rm out}\rangle+r_{io}\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}$ 与握手关系 \eqref{eq:handshake}，
 
@@ -171,11 +171,11 @@ $$
 \lambda_c=\Bigl[\tau\langle k_{\rm in}\rangle+\tfrac{N}{M}\,r_{io}\,\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}-1\Bigr]^{-1}\label{eq:lcrio}
 $$
 
-在两条边际度序列固定时 $\lambda_c$ 是 $r_{io}$ 的严格减函数：正的入出度相关促进传播。这一方向与成对有向图上的 SIR 一致——那里 $R_0$ 同样经 $\langle k_{\rm in}k_{\rm out}\rangle$ 依赖于入出度的协方差 [3]；\eqref{eq:lcrio} 把该依赖推广到有向超图，并显式给出 $\tau$ 与 $N/M$ 的系数。需要提醒的是这一方向并非普适于一切传播机制：有向网络的阈值型级联中，正的入出度相关反而提高系统稳健性 [6]。二者并不冲突——阈值模型按活跃邻居的比例判定激活，高入度抬高激活门槛；SIR 中高入度只增加暴露，故 $k_{\rm in}$ 与 $k_{\rm out}$ 同时偏大的节点在 SIR 中放大 $R_0$，在阈值级联中却既难被激活又本可广播。这是第 VI 节 $r_{io}$ 扫描的定量预言。
+在两条边际度序列固定时 $\lambda_c$ 是 $r_{io}$ 的严格减函数：正的入出度相关促进传播。这一方向与成对有向图上的 SIR 一致——那里 $R_0$ 同样经 $\langle k_{\rm in}k_{\rm out}\rangle$ 依赖于入出度的协方差 [1]；\eqref{eq:lcrio} 把该依赖推广到有向超图，并显式给出 $\tau$ 与 $N/M$ 的系数。需要提醒的是这一方向并非普适于一切传播机制：有向网络的阈值型级联中，正的入出度相关反而提高系统稳健性 [8]。二者并不冲突——阈值模型按活跃邻居的比例判定激活，高入度抬高激活门槛；SIR 中高入度只增加暴露，故 $k_{\rm in}$ 与 $k_{\rm out}$ 同时偏大的节点在 SIR 中放大 $R_0$，在阈值级联中却既难被激活又本可广播。这是第 6 节 $r_{io}$ 扫描的定量预言。
 
-**一个否定性推论。** \eqref{eq:lc} 只依赖于阶数 $\tau$ 与双度序列（经由 $\kappa$）。更强地说，\eqref{eq:S} 与 \eqref{eq:psitail} 也只读取双度序列，故整个闭合而不止阈值都看不见重叠 $\alpha$。由 II.C 的求和规则，双度序列锁死的只是四个通道的重叠总量 $C_{ab}$，并不锁死 $\alpha^{ab}=C_{ab}/m_{ab}$ 本身，$\alpha$ 因而在固定度序列下仍是可动的自由度。这不是疏漏而是可检验的预言：重叠恰好度量超边之间共享节点的程度，也就是 (H1) 所排除的短回路。第 VI 节若测得阈值随 $\alpha$ 移动，其幅度即为树状闭合失效的定量刻度；若测不到，则 $\alpha$ 的作用只体现在阈值以外的量上。但须说明，可动不等于易动：单纯的保度双边交换只能把 $\alpha^{\parallel}$ 挪动 $0.005$–$0.006$（$N=150$ 与 $N=500$ 两处测量），在如此窄的区间上仿真的变化不可分辨，因而检验这一预言必须先有第 V 节的定向重连工具把 $\alpha$ 推到有意义的范围。极性失衡 $\Delta\alpha$ 是例外，它可被驱动到 $0.108$，故第 VI 节对它的上界测量不受此限。
+**一个否定性推论。** \eqref{eq:lc} 只依赖于阶数 $\tau$ 与双度序列（经由 $\kappa$）。更强地说，\eqref{eq:S} 与 \eqref{eq:psitail} 也只读取双度序列，故整个闭合而不止阈值都看不见重叠 $\alpha$。由 2.3 的求和规则，双度序列锁死的只是四个通道的重叠总量 $C_{ab}$，并不锁死 $\alpha^{ab}=C_{ab}/m_{ab}$ 本身，$\alpha$ 因而在固定度序列下仍是可动的自由度。这不是疏漏而是可检验的预言：重叠恰好度量超边之间共享节点的程度，也就是 (H1) 所排除的短回路。第 6 节若测得阈值随 $\alpha$ 移动，其幅度即为树状闭合失效的定量刻度；若测不到，则 $\alpha$ 的作用只体现在阈值以外的量上。但须说明，可动不等于易动：单纯的保度双边交换只能把 $\alpha^{\parallel}$ 挪动 $0.005$–$0.006$（$N=150$ 与 $N=500$ 两处测量），在如此窄的区间上仿真的变化不可分辨，因而检验这一预言必须先有第 5 节的定向重连工具把 $\alpha$ 推到有意义的范围。极性失衡 $\Delta\alpha$ 是例外，它可被驱动到 $0.108$，故第 6 节对它的上界测量不受此限。
 
-## D. 与均场闭合的比较
+## 3.4. 与均场闭合的比较
 
 同一模型的度均场闭合是：设节点 $v$ 的感染概率为 $i_v$，把其入超边的激活概率取为系综平均 $\Theta=1-(1-\phi)^{\tau}$（$\theta=1$），其中 $\phi=\sum_v k_{\rm out}(v)i_v\big/\sum_v k_{\rm out}(v)$ 为尾槽被感染节点占据的比例，则
 
@@ -196,13 +196,13 @@ $$
 \frac{\lambda_c}{\lambda_c^{\rm MF}}=\frac{\tau\kappa}{\tau\kappa-1}\label{eq:gain}
 $$
 
-在 $\tau\kappa\to1^{+}$ 时发散：均场的误差在阈值邻域最大，而这正是最需要理论的区域。这与成对网络上 EBCM 相对均场的增益同源 [1, 2]，本文把它推广到有向超图并给出闭式。
+在 $\tau\kappa\to1^{+}$ 时发散：均场的误差在阈值邻域最大，而这正是最需要理论的区域。这与成对网络上 EBCM 相对均场的增益同源 [6, 7]，本文把它推广到有向超图并给出闭式。
 
-需要说明，\eqref{eq:mf} 是我们为本模型构造的均场对照，而非 [7] 中模型的复述——后者是社会传播而非 SIR，其方向性由单一标量强度参数调节。此处比较的是闭合层级，不是两项工作的模型。
+需要说明，\eqref{eq:mf} 是我们为本模型构造的均场对照，而非 [4] 中模型的复述——后者是社会传播而非 SIR，其方向性由单一标量强度参数调节。此处比较的是闭合层级，不是两项工作的模型。
 
-## E. 数值校验
+## 3.5. 数值校验
 
-校验分三层：闭合内部的自洽、闭合对精确仿真的复现、以及结构预言。脚本见 `tools/ebcm_directed.py` 与 `tools/section3_data.py`；仿真为 II.B 所定义连续时间 Markov 过程的精确 Gillespie 抽样 [8]，取 $\mu=1$。
+校验分三层：闭合内部的自洽、闭合对精确仿真的复现、以及结构预言。脚本见 `tools/ebcm_directed.py` 与 `tools/section3_data.py`；仿真为 2.2 所定义连续时间 Markov 过程的精确 Gillespie 抽样 [3]，取 $\mu=1$。
 
 **内部自洽。** 恒等式 \eqref{eq:identity} 的残差随 Euler 步长线性收敛：$\mathrm{d}t$ 由 $0.008$ 逐次减半至 $0.001$ 时，最大残差由 $7.13\times10^{-4}$ 降至 $8.89\times10^{-5}$，相邻比值三次均为 $2.00$。残差因而是积分误差而非闭合的破缺。两种分支计数 \eqref{eq:twocounts} 在 $(\tau,\eta)=(2,2),(3,1),(1,3),(2,3)$ 上的相对差不超过 $2\times10^{-16}$；\eqref{eq:lcrio} 与 \eqref{eq:lc} 在全部 $45$ 个位形模型实现上的相对差不超过 $4\times10^{-16}$，即经由 $r_{io}$ 的改写是恒等的。$\kappa$ 在 $4000$ 次保度双边交换下的改变量恰为零，与本节的否定性推论一致。
 
@@ -210,19 +210,19 @@ $$
 
 **含时复现。** 图 1 给出 $\tau=\eta=2$、$N=6000$、$\lambda=1.6\lambda_c$ 下的完整时间演化。并发型 EBCM 与仿真在 $S(t)$ 与 $I(t)$ 上的最大偏差分别为 $0.0031$ 与 $0.0008$，均小于图中线宽；峰位完全重合（$t=4.50$），峰高相差 $1.3\%$。均场则把峰值由 $0.059$ 抬到 $0.117$（约一倍），并把峰位由 $t=4.50$ 提前到 $t=3.75$。
 
-![图 1　有向超图 SIR 的含时演化，$N=6000$、$\tau=\eta=2$、$\lambda=1.6\lambda_c$、初始感染比例 $\varepsilon=0.01$。黑线为 $400$ 次独立 Gillespie 实现的均值，灰带为 $95\%$ 置信区间，最宽处约与线宽相当；蓝虚线为并发型 EBCM \eqref{eq:master}，橙点线为均场闭合 \eqref{eq:mf}。(a) 易感比例；(b) 感染比例。](figures/fig1_trajectory_zh.png){width=6.5}
+![图 1　有向超图 SIR 的含时演化，$N=6000$、$\tau=\eta=2$、$\lambda=1.6\lambda_c$、初始感染比例 $\varepsilon=0.01$。黑线为 $400$ 次独立 Gillespie 实现的均值，灰带为 $95\%$ 置信区间，最宽处约与线宽相当；蓝虚线为并发型 EBCM \eqref{eq:master}，橙点线为均场闭合 \eqref{eq:mf}。(a) 易感比例；(b) 感染比例。](figures/fig1_trajectory_zh.png){width=5.5}
 
 **定量校验。** 图 2 汇总三项定量比较。
 
-![图 2　闭合的定量校验。(a) $t\le12$ 上 $S(t)$ 的平均绝对偏差随系统规模的变化；初始感染比例 $\varepsilon=0.01$，除 $N$ 外生成参数、仿真次数与 $\lambda/\lambda_c$ 全部固定，每点为 $4$ 个独立结构的均值，误差棒为结构间标准误，灰点划线为加权幂律拟合，指数 $-1.2$（子集拟合散布约 $\pm0.2$，与 $-1$ 相容）。(b) 终态规模随 $\lambda/\lambda_c$ 的变化，$N=6000$，初始感染比例 $\varepsilon=0.005$，每点 $400$ 次实现，误差棒为 $95\%$ 置信区间。(c) 爆发阈值随入出度相关的变化，$N=3000$，每点 $5$ 个独立双度序列，两个方向的误差棒均为标准误，实线为 \eqref{eq:lcrio}。](figures/fig2_validation_zh.png){width=6.5}
+![图 2　闭合的定量校验。(a) $t\le12$ 上 $S(t)$ 的平均绝对偏差随系统规模的变化；初始感染比例 $\varepsilon=0.01$，除 $N$ 外生成参数、仿真次数与 $\lambda/\lambda_c$ 全部固定，每点为 $4$ 个独立结构的均值，误差棒为结构间标准误，灰点划线为加权幂律拟合，指数 $-1.2$（子集拟合散布约 $\pm0.2$，与 $-1$ 相容）。(b) 终态规模随 $\lambda/\lambda_c$ 的变化，$N=6000$，初始感染比例 $\varepsilon=0.005$，每点 $400$ 次实现，误差棒为 $95\%$ 置信区间。(c) 爆发阈值随入出度相关的变化，$N=3000$，每点 $5$ 个独立双度序列，两个方向的误差棒均为标准误，实线为 \eqref{eq:lcrio}。](figures/fig2_validation_zh.png){width=5.5}
 
 图 2(a) 分离出两种误差的不同性质。EBCM 的偏差随 $N$ 幂律衰减，四点加权拟合给出指数 $-1.22\pm0.05$；但这一误差棒只是拟合的统计误差，改用子集重拟合得 $-1.32\pm0.11$、$-1.21\pm0.10$、$-1.03\pm0.31$，因而实际不确定度约 $\pm0.2$，数据尚不能把该指数与 $-1$ 区分开。$-1$ 正是树状闭合所预期的：位形模型中短回路的密度为 $O(1/N)$。可以确定的是偏差趋于零。均场的偏差同样随 $N$ 下降（$0.220\to0.156$），却按 $a+b/N$ 外推到非零平台 $a=0.146\pm0.001$（四种子集拟合的散布）。两者因而不是同一类误差：EBCM 的可以靠增大系统消除，均场的不能，因为那是闭合层级的误差。$N=4000$ 时二者相差 $28$ 倍。
 
-图 2(b) 检验 \eqref{eq:gain} 所预言的形状——均场的误差集中在阈值邻域。均场把阈值压低到 $\lambda_c^{\rm MF}=0.75\lambda_c$，因而在真实的亚临界区已给出宏观爆发：$\lambda=0.9\lambda_c$ 处高估 $5.1$ 倍、$\lambda=\lambda_c$ 处高估 $4.3$ 倍，深超临界区才收敛到 $1.2$ 倍。第 I 节所称"边基闭合相对均场的增益"由此定量化：增益不是均匀的百分数，而集中在最需要理论的区域。
+图 2(b) 检验 \eqref{eq:gain} 所预言的形状——均场的误差集中在阈值邻域。均场把阈值压低到 $\lambda_c^{\rm MF}=0.75\lambda_c$，因而在真实的亚临界区已给出宏观爆发：$\lambda=0.9\lambda_c$ 处高估 $5.1$ 倍、$\lambda=\lambda_c$ 处高估 $4.3$ 倍，深超临界区才收敛到 $1.2$ 倍。第 1 节所称"边基闭合相对均场的增益"由此定量化：增益不是均匀的百分数，而集中在最需要理论的区域。
 
 同一张图也暴露出 EBCM 自身的限度，须如实报告。偏差在深超临界区最小（$\lambda\ge1.6\lambda_c$ 处 $\le0.7\%$），亚临界侧为 $+3.3\%$（$0.6\lambda_c$）与 $+1.7\%$（$0.8\lambda_c$），而在 $\lambda=\lambda_c$ 与 $1.1\lambda_c$ 处 EBCM 系统性高估 $18\%$ 与 $19\%$（分别为 $6.9\sigma$ 与 $8.4\sigma$）。偏差在亚临界区与阈值邻域一律为正，并在阈值邻域出现尖峰，深超临界区则收敛到零。这一高估是有限尺寸效应而非闭合误差，已直接验证：在 $\lambda=\lambda_c$ 处固定 $\varepsilon=0.005$、每点取 $3$ 个独立结构逐一增大系统，高估由 $N=1000$ 的 $+54\%$ 单调降至 $N=16000$ 的 $+4.4\%$——$N$ 增大 $16$ 倍，高估缩小约 $12$ 倍。这与 \eqref{eq:S}–\eqref{eq:master} 是 $N\to\infty$ 理论一致（阈值邻域关联长度发散，有限系统的偏离在此最大），也与均场那个不随 $N$ 消失的平台形成对照。即便如此，生产运行仍须在阈值邻域做有限尺寸标度外推，不能直接引用有限 $N$ 的 EBCM 值。
 
-图 2(c) 给出阈值对结构的依赖。保持两条边际度序列不变、只重新配置 $k_{\rm in}$ 与 $k_{\rm out}$ 在节点上的配对，$\lambda_c$ 在 $r_{io}\in[-0.89,+0.89]$ 上从 $0.803$ 降到 $0.209$，变动近四倍，与 \eqref{eq:lcrio} 逐点吻合。需要说明，图 2(c) 的纵轴由 \eqref{eq:lc} 经 $\kappa$ 算得，因而它检验的是"$r_{io}$ 能把阈值推到多远"以及改写 \eqref{eq:lcrio} 的恒等性，而非对阈值的独立测量；对 $\lambda_c(r_{io})$ 的仿真检验属于第 VI 节。同时须记住 II.D 的宇称结论——$r_{io}$ 移动阈值，却不产生方向对称性破缺，二者并不矛盾。
+图 2(c) 给出阈值对结构的依赖。保持两条边际度序列不变、只重新配置 $k_{\rm in}$ 与 $k_{\rm out}$ 在节点上的配对，$\lambda_c$ 在 $r_{io}\in[-0.89,+0.89]$ 上从 $0.803$ 降到 $0.209$，变动近四倍，与 \eqref{eq:lcrio} 逐点吻合。需要说明，图 2(c) 的纵轴由 \eqref{eq:lc} 经 $\kappa$ 算得，因而它检验的是"$r_{io}$ 能把阈值推到多远"以及改写 \eqref{eq:lcrio} 的恒等性，而非对阈值的独立测量；对 $\lambda_c(r_{io})$ 的仿真检验属于第 6 节。同时须记住 2.4 的宇称结论——$r_{io}$ 移动阈值，却不产生方向对称性破缺，二者并不矛盾。
 
 **独立复算。** 上述数字均由与原推导不共享路径的方式复核一遍（脚本 `tools/section3_audit.py`）。$\tau=1$ 时方程组可解析积出终态：由 $\dot\Phi=-\beta x_{010}$ 与 $\dot x_{001}=\mu x_{010}$ 得 $x_{001}=\lambda^{-1}(1-\Phi)$，令 $t\to\infty$ 即
 
@@ -240,11 +240,11 @@ $$
 
 ## 参考文献
 
-1. E. Volz, *Journal of Mathematical Biology*, **56**, 293–310 (2008). doi:10.1007/s00285-007-0116-4
-2. J. C. Miller, A. C. Slim, E. M. Volz, *Journal of the Royal Society Interface*, **9**, 890–906 (2012). doi:10.1098/rsif.2011.0403
-3. A. Allard, C. Moore, S. V. Scarpino, B. M. Althouse, L. Hébert-Dufresne, *SIAM Review*, **65**, 471–492 (2023). doi:10.1137/20M1383811
-4. L. A. Meyers, M. E. J. Newman, B. Pourbohloul, *Journal of Theoretical Biology*, **240**, 400–418 (2006). doi:10.1016/j.jtbi.2005.10.004
-5. M. Boguñá, M. Á. Serrano, *Physical Review E*, **72**, 016106 (2005). doi:10.1103/PhysRevE.72.016106
-6. X. J. Xu, J. Y. Li, X. Fu, L. J. Zhang, *Scientific Reports*, **8** (2018). doi:10.1038/s41598-018-22508-1
-7. J. Li, X. Wu, J. Lü, L. Lei, *Communications Physics*, **7** (2024). doi:10.1038/s42005-024-01614-9
-8. D. T. Gillespie, *The Journal of Physical Chemistry*, **81**, 2340–2361 (1977). doi:10.1021/j100540a008
+1. A. Allard, C. Moore, S. V. Scarpino, B. M. Althouse, and L. Hébert-Dufresne, *The Role of Directionality, Heterogeneity, and Correlations in Epidemic Risk and Spread*, SIAM Review, 65 (2023), pp. 471–492, https://doi.org/10.1137/20M1383811.
+2. M. Boguñá and M. Á. Serrano, *Generalized percolation in random directed networks*, Physical Review E, 72 (2005), p. 016106, https://doi.org/10.1103/PhysRevE.72.016106.
+3. D. T. Gillespie, *Exact stochastic simulation of coupled chemical reactions*, The Journal of Physical Chemistry, 81 (1977), pp. 2340–2361, https://doi.org/10.1021/j100540a008.
+4. J. Li, X. Wu, J. Lü, and L. Lei, *Enhancing predictive accuracy in social contagion dynamics via directed hypergraph structures*, Communications Physics, 7 (2024), https://doi.org/10.1038/s42005-024-01614-9.
+5. L. A. Meyers, M. E. J. Newman, and B. Pourbohloul, *Predicting epidemics on directed contact networks*, Journal of Theoretical Biology, 240 (2006), pp. 400–418, https://doi.org/10.1016/j.jtbi.2005.10.004.
+6. J. C. Miller, A. C. Slim, and E. M. Volz, *Edge-based compartmental modelling for infectious disease spread*, Journal of the Royal Society Interface, 9 (2012), pp. 890–906, https://doi.org/10.1098/rsif.2011.0403.
+7. E. Volz, *SIR dynamics in random networks with heterogeneous connectivity*, Journal of Mathematical Biology, 56 (2008), pp. 293–310, https://doi.org/10.1007/s00285-007-0116-4.
+8. X. J. Xu, J. Y. Li, X. Fu, and L. J. Zhang, *Impact of directionality and correlation on contagion*, Scientific Reports, 8 (2018), https://doi.org/10.1038/s41598-018-22508-1.

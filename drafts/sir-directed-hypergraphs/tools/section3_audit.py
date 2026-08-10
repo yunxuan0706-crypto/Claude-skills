@@ -15,7 +15,7 @@ by a route that does not share the derivation being tested.
     reached -- through a head slot, hence k_in-biased -- give it an Exp(mu)
     infectious period, and race an Exp(beta) clock on every (out-hyperedge,
     head) pair. The mean offspring count must equal tau*kappa*beta/(beta+mu).
-    This tests the branching reading of eq (35) and the identity (36) at once,
+    This tests the branching reading of eq (3.17) and the identity (3.18) at once,
     touching neither the ODE nor the final-size algebra.
 
  C  Mean-field threshold by bisection on its own integrated final size, the
@@ -126,10 +126,10 @@ def check_B(N=4000, tau=2, eta=2, md=2, trials=400000, seed=77):
         se = math.sqrt(meas / trials) * 2      # crude; offspring is over-dispersed
         print(f"  lam={lam:.2f}: measured R_0 = {meas:.4f}   predicted {pred:.4f}"
               f"   rel {abs(meas-pred)/pred:.2e}")
-    # the two counting forms of eq (36)
+    # the two counting forms of eq (3.18)
     a = tau * p.kappa
     b = eta * sum(x * y for x, y in zip(ki, ko)) / sum(ki)
-    print(f"  eq (36): tau<kk>/<ko> = {a:.10f}   eta<kk>/<ki> = {b:.10f}"
+    print(f"  eq (3.18): tau<kk>/<ko> = {a:.10f}   eta<kk>/<ki> = {b:.10f}"
           f"   rel {abs(a-b)/a:.1e}")
 
 
@@ -277,11 +277,6 @@ def check_H(N=120, tau=2, eta=2, M=90, runs=3000, lam=1.2, seed=5):
     se = math.sqrt(st.variance(a) / runs + st.variance(b) / runs)
     print(f"  fast {ma:.5f}   reference {mb:.5f}   diff {ma-mb:+.5f}"
           f"  ({abs(ma-mb)/se:.2f} sigma over {runs} runs)")
-
-
-if __name__ == "__main__":
-    check_A(); check_C(); check_D(); check_F(); check_G(); check_H()
-    check_E(); check_B(); check_I(); check_J(); check_K()
 
 
 # ------------------------------------------------------------------- I ------
@@ -433,3 +428,8 @@ def check_K(N=1500, tau=2, eta=2, md=2, seed=23):
         err = abs(vals[1][1] - lim) / lim          # error at the dt used in the figures
         print(f"  {lab}: R(inf) at dt=0.01 is {vals[1][1]:.6f}, extrapolated limit"
               f" {lim:.6f}, relative error {err:.2%}")
+
+
+if __name__ == "__main__":
+    check_A(); check_C(); check_D(); check_F(); check_G(); check_H()
+    check_E(); check_B(); check_I(); check_J(); check_K()

@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
-"""Turn \\cite{key} markers into numbered [n] citations in order of first
-appearance, and emit the matching numbered reference list (PRE style).
+"""Turn \\cite{key} markers into numbered [n] citations against an alphabetical
+reference list, and emit that list (SIAM style; --order appearance for PRE).
 
     python3 tools/number_citations.py introduction.src.md introduction.md
     python3 tools/number_citations.py intro.src.md section2.src.md -o manuscript.md
@@ -16,6 +16,11 @@ import re, sys, os
 HERE = os.path.dirname(os.path.abspath(__file__))
 BIB = os.path.join(HERE, "..", "references.bib")
 args = sys.argv[1:]
+ORDER = "alpha"          # SIAM: alphabetical list, numeric labels
+if "--order" in args:
+    i = args.index("--order")
+    ORDER = args[i + 1]
+    del args[i:i + 2]
 if "-o" in args:
     i = args.index("-o")
     SRCS, OUT = args[:i], args[i + 1]
@@ -52,32 +57,56 @@ def authors(a):
             out.append(" ".join(w[0] + "." for w in giv.replace("-", " ").split() if w) + " " + fam)
         else:
             out.append(n.strip())
-    return ", ".join(out[:8]) + (" et al." if len(out) > 8 else "")
+    out = out[:8] + (["et al."] if len(out) > 8 else [])
+    # SIAM joins the last two authors with "and".
+    return out[0] if len(out) == 1 else ", ".join(out[:-1]) + (
+        ", and " if len(out) > 2 else " and ") + out[-1]
 
-order = []
+def family(a):
+    """Family name of the first author, for alphabetical ordering."""
+    first = detex(a).split(" and ")[0]
+    return (first.split(",")[0] if "," in first else first.split()[-1]).lower()
 
-def repl(m):
-    nums = []
+# SIAM orders the reference list alphabetically and labels it numerically, so the
+# numbers are only known after every citation has been seen: collect first, then
+# number, then substitute.
+CITE = re.compile(r"\\cite\{([^}]+)\}")
+body = "\n\n".join(open(f, encoding="utf-8").read().rstrip() for f in SRCS)
+cited = []
+for m in CITE.finditer(body):
     for k in (k.strip() for k in m.group(1).split(",")):
         if k not in entries:
             sys.exit(f"MISSING BIB KEY: {k}")
-        if k not in order:
-            order.append(k)
-        nums.append(order.index(k) + 1)
-    return "[" + ", ".join(str(n) for n in sorted(nums)) + "]"
+        if k not in cited:
+            cited.append(k)
 
-body = re.sub(r"\\cite\{([^}]+)\}", repl,
-              "\n\n".join(open(f, encoding="utf-8").read().rstrip() for f in SRCS))
+if ORDER == "appearance":
+    order = cited
+else:
+    order = sorted(cited, key=lambda k: (family(entries[k]["author"]),
+                                         entries[k].get("year", ""),
+                                         detex(entries[k].get("title", ""))))
+num = {k: i + 1 for i, k in enumerate(order)}
+
+body = CITE.sub(lambda m: "[" + ", ".join(
+    str(n) for n in sorted(num[k.strip()] for k in m.group(1).split(","))) + "]", body)
 
 lines = ["", "---", "", "## 参考文献", ""]
 for i, k in enumerate(order, 1):
     e = entries[k]
-    bits = [f"{authors(e['author'])}, *{detex(e.get('journal') or e.get('booktitle') or '')}*"]
+    bits = [authors(e["author"])]
+    if e.get("title"):
+        bits.append(f"*{detex(e['title'])}*")
+    tail = detex(e.get("journal") or e.get("booktitle") or "")
     if e.get("volume"):
-        bits.append(f"**{e['volume']}**")
+        tail += f", {e['volume']}"
+    tail += f" ({e['year']})"
     if e.get("pages"):
-        bits.append(detex(e["pages"]).replace("--", "–"))
-    lines.append(f"{i}. " + ", ".join(bits) + f" ({e['year']}). doi:{e.get('doi', '')}")
+        pg = detex(e["pages"]).replace("--", "–")
+        tail += (", pp. " if "–" in pg else ", p. ") + pg
+    bits.append(tail)
+    doi = e.get("doi", "")
+    lines.append(f"{i}. " + ", ".join(bits) + (f", https://doi.org/{doi}." if doi else "."))
 
 open(OUT, "w", encoding="utf-8").write(body.rstrip() + "\n" + "\n".join(lines) + "\n")
-print(f"{len(SRCS)} source file(s) -> {OUT}: {len(order)} references cited, numbered in order of appearance")
+print(f"{len(SRCS)} source file(s) -> {OUT}: {len(order)} references, ordered by {ORDER}")

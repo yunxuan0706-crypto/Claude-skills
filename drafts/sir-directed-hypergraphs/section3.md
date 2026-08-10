@@ -4,7 +4,7 @@
 
 成对网络上的边基房室模型（EBCM）以"沿一条边尚未传来感染"的概率为核心变量，把 SIR 的含时演化压缩到少数常微分方程 [1, 2]。移到有向超图上有两重并发需要处理：一个头节点同时暴露于 $k_{\rm in}$ 条超边，而每条超边内又有 $\tau$ 个尾成员同时向它施压。前一重可以因子化，后一重不能——本小节说明界线在哪里。
 
-固定一个**检验节点** $u$，人为令其永久保持易感（空腔节点），并取一条以 $u$ 为头成员的超边 $e$，即 $u\in H(e)$。定义边基变量
+固定一个检验节点 $u$，人为令其永久保持易感（空腔节点），并取一条以 $u$ 为头成员的超边 $e$，即 $u\in H(e)$。定义边基变量
 
 $$
 \Phi(t)=\Pr\bigl[e\ \text{到}\ t\ \text{时刻尚未向}\ u\ \text{传递感染}\bigr]\label{eq:phi}
@@ -16,7 +16,7 @@ $$
 \Phi(t)=\Bigl\langle\exp\Bigl[-\beta\int_0^{t}g\bigl(n_e(s)\bigr)\,\mathrm{d}s\Bigr]\Bigr\rangle\label{eq:phiexp}
 $$
 
-主线取 $\theta=1$，此时 $g(n_e)=\mathbb{1}[n_e\ge1]$，指数上的积分即 $e$ 的**激活时长**，也就是其各尾成员感染期之**并**的测度。并的测度不等于各成员贡献之和，因而
+主线取 $\theta=1$，此时 $g(n_e)=\mathbb{1}[n_e\ge1]$，指数上的积分即 $e$ 的激活时长，也就是其各尾成员感染期之并的测度。并的测度不等于各成员贡献之和，因而
 
 $$
 \Phi(t)\neq\prod_{v\in T(e)}\Phi_v(t)\label{eq:noprod}
@@ -39,17 +39,17 @@ $$
 
 (H2) 是有向结构特有的。无向超图中同一条超边内的节点相互施加影响，"尾成员相互独立"根本无从谈起；正是尾与头的分离，使第二重并发退化为"$\tau$ 个独立个体驱动同一个共享时钟"，从而可由一个低维状态刻画。
 
-还需注意一处**度偏置**。沿 $e$ 的一个尾槽到达的节点 $v$ 是按 $k_{\rm out}$ 加权抽取的，而决定 $v$ 何时被感染的是它的 $k_{\rm in}$ 条入超边。由 $T\cap H=\varnothing$，$e$ 本身不属于 $v$ 的入超边，因而**不出现无向 EBCM 中的余度相减**——偏置变量与计数变量是两个不同的量。据此定义尾侧生成函数
+还需注意一处度偏置。沿 $e$ 的一个尾槽到达的节点 $v$ 是按 $k_{\rm out}$ 加权抽取的，而决定 $v$ 何时被感染的是它的 $k_{\rm in}$ 条入超边。由 $T\cap H=\varnothing$，$e$ 本身不属于 $v$ 的入超边，因而不出现无向 EBCM 中的余度相减——偏置变量与计数变量是两个不同的量。据此定义尾侧生成函数
 
 $$
 \psi_{\rm tail}(x)=\frac{1}{\langle k_{\rm out}\rangle}\sum_{k_{\rm in},k_{\rm out}}k_{\rm out}\,P(k_{\rm in},k_{\rm out})\,x^{k_{\rm in}}\label{eq:psitail}
 $$
 
-$\psi_{\rm tail}$ 显式依赖于**联合**分布 $P(k_{\rm in},k_{\rm out})$，而 \eqref{eq:S} 的 $\psi_{\rm in}$ 只依赖于其边际。这是 II.A 的入出度相关 $r_{io}$ 进入动力学的解析通道，也是下文阈值公式中唯一承载 $r_{io}$ 的位置。
+$\psi_{\rm tail}$ 显式依赖于联合分布 $P(k_{\rm in},k_{\rm out})$，而 \eqref{eq:S} 的 $\psi_{\rm in}$ 只依赖于其边际。这是 II.A 的入出度相关 $r_{io}$ 进入动力学的解析通道，也是下文阈值公式中唯一承载 $r_{io}$ 的位置。
 
 ## B. 方程组
 
-由 (H2)，$e$ 的 $\tau$ 个尾成员相互独立，其联合状态可由计数 $(a,b,c)$ 概括：$a$ 个易感、$b$ 个感染、$c$ 个康复，$a+b+c=\tau$。定义**未传递子概率**
+由 (H2)，$e$ 的 $\tau$ 个尾成员相互独立，其联合状态可由计数 $(a,b,c)$ 概括：$a$ 个易感、$b$ 个感染、$c$ 个康复，$a+b+c=\tau$。定义未传递子概率
 
 $$
 x_{abc}(t)=\Pr\bigl[e\ \text{尚未向}\ u\ \text{传递}\ \ \wedge\ \ T(e)\ \text{处于状态}\ (a,b,c)\bigr]\label{eq:xabc}
@@ -70,7 +70,7 @@ h(t)=-\frac{\mathrm{d}}{\mathrm{d}t}\ln\bigl[(1-\varepsilon)\psi_{\rm tail}(\Phi
 =\beta\,\Phi_A\,\frac{\psi'_{\rm tail}(\Phi)}{\psi_{\rm tail}(\Phi)}\label{eq:h}
 $$
 
-末一步用了下面的 \eqref{eq:phidot}。向 $u$ 的传递以速率 $\beta\,\mathbb{1}[b\ge\theta]$ 把概率移出"未传递"类。等价地，在 $(a,b,c)$ 之外添一个"已传递"的吸收态，则整体是一条标准的连续时间 Markov 链，而 $x_{abc}$ 是其未被吸收部分的**子概率**，$\sum_{abc}x_{abc}=\Phi\le1$；概率论中这称为以速率 $\beta\,\mathbb{1}[b\ge\theta]$ **消灭**（killing）的 Markov 链，其半群为次随机的，而 \eqref{eq:phiexp} 正是它的 Feynman–Kac 表示。据此
+末一步用了下面的 \eqref{eq:phidot}。向 $u$ 的传递以速率 $\beta\,\mathbb{1}[b\ge\theta]$ 把概率移出"未传递"类。等价地，在 $(a,b,c)$ 之外添一个"已传递"的吸收态，则整体是一条标准的连续时间 Markov 链，而 $x_{abc}$ 是其未被吸收部分的子概率，$\sum_{abc}x_{abc}=\Phi\le1$；概率论中这称为以速率 $\beta\,\mathbb{1}[b\ge\theta]$ 消灭（killing）的 Markov 链，其半群为次随机的，而 \eqref{eq:phiexp} 正是它的 Feynman–Kac 表示。据此
 
 $$
 \dot x_{abc}=h\bigl[(a+1)x_{a+1,b-1,c}-a\,x_{abc}\bigr]
@@ -122,7 +122,7 @@ $$
 
 对一切 $t$ 成立。\eqref{eq:identity} 不是额外假设，而是 \eqref{eq:master} 的推论：对右端求导得 $-\tau h\,x_{\tau00}$，与 \eqref{eq:master} 在 $(a,b,c)=(\tau,0,0)$ 处逐项相同。它为数值积分提供了一条无需仿真的自检。
 
-**求解到什么程度。** 有必要把"求解"的含义说清楚。$\theta=1$ 时，\eqref{eq:S} 与 \eqref{eq:master}–\eqref{eq:phidot} 构成一个封闭的低维系统，其积分给出完整的 $S(t)$、$I(t)$、$R(t)$ 与终态规模，精度由 III.E 逐项校验；爆发阈值 \eqref{eq:lc} 是闭式，$\tau=1$ 时终态亦有闭式 \eqref{eq:finalsize}。但 $\tau\ge2$ 时终态**没有**闭式，原因是结构性的而非技术性的：$\Phi_\infty$ 取决于各尾成员感染期之**并**的长度；$\tau=1$ 时这个并只有一段，其长度服从 $\mathrm{Exp}(\mu)$ 且与起始时刻无关，故可只用终态量闭合，而 $\tau\ge2$ 时并的长度依赖于各感染时刻的相对先后，终态量不足以确定它。这与 \eqref{eq:noprod} 是同一个障碍。取线性核 $g(n)=n$ 时传播事件逐（尾成员，头成员）对独立，闭式重新出现。$\theta\ge2$ 的爆发条件不属本节范围。
+**求解到什么程度。** 有必要把"求解"的含义说清楚。$\theta=1$ 时，\eqref{eq:S} 与 \eqref{eq:master}–\eqref{eq:phidot} 构成一个封闭的低维系统，其积分给出完整的 $S(t)$、$I(t)$、$R(t)$ 与终态规模，精度由 III.E 逐项校验；爆发阈值 \eqref{eq:lc} 是闭式，$\tau=1$ 时终态亦有闭式 \eqref{eq:finalsize}。但 $\tau\ge2$ 时终态没有闭式，原因是结构性的而非技术性的：$\Phi_\infty$ 取决于各尾成员感染期之并的长度；$\tau=1$ 时这个并只有一段，其长度服从 $\mathrm{Exp}(\mu)$ 且与起始时刻无关，故可只用终态量闭合，而 $\tau\ge2$ 时并的长度依赖于各感染时刻的相对先后，终态量不足以确定它。这与 \eqref{eq:noprod} 是同一个障碍。取线性核 $g(n)=n$ 时传播事件逐（尾成员，头成员）对独立，闭式重新出现。$\theta\ge2$ 的爆发条件不属本节范围。
 
 **$\theta\ge2$。** \eqref{eq:master} 中只有消灭项的指示函数依赖于 $\theta$，故方程组对任意 $\theta$ 形式不变。但下一小节的阈值分析不再适用：$\theta\ge2$ 时单个感染尾成员不足以激活超边，\eqref{eq:master} 在无病定态附近的线性化没有增长模式，这与 II.B 所述 bootstrap 图像一致，须按第 IV 节的 $k$-core 途径处理。
 
@@ -157,7 +157,7 @@ $$
 
 两种数法给出同一个 $R_0$，且 $R_0=1$ 与 \eqref{eq:lc} 等价。
 
-**$\tau=\eta=1$ 的退化。** \eqref{eq:lc} 化为 $\lambda_c=\bigl[\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle-1\bigr]^{-1}$，即有向随机图上 SIR 的已知阈值 [3, 4, 5]。[4] 的半有向阈值条件在纯有向极限下化为临界传播率 $T_c=\langle k_{\rm in}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，[3] 亦以再生数 $R_0=\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 给出同一结果；由 $T=\lambda/(1+\lambda)$ 代入 \eqref{eq:lc} 得 $T_c=1/\kappa=\langle k_{\rm out}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，而 $\tau=\eta$ 时握手关系 \eqref{eq:handshake} 给出 $\langle k_{\rm in}\rangle=\langle k_{\rm out}\rangle$，两式因而恒等。需要强调，令 $k_{\rm in}=k_{\rm out}$ 并**不**回到无向网络的结果：无向情形的余度相减源于"来路那条边不可再用"，而有向情形下来路超边根本不在 $v$ 的入超边之列。\eqref{eq:lc} 分母中的 $-1$ 来自 $T=\beta/(\beta+\mu)$ 里的 $\beta$，与余度无关。两者是不同的结构，不应混为一谈。
+**$\tau=\eta=1$ 的退化。** \eqref{eq:lc} 化为 $\lambda_c=\bigl[\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm out}\rangle-1\bigr]^{-1}$，即有向随机图上 SIR 的已知阈值 [3, 4, 5]。[4] 的半有向阈值条件在纯有向极限下化为临界传播率 $T_c=\langle k_{\rm in}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，[3] 亦以再生数 $R_0=\langle k_{\rm in}k_{\rm out}\rangle/\langle k_{\rm in}\rangle$ 给出同一结果；由 $T=\lambda/(1+\lambda)$ 代入 \eqref{eq:lc} 得 $T_c=1/\kappa=\langle k_{\rm out}\rangle/\langle k_{\rm in}k_{\rm out}\rangle$，而 $\tau=\eta$ 时握手关系 \eqref{eq:handshake} 给出 $\langle k_{\rm in}\rangle=\langle k_{\rm out}\rangle$，两式因而恒等。需要强调，令 $k_{\rm in}=k_{\rm out}$ 并不回到无向网络的结果：无向情形的余度相减源于"来路那条边不可再用"，而有向情形下来路超边根本不在 $v$ 的入超边之列。\eqref{eq:lc} 分母中的 $-1$ 来自 $T=\beta/(\beta+\mu)$ 里的 $\beta$，与余度无关。两者是不同的结构，不应混为一谈。
 
 **阈值对 $r_{io}$ 的依赖。** 由 $\langle k_{\rm in}k_{\rm out}\rangle=\langle k_{\rm in}\rangle\langle k_{\rm out}\rangle+r_{io}\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}$ 与握手关系 \eqref{eq:handshake}，
 
@@ -171,9 +171,9 @@ $$
 \lambda_c=\Bigl[\tau\langle k_{\rm in}\rangle+\tfrac{N}{M}\,r_{io}\,\sigma_{k_{\rm in}}\sigma_{k_{\rm out}}-1\Bigr]^{-1}\label{eq:lcrio}
 $$
 
-在两条边际度序列固定时 $\lambda_c$ 是 $r_{io}$ 的严格减函数：正的入出度相关促进传播。这一方向与成对有向图上的 SIR 一致——那里 $R_0$ 同样经 $\langle k_{\rm in}k_{\rm out}\rangle$ 依赖于入出度的协方差 [3]；\eqref{eq:lcrio} 把该依赖推广到有向超图，并显式给出 $\tau$ 与 $N/M$ 的系数。需要提醒的是这一方向并非普适于一切传播机制：有向网络的阈值型级联中，正的入出度相关反而**提高**系统稳健性 [6]。二者并不冲突——阈值模型按活跃邻居的比例判定激活，高入度抬高激活门槛；SIR 中高入度只增加暴露，故 $k_{\rm in}$ 与 $k_{\rm out}$ 同时偏大的节点在 SIR 中放大 $R_0$，在阈值级联中却既难被激活又本可广播。这是第 VI 节 $r_{io}$ 扫描的定量预言。
+在两条边际度序列固定时 $\lambda_c$ 是 $r_{io}$ 的严格减函数：正的入出度相关促进传播。这一方向与成对有向图上的 SIR 一致——那里 $R_0$ 同样经 $\langle k_{\rm in}k_{\rm out}\rangle$ 依赖于入出度的协方差 [3]；\eqref{eq:lcrio} 把该依赖推广到有向超图，并显式给出 $\tau$ 与 $N/M$ 的系数。需要提醒的是这一方向并非普适于一切传播机制：有向网络的阈值型级联中，正的入出度相关反而提高系统稳健性 [6]。二者并不冲突——阈值模型按活跃邻居的比例判定激活，高入度抬高激活门槛；SIR 中高入度只增加暴露，故 $k_{\rm in}$ 与 $k_{\rm out}$ 同时偏大的节点在 SIR 中放大 $R_0$，在阈值级联中却既难被激活又本可广播。这是第 VI 节 $r_{io}$ 扫描的定量预言。
 
-**一个否定性推论。** \eqref{eq:lc} 只依赖于阶数 $\tau$ 与双度序列（经由 $\kappa$）。更强地说，\eqref{eq:S} 与 \eqref{eq:psitail} 也只读取双度序列，故**整个闭合而不止阈值都看不见重叠 $\alpha$**。由 II.C 的求和规则，双度序列锁死的只是四个通道的重叠总量 $C_{ab}$，并不锁死 $\alpha^{ab}=C_{ab}/m_{ab}$ 本身，$\alpha$ 因而在固定度序列下仍是可动的自由度。这不是疏漏而是可检验的预言：重叠恰好度量超边之间共享节点的程度，也就是 (H1) 所排除的短回路。第 VI 节若测得阈值随 $\alpha$ 移动，其幅度即为树状闭合失效的定量刻度；若测不到，则 $\alpha$ 的作用只体现在阈值以外的量上。但须说明，可动不等于易动：单纯的保度双边交换只能把 $\alpha^{\parallel}$ 挪动 $0.005$–$0.006$（$N=150$ 与 $N=500$ 两处测量），在如此窄的区间上仿真的变化不可分辨，因而检验这一预言必须先有第 V 节的定向重连工具把 $\alpha$ 推到有意义的范围。极性失衡 $\Delta\alpha$ 是例外，它可被驱动到 $0.108$，故第 VI 节对它的上界测量不受此限。
+**一个否定性推论。** \eqref{eq:lc} 只依赖于阶数 $\tau$ 与双度序列（经由 $\kappa$）。更强地说，\eqref{eq:S} 与 \eqref{eq:psitail} 也只读取双度序列，故整个闭合而不止阈值都看不见重叠 $\alpha$。由 II.C 的求和规则，双度序列锁死的只是四个通道的重叠总量 $C_{ab}$，并不锁死 $\alpha^{ab}=C_{ab}/m_{ab}$ 本身，$\alpha$ 因而在固定度序列下仍是可动的自由度。这不是疏漏而是可检验的预言：重叠恰好度量超边之间共享节点的程度，也就是 (H1) 所排除的短回路。第 VI 节若测得阈值随 $\alpha$ 移动，其幅度即为树状闭合失效的定量刻度；若测不到，则 $\alpha$ 的作用只体现在阈值以外的量上。但须说明，可动不等于易动：单纯的保度双边交换只能把 $\alpha^{\parallel}$ 挪动 $0.005$–$0.006$（$N=150$ 与 $N=500$ 两处测量），在如此窄的区间上仿真的变化不可分辨，因而检验这一预言必须先有第 V 节的定向重连工具把 $\alpha$ 推到有意义的范围。极性失衡 $\Delta\alpha$ 是例外，它可被驱动到 $0.108$，故第 VI 节对它的上界测量不受此限。
 
 ## D. 与均场闭合的比较
 
@@ -196,9 +196,9 @@ $$
 \frac{\lambda_c}{\lambda_c^{\rm MF}}=\frac{\tau\kappa}{\tau\kappa-1}\label{eq:gain}
 $$
 
-在 $\tau\kappa\to1^{+}$ 时发散：**均场的误差在阈值邻域最大**，而这正是最需要理论的区域。这与成对网络上 EBCM 相对均场的增益同源 [1, 2]，本文把它推广到有向超图并给出闭式。
+在 $\tau\kappa\to1^{+}$ 时发散：均场的误差在阈值邻域最大，而这正是最需要理论的区域。这与成对网络上 EBCM 相对均场的增益同源 [1, 2]，本文把它推广到有向超图并给出闭式。
 
-需要说明，\eqref{eq:mf} 是我们为本模型构造的均场对照，而非 [7] 中模型的复述——后者是社会传播而非 SIR，其方向性由单一标量强度参数调节。此处比较的是**闭合层级**，不是两项工作的模型。
+需要说明，\eqref{eq:mf} 是我们为本模型构造的均场对照，而非 [7] 中模型的复述——后者是社会传播而非 SIR，其方向性由单一标量强度参数调节。此处比较的是闭合层级，不是两项工作的模型。
 
 ## E. 数值校验
 

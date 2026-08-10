@@ -132,11 +132,57 @@ def check_legends(fig):
         raise SystemExit("legend overflows its axes in: " + "; ".join(bad))
 
 
+def check_text_overlap(fig, pad=0.5):
+    """Fail if any two pieces of text in the figure overlap.
+
+    Covers tick labels, axis labels, in-axes annotations, panel letters and
+    legend entries, across panels as well as within them -- the cases a
+    per-axes tick check cannot see. Run it after every artist is placed.
+    """
+    fig.canvas.draw()
+    items = []                       # (label, bbox, legend-id or None)
+    for i, ax in enumerate(fig.axes):
+        group = [(f"panel{i} xlabel", ax.xaxis.label), (f"panel{i} ylabel", ax.yaxis.label)]
+        # Matplotlib keeps tick labels for ticks outside the view; those are
+        # never drawn, so comparing their boxes invents collisions.
+        for axis, kind in ((ax.xaxis, "x"), (ax.yaxis, "y")):
+            lo, hi = sorted(ax.get_xlim() if kind == "x" else ax.get_ylim())
+            locs = axis.get_ticklocs()
+            labs = axis.get_ticklabels()
+            group += [(f"panel{i} {kind}tick {t.get_text()}", t)
+                      for v, t in zip(locs, labs) if lo <= v <= hi]
+        group += [(f"panel{i} text {t.get_text()[:18]}", t) for t in ax.texts]
+        for name, t in group:
+            if t.get_text().strip() and t.get_visible():
+                items.append((name, t.get_window_extent(), None))
+        lg = ax.get_legend()
+        if lg is not None:
+            for t in lg.get_texts():
+                items.append((f"panel{i} legend {t.get_text()[:18]}",
+                              t.get_window_extent(), id(lg)))
+    for t in fig.texts:
+        if t.get_text().strip() and t.get_visible():
+            items.append((f"figure text {t.get_text()[:18]}", t.get_window_extent(), None))
+
+    clashes = []
+    for i in range(len(items)):
+        ni, bi, gi = items[i]
+        for j in range(i + 1, len(items)):
+            nj, bj, gj = items[j]
+            if gi is not None and gi == gj:
+                continue            # rows of one legend are laid out, not colliding
+            if (bi.x0 < bj.x1 - pad and bj.x0 < bi.x1 - pad
+                    and bi.y0 < bj.y1 - pad and bj.y0 < bi.y1 - pad):
+                clashes.append(f"{ni} <-> {nj}")
+    if clashes:
+        raise SystemExit("overlapping labels:\n  " + "\n  ".join(clashes))
+
+
 # --------------------------------------------------------------- figure 1 ----
 def figure1(d, cn):
     tr = d["trajectory"]
     t = np.array(tr["t"])
-    fig, axes = plt.subplots(1, 2, figsize=(WIDTH, 2.1))
+    fig, axes = plt.subplots(1, 2, figsize=(WIDTH, 2.2))
 
     for ax, key, ylab in (
         (axes[0], "S", L("易感比例 $S(t)$", "Susceptible fraction $S(t)$", cn)),
@@ -169,15 +215,15 @@ def figure1(d, cn):
 
 # --------------------------------------------------------------- figure 2 ----
 def figure2(d, cn):
-    fig, axes = plt.subplots(1, 3, figsize=(WIDTH, 2.45))
+    fig, axes = plt.subplots(1, 3, figsize=(WIDTH, 2.35))
 
     # (a) closure residual versus N
     ax = axes[0]
     fs = d["finite_size"]
     N = np.array([r["N"] for r in fs], float)
     for key, col, mk, ls, lab in (
-        ("ebcm", C_EBCM, "o", "-", L("并发型 EBCM", "Concurrent EBCM", cn)),
-        ("mf", C_MF, "s", "--", L("均场闭合", "Mean field", cn)),
+        ("ebcm", C_EBCM, "o", "--", L("并发型 EBCM", "Concurrent EBCM", cn)),
+        ("mf", C_MF, "s", ":", L("均场闭合", "Mean field", cn)),
     ):
         y = np.array([r[key] for r in fs])
         e = np.array([r[key + "_sem"] for r in fs])
@@ -225,19 +271,23 @@ def figure2(d, cn):
             label=L("均场闭合", "Mean field", cn))
     ax.set_xlabel(L("$\\lambda/\\lambda_c$", "$\\lambda/\\lambda_c$", cn))
     ax.set_ylabel(L("终态规模 $R(\\infty)$", "Final size $R(\\infty)$", cn))
-    ax.set_ylim(0, 0.98)
-    # Name the two verticals in the legend. Placing the labels in the axes ran
-    # them into the y-axis on the left and into the data on the right. In a
-    # 1.8 in panel a four-row legend spans the full width whatever its corner,
-    # so the y-limit reserves a blank band above the curves for it to sit in.
-    from matplotlib.lines import Line2D
-    handles, labels = ax.get_legend_handles_labels()
-    handles += [Line2D([], [], color=C_MF, ls=":", lw=0.8),
-                Line2D([], [], color=C_REF, ls="-", lw=0.8)]
-    labels += [L("均场阈值 $\\lambda_c^{\\rm MF}$", "MF threshold $\\lambda_c^{\\rm MF}$", cn),
-               L("真实阈值 $\\lambda_c$", "True threshold $\\lambda_c$", cn)]
-    ax.legend(handles, labels, loc="upper left", handlelength=1.9,
-              labelspacing=0.32, borderpad=0.3)
+    ax.set_ylim(0, 0.78)
+    # Carrying the two verticals in the legend made it five rows deep, which in
+    # a panel this narrow forced a blank band over a quarter of the axes. Name
+    # them in place instead: the labels sit under the top spine and lean away
+    # from each other, so neither the lines nor each other are touched.
+    ax.text(th["lc_mf"] / th["lc"] - 0.03, 0.985, L("$\\lambda_c^{\\rm MF}$", "$\\lambda_c^{\\rm MF}$", cn),
+            transform=ax.get_xaxis_transform(), ha="right", va="top",
+            fontsize=7, color=C_MF)
+    ax.text(1.03, 0.985, L("$\\lambda_c$", "$\\lambda_c$", cn),
+            transform=ax.get_xaxis_transform(), ha="left", va="top",
+            fontsize=7, color="#555555")
+    # Only the simulation needs naming here: the dashed-blue / dotted-orange
+    # encoding is established in (a), and one row is the most this corner holds
+    # -- everything above y ~ 0.35 is data once lambda > 1.5 lambda_c.
+    ax.legend([ax.containers[0]], [L("仿真", "Simulation", cn)],
+              loc="lower right", handlelength=1.0, borderpad=0.2,
+              handletextpad=0.4)
 
     # (c) threshold versus in-out degree correlation
     LCRIO = eq_number("eq:lcrio")
@@ -273,8 +323,9 @@ def main(cn=True, tag="zh"):
     for name, builder in (("fig1_trajectory", figure1), ("fig2_validation", figure2)):
         fig = builder(d, cn)
         finalize_figure(fig)
-        check_legends(fig)
         add_panel_labels(fig, style="nature")
+        check_legends(fig)
+        check_text_overlap(fig)
         base = os.path.join(FIGS, f"{name}_{tag}")
         prev = visual_qa.render_preview(fig, base + "_preview.png", dpi=220)
         issues = visual_qa.audit_layout(fig)

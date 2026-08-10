@@ -109,6 +109,29 @@ def L(zh, en, cn):
     return zh if cn else en
 
 
+
+def check_legends(fig):
+    """Fail if a legend spills outside its axes.
+
+    The layout audit checks glyphs, clipping and tick overlap; it does not
+    notice a legend that has outgrown its panel, which is how a long label
+    silently covers the data.
+    """
+    fig.canvas.draw()
+    bad = []
+    for ax in fig.axes:
+        lg = ax.get_legend()
+        if lg is None:
+            continue
+        lb = lg.get_window_extent()
+        ab = ax.get_window_extent()
+        if (lb.x0 < ab.x0 - 1 or lb.x1 > ab.x1 + 1
+                or lb.y0 < ab.y0 - 1 or lb.y1 > ab.y1 + 1):
+            bad.append(ax.get_ylabel() or ax.get_xlabel() or "axes")
+    if bad:
+        raise SystemExit("legend overflows its axes in: " + "; ".join(bad))
+
+
 # --------------------------------------------------------------- figure 1 ----
 def figure1(d, cn):
     tr = d["trajectory"]
@@ -233,7 +256,7 @@ def figure2(d, cn):
             label=L(f"式 ({LCRIO})", f"Eq. ({LCRIO})", cn))
     ax.errorbar(x, y, xerr=xe, yerr=ye, color=C_SIM, marker="D", ls="none",
                 capsize=1.8, elinewidth=0.6, capthick=0.6, zorder=5,
-                label=L("位形模型实现", "Configuration-model realisations", cn))
+                label=L("位形模型实现", "Realisations", cn))
     ax.set_xlabel(L("入出度相关 $r_{io}$",
                     "In-out degree correlation $r_{io}$", cn))
     ax.set_ylabel(L("爆发阈值 $\\lambda_c$", "Epidemic threshold $\\lambda_c$", cn))
@@ -250,6 +273,7 @@ def main(cn=True, tag="zh"):
     for name, builder in (("fig1_trajectory", figure1), ("fig2_validation", figure2)):
         fig = builder(d, cn)
         finalize_figure(fig)
+        check_legends(fig)
         add_panel_labels(fig, style="nature")
         base = os.path.join(FIGS, f"{name}_{tag}")
         prev = visual_qa.render_preview(fig, base + "_preview.png", dpi=220)
@@ -263,6 +287,7 @@ def main(cn=True, tag="zh"):
 
 
 if __name__ == "__main__":
-    # One set of files. Pass cn=False for the English submission version; the
-    # labels are the only thing that changes.
-    main(cn=True, tag="zh")
+    # One set of files, English-labelled: journal figures carry English labels
+    # even when the manuscript is drafted in Chinese. main(cn=True, tag="zh")
+    # regenerates the Chinese-labelled variant; nothing but the labels changes.
+    main(cn=False, tag="en")

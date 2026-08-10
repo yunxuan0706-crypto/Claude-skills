@@ -31,9 +31,44 @@ import numpy as np
 
 SKILL = "/root/.claude/skills/scipilot-figure-skill/scripts"
 sys.path.insert(0, SKILL)
-from export_figure import export_figure          # noqa: E402
-from layout_tools import add_panel_labels, finalize_figure   # noqa: E402
-import visual_qa                                  # noqa: E402
+try:
+    from export_figure import export_figure          # noqa: E402
+    from layout_tools import add_panel_labels, finalize_figure   # noqa: E402
+    import visual_qa                                  # noqa: E402
+except ImportError:                                   # standalone fallback
+    # The helpers above live in a local plotting skill. Everything this figure
+    # depends on for correctness -- the data, the styling, and the checks below
+    # -- is in this file, so degrade to plain matplotlib rather than refuse to
+    # run for anyone who does not have that skill installed.
+    print("[note] plotting helpers not found; using plain matplotlib")
+
+    def finalize_figure(fig):
+        fig.tight_layout()
+
+    def add_panel_labels(fig, style=None):
+        for ax, lab in zip(fig.axes, "abcdefgh"):
+            ax.text(-0.02, 1.06, lab, transform=ax.transAxes,
+                    fontweight="bold", fontsize=9, ha="right", va="bottom")
+
+    def export_figure(fig, base, formats=("pdf", "png"), dpi=600,
+                      grayscale_preview=False):
+        for ext in formats:
+            fig.savefig(f"{base}.{ext}", dpi=dpi, bbox_inches="tight")
+            print(f"wrote {base}.{ext}")
+
+    class visual_qa:                                  # noqa: N801
+        @staticmethod
+        def render_preview(fig, path, dpi=220):
+            fig.savefig(path, dpi=dpi, bbox_inches="tight")
+            return path
+
+        @staticmethod
+        def audit_layout(fig):
+            return []
+
+        @staticmethod
+        def print_report(issues):
+            return "  [skipped] layout audit needs the plotting skill"
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 DATA = os.path.join(HERE, "..", "data", "section3.json")

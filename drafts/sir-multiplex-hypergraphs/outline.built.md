@@ -23,14 +23,13 @@
    激活门槛不同**。
 2. **已有工具恰好绕开这个交叉点。**
    - 成对多层已解决：SIR 映射到多层键渗流，阈值解析可得，且强烈依赖层间度相关
-     \cite{bianconi2017multilayer}；多渠道传播的成对版 \cite{zhao2014routes}；
-     EBCM 也已上过双层 multiplex，但两层都是成对的 \cite{barnard2018ebcm}。
+     [2]；多渠道传播的成对版 [7]；
+     EBCM 也已上过双层 multiplex，但两层都是成对的 [1]。
    - 高阶单层已解决：群体传播的阈值、爆炸相变、重叠效应；精度最高的可解闭合是
-     群体近似主方程 \cite{stonge2021ame}。
+     群体近似主方程 [4]。
    - 高阶多层只做了两个角落：**只做渗流不做动力学**
-     \cite{sunbianconi2021multiplexhg}；或**做动力学但层的角色不同且用均场**
-     （信息层＋接触层，微观 Markov 链）\cite{fan2022multilayersimplicial,
-     wan2022multilayerho}。
+     [5]；或**做动力学但层的角色不同且用均场**
+     （信息层＋接触层，微观 Markov 链）[3, 6]。
 3. **技术困难。** 三重并发要处理：一个节点同时暴露于多层、每层多个群体、
    每个群体内多个成员共享一个激活时钟。更麻烦的是**无向群体的成员互为源与靶**，
    同群成员的状态相关，不能当作独立。
@@ -177,7 +176,7 @@ $$
 必须写的退化检验：
 - $M=1$：回到单层超图 SIR 的已知阈值。
 - $m_a=2$（全部层成对）：回到多层网络 SIR 的已知阈值
-  \cite{bianconi2017multilayer}。
+  [2]。
 - $M=1,m=2$：回到 $\langle k\rangle/(\langle k^2\rangle-\langle k\rangle)$。
 
 **$M=2$ 的闭式**：$\rho=\tfrac12\bigl[M_{11}+M_{22}+\sqrt{(M_{11}-M_{22})^2+4M_{12}M_{21}}\bigr]=1$
@@ -290,3 +289,15 @@ $M=2$、$m_1\neq m_2$ 的完整 $S(t),I(t)$：仿真 vs AME vs 度均场。
 | 构建工具链（编号、docx） | 直接可用 |
 
 **不能复用**：(H2) 尾内无相互作用；"没有余度相减"的论证；"树极限下精确"的措辞。
+
+---
+
+## 参考文献
+
+1. R. C. Barnard, I. Z. Kiss, L. Berthouze, and J. C. Miller, *Edge-Based Compartmental Modelling of an SIR Epidemic on a Dual-Layer Static–Dynamic Multiplex Network with Tunable Clustering*, Bulletin of Mathematical Biology, 80 (2018), pp. 2698–2733, https://doi.org/10.1007/s11538-018-0484-5.
+2. G. Bianconi, *Epidemic spreading and bond percolation on multilayer networks*, Journal of Statistical Mechanics: Theory and Experiment, 2017 (2017), p. 034001, https://doi.org/10.1088/1742-5468/aa5fd8.
+3. J. Fan, Q. Yin, C. Xia, and M. Perc, *Epidemics on multilayer simplicial complexes*, Proceedings of the Royal Society A: Mathematical, Physical and Engineering Sciences, 478 (2022), https://doi.org/10.1098/rspa.2022.0059.
+4. G. St-Onge, V. Thibeault, A. Allard, L. J. Dubé, and L. Hébert-Dufresne, *Master equation analysis of mesoscopic localization in contagion dynamics on higher-order networks*, Physical Review E, 103 (2021), https://doi.org/10.1103/physreve.103.032301.
+5. H. Sun and G. Bianconi, *Higher-order percolation processes on multiplex hypergraphs*, Physical Review E, 104 (2021), https://doi.org/10.1103/physreve.104.034306.
+6. J. Wan, G. Ichinose, M. Small, H. Sayama, Y. Moreno, and C. Cheng, *Multilayer networks with higher-order interaction reveal the impact of collective behavior on epidemic dynamics*, Chaos, Solitons &amp; Fractals, 164 (2022), p. 112735, https://doi.org/10.1016/j.chaos.2022.112735.
+7. D. Zhao, L. Li, H. Peng, Q. Luo, and Y. Yang, *Multiple routes transmitted epidemics on multiplex networks*, Physics Letters A, 378 (2014), pp. 770–776, https://doi.org/10.1016/j.physleta.2014.01.014.

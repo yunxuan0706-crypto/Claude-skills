@@ -216,7 +216,7 @@ if __name__ == "__main__":
     betas = [lam, lam]; eps, tmax, dt = 0.02, 12.0, 0.005
     cl = Closure(P, ms, betas)
     ode, _ = cl.run(eps, tmax, dt)
-    ode = {round(t, 6): s for t, s in ode}
+    ode = {round(t, 6): s for t, s, _ in ode}
     print(f"closure vs exact simulation   lambda={lam}, m=({ms[0]},{ms[1]}), eps={eps}")
     print(f"{'N':>7} {'runs':>5} {'mean |dS| over t<=12':>22} {'max |dS|':>10}")
     for N0, runs in ((500, 400), (1000, 300), (2000, 200), (4000, 120)):
@@ -226,7 +226,7 @@ if __name__ == "__main__":
             N, layers = build(P, ms, N0, random.Random(1000 + N0*13 + r))
             tr = gillespie(N, layers, betas, tmax, 0.25, eps, rng)
             if acc is None: acc = [0.0]*len(tr)
-            for j, (_, s) in enumerate(tr): acc[j] += s
+            for j, x in enumerate(tr): acc[j] += x[1]
             cnt += 1
         sim = [(j*0.25, acc[j]/cnt) for j in range(len(acc))]
         d = [abs(s - ode[round(t, 6)]) for t, s in sim if t <= tmax]

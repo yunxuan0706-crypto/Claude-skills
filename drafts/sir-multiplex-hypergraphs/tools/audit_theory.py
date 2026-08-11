@@ -60,42 +60,43 @@ def bp_threshold(P, ms, thetas, w):
         else: lo = mid
     return .5*(lo+hi)
 
-CASES = [
-    ("anti-correlated degrees", {(2, 4): .5, (4, 2): .5}, (3, 4), (1.0, 1.0), (1, 1)),
-    ("asymmetric rates+sizes",  {(2, 2): .5, (4, 4): .5}, (3, 5), (1.0, 0.4), (1, 1)),
-    ("theta = (1,2)",           {(2, 2): .5, (3, 3): .5}, (3, 4), (1.0, 1.0), (1, 2)),
-    ("three layers",            {(2, 2, 2): .5, (3, 1, 2): .5}, (3, 4, 2), (1.0, .7, 1.3), (1, 1, 1)),
-]
+if __name__ == "__main__":
+    CASES = [
+        ("anti-correlated degrees", {(2, 4): .5, (4, 2): .5}, (3, 4), (1.0, 1.0), (1, 1)),
+        ("asymmetric rates+sizes",  {(2, 2): .5, (4, 4): .5}, (3, 5), (1.0, 0.4), (1, 1)),
+        ("theta = (1,2)",           {(2, 2): .5, (3, 3): .5}, (3, 4), (1.0, 1.0), (1, 2)),
+        ("three layers",            {(2, 2, 2): .5, (3, 1, 2): .5}, (3, 4, 2), (1.0, .7, 1.3), (1, 1, 1)),
+    ]
 
-print("A. nonlinear closure threshold  vs  rho(N)=1")
-print(f"{'case':26s} {'ODE final-size':>15s} {'rho(N)=1':>10s} {'rel':>9s}")
-for name, P, ms, w, th in CASES:
-    a = ode_threshold(P, ms, th, w); b = bp_threshold(P, ms, th, w)
-    rel = abs(a-b)/b if b > 0 and a == a else float('nan')
-    print(f"{name:26s} {a:15.5f} {b:10.5f} {rel:9.1e}")
+    print("A. nonlinear closure threshold  vs  rho(N)=1")
+    print(f"{'case':26s} {'ODE final-size':>15s} {'rho(N)=1':>10s} {'rel':>9s}")
+    for name, P, ms, w, th in CASES:
+        a = ode_threshold(P, ms, th, w); b = bp_threshold(P, ms, th, w)
+        rel = abs(a-b)/b if b > 0 and a == a else float('nan')
+        print(f"{name:26s} {a:15.5f} {b:10.5f} {rel:9.1e}")
 
-print("\nB. full nonlinear closure vs exact simulation (N = 4000, 300 runs)")
-print(f"{'case':26s} {'mean |dS|':>10s} {'noise':>9s} {'verdict':>10s}")
-for name, P, ms, w, th in CASES:
-    lam = 1.6*bp_threshold(P, ms, th, w)
-    if not (lam == lam) or lam > 3: 
-        print(f"{name:26s} {'--- no finite threshold ---':>32s}"); continue
-    betas = [lam*wa for wa in w]
-    eps, tmax, gdt, N0, runs = 0.02, 12.0, 0.5, 4000, 300
-    cl = Closure(P, ms, betas, th)
-    ode, _ = cl.run(eps, tmax, 0.005)
-    odeS = {round(t, 6): s for t, s in ode}
-    grid = [round(j*gdt, 6) for j in range(int(tmax/gdt)+1)]
-    rng = random.Random(99)
-    per = []
-    for r in range(runs):
-        N, layers = build(P, ms, N0, random.Random(5150+r))
-        tr = gillespie(N, layers, betas, tmax, gdt, eps, rng, list(th))
-        per.append([s for _, s in tr][:len(grid)])
-    n = len(per)
-    mean = [sum(p[j] for p in per)/n for j in range(len(grid))]
-    var = [sum((p[j]-mean[j])**2 for p in per)/(n-1) for j in range(len(grid))]
-    sem = [math.sqrt(v/n) for v in var]
-    dev = sum(abs(mean[j]-odeS[grid[j]]) for j in range(len(grid)))/len(grid)
-    floor = sum(sem)/len(sem)*math.sqrt(2/math.pi)
-    print(f"{name:26s} {dev:10.5f} {floor:9.5f} {'OK' if dev < 3*floor else 'CHECK':>10s}")
+    print("\nB. full nonlinear closure vs exact simulation (N = 4000, 300 runs)")
+    print(f"{'case':26s} {'mean |dS|':>10s} {'noise':>9s} {'verdict':>10s}")
+    for name, P, ms, w, th in CASES:
+        lam = 1.6*bp_threshold(P, ms, th, w)
+        if not (lam == lam) or lam > 3: 
+            print(f"{name:26s} {'--- no finite threshold ---':>32s}"); continue
+        betas = [lam*wa for wa in w]
+        eps, tmax, gdt, N0, runs = 0.02, 12.0, 0.5, 4000, 300
+        cl = Closure(P, ms, betas, th)
+        ode, _ = cl.run(eps, tmax, 0.005)
+        odeS = {round(t, 6): s for t, s, _ in ode}
+        grid = [round(j*gdt, 6) for j in range(int(tmax/gdt)+1)]
+        rng = random.Random(99)
+        per = []
+        for r in range(runs):
+            N, layers = build(P, ms, N0, random.Random(5150+r))
+            tr = gillespie(N, layers, betas, tmax, gdt, eps, rng, list(th))
+            per.append([x[1] for x in tr][:len(grid)])
+        n = len(per)
+        mean = [sum(p[j] for p in per)/n for j in range(len(grid))]
+        var = [sum((p[j]-mean[j])**2 for p in per)/(n-1) for j in range(len(grid))]
+        sem = [math.sqrt(v/n) for v in var]
+        dev = sum(abs(mean[j]-odeS[grid[j]]) for j in range(len(grid)))/len(grid)
+        floor = sum(sem)/len(sem)*math.sqrt(2/math.pi)
+        print(f"{name:26s} {dev:10.5f} {floor:9.5f} {'OK' if dev < 3*floor else 'CHECK':>10s}")

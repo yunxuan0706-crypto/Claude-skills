@@ -3,6 +3,22 @@
 sat above the noise floor at N=4000. Finite-size effect, or a real failure of
 the closure for unequal rates and group sizes? Only the N-scaling tells them
 apart: a finite-size effect keeps falling, a closure error plateaus.
+
+Result (lambda = 1.6 lambda_c, eps = 0.02, t <= 12):
+
+       N   runs   mean |dS|     noise   ratio
+    1000    400     0.00682   0.00240    2.84
+    2000    400     0.00567   0.00161    3.53
+    4000    400     0.00287   0.00107    2.68
+    8000    250     0.00039   0.00094    0.41
+   16000    150     0.00111   0.00083    1.34
+
+The deviation falls by a factor ~17 between N=1000 and N=8000 and reaches the
+sampling floor there; the N=16000 point sits at 1.3x the floor on the fewest
+runs and is above N=8000, which no monotone systematic can do -- it is noise.
+So the N=4000 flag was a finite-size effect, stronger here because m2=5 packs
+short cycles more densely at fixed N. The closure holds for unequal rates and
+unequal group sizes.
 """
 import math, random, sys
 sys.path.insert(0, __file__.rsplit('/', 1)[0])

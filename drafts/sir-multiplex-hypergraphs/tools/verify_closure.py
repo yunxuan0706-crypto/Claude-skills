@@ -40,9 +40,10 @@ def build(P, ms, N, rng):
     return N, layers
 
 # ------------------------------------------------------------ Gillespie ----
-def gillespie(N, layers, betas, tmax, dt, eps, rng):
-    """Exact CTMC sampling; mu = 1. theta = 1 for every layer."""
+def gillespie(N, layers, betas, tmax, dt, eps, rng, thetas=None):
+    """Exact CTMC sampling; mu = 1, per-layer group threshold theta_a."""
     S, I, R = 0, 1, 2
+    if thetas is None: thetas = [1]*len(layers)
     state = [S]*N
     ginfo, of = [], [[] for _ in range(N)]          # groups, and each node's groups
     for a, gs in enumerate(layers):
@@ -55,7 +56,7 @@ def gillespie(N, layers, betas, tmax, dt, eps, rng):
     pos = {}
     def bkey(gid):
         a, g, s, i = ginfo[gid]
-        return (a, s) if (i >= 1 and s >= 1) else None
+        return (a, s) if (i >= thetas[a] and s >= 1) else None
     def brefresh(gid, old):
         new = bkey(gid)
         if old == new: return
@@ -108,8 +109,9 @@ def gillespie(N, layers, betas, tmax, dt, eps, rng):
 
 # ---------------------------------------------------------------- closure --
 class Closure:
-    def __init__(self, P, ms, betas):
+    def __init__(self, P, ms, betas, thetas=None):
         self.P, self.ms, self.betas, self.M = P, ms, betas, len(ms)
+        self.th = thetas or [1]*len(ms)
         self.kbar = [sum(p*k[a] for k, p in P.items()) for a in range(self.M)]
         self.st = [[(s, i, m-1-s-i) for s in range(m) for i in range(m-s)] for m in ms]
         self.ix = [{v: j for j, v in enumerate(S)} for S in self.st]
@@ -133,7 +135,7 @@ class Closure:
         M = self.M; n = self.off[-1]
         x, Rv = y[:n], y[n]
         Phi = [sum(x[self.off[a]:self.off[a+1]]) for a in range(M)]
-        PhiA = [sum(x[self.off[a]+j] for j, (s, i, r) in enumerate(self.st[a]) if i >= 1)
+        PhiA = [sum(x[self.off[a]+j] for j, (s, i, r) in enumerate(self.st[a]) if i >= self.th[a])
                 for a in range(M)]
         h = []
         for a in range(M):
@@ -145,13 +147,14 @@ class Closure:
             for (s, i, r), j in ix.items():
                 v = x[self.off[a]+j]
                 if v == 0.0: continue
-                rate = (h[a] + (b if i >= 1 else 0.0))*s
+                rate = (h[a] + (b if i >= self.th[a] else 0.0))*s
                 if rate:
                     o[self.off[a]+j] -= rate*v
                     o[self.off[a]+ix[(s-1, i+1, r)]] += rate*v
                 if i:
                     o[self.off[a]+j] -= i*v
                     o[self.off[a]+ix[(s, i-1, r+1)]] += i*v
+                if i >= self.th[a]:
                     o[self.off[a]+j] -= b*v
         Sv = (1-self.eps)*self.Psi(Phi)
         o[n] = 1.0*(1.0 - Sv - Rv)                    # dR/dt = mu I
@@ -194,7 +197,7 @@ class Closure:
         worst_sum = 0.0
         for a in range(self.M):
             dsum = sum(f[self.off[a]:self.off[a+1]])
-            PhiA = sum(y[self.off[a]+j] for j, (s, i, r) in enumerate(self.st[a]) if i >= 1)
+            PhiA = sum(y[self.off[a]+j] for j, (s, i, r) in enumerate(self.st[a]) if i >= self.th[a])
             worst_sum = max(worst_sum, abs(dsum + self.betas[a]*PhiA))
         return worst_id, worst_sum
 

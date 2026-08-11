@@ -22,7 +22,7 @@ const UNRESOLVED = new Map();
 const SYM = {
   "\\phi": "\u03c6", "\\alpha": "\u03b1", "\\tau": "\u03c4", "\\eta": "\u03b7",
   "\\mu": "\u03bc", "\\theta": "\u03b8", "\\lambda": "\u03bb", "\\beta": "\u03b2",
-  "\\sigma": "\u03c3", "\\rho": "\u03c1", "\\Delta": "\u0394", "\\varnothing": "\u2205", "\\square": "\u25a1",
+  "\\sigma": "\u03c3", "\\rho": "\u03c1", "\\Delta": "\u0394", "\\varnothing": "\u2205", "\\square": "\u25a1", "\\Rightarrow": "\u21d2",
   "\\to": "\u2192", "\\ge": "\u2265", "\\le": "\u2264", "\\geq": "\u2265", "\\leq": "\u2264",
   "\\in": "\u2208", "\\neq": "\u2260", "\\cap": "\u2229", "\\cup": "\u222a",
   "\\rightrightarrows": "\u21c9", "\\rightleftarrows": "\u21c4",
@@ -55,7 +55,8 @@ const STRUCTURAL = new Set([
   "frac", "tfrac", "dfrac", "binom", "bar", "overline", "dot", "boxed",
   "Bigl", "Bigr", "Bigm", "bigl", "bigr", "bigm", "Big", "big", "left", "right",
   "qquad", "quad", "text", "textrm", "textit", "textbf", "mathcal", "mathbb",
-  "mathrm", "mathbf", "mathsf", "operatorname", "begin", "end", "label",
+  "mathrm", "mathbf", "mathsf", "boldsymbol", "widetilde", "operatorname",
+  "begin", "end", "label",
   "eqref", "cite", "hline", "rm",
 ]);
 
@@ -89,7 +90,8 @@ function linearize(s) {
   o = o.replace(/\\mathcal\s*\{([^{}]*)\}/g, "$1");
   const BB = { P: "\u2119", R: "\u211d", N: "\u2115", Z: "\u2124", Q: "\u211a", C: "\u2102" };
   o = o.replace(/\\mathbb\s*\{([^{}]*)\}/g, (_, x) => BB[x] || x);
-  o = o.replace(/\\(?:mathrm|mathbf|mathsf|operatorname)\s*\{([^{}]*)\}/g, "$1");
+  o = o.replace(/\\(?:mathrm|mathbf|mathsf|boldsymbol|operatorname)\s*\{([^{}]*)\}/g, "$1");
+  o = o.replace(/\\widetilde\s*\{?([A-Za-z])\}?/g, "$1\u0303");
   o = o.replace(/\\#/g, "#").replace(/\\%/g, "%").replace(/\\&/g, "&");
   o = o.replace(/\\\\/g, "  ");
   // Anything still carrying a backslash would be silently degraded to a bare

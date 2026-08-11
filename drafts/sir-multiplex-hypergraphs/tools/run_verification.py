@@ -40,16 +40,8 @@ def jacobian_threshold(P, ms, w, th):
             xp = list(x0); xp[j] += h
             fp = cl.rhs(xp)
             for q in range(n): J[q][j] = (fp[q]-f0[q])/h
-        # power iteration on (J + cI) to get the dominant eigenvalue's real part
-        c = 50.0
-        v = [1.0/math.sqrt(n)]*n
-        lam_est = 0.0
-        for _ in range(4000):
-            w2 = [sum(J[q][j]*v[j] for j in range(n)) + c*v[q] for q in range(n)]
-            nv = math.sqrt(sum(t*t for t in w2))
-            if nv == 0: return -c
-            v = [t/nv for t in w2]; lam_est = nv
-        return lam_est - c
+        import numpy as _np
+        return max(_np.linalg.eigvals(_np.array(J)).real)
     lo, hi = 1e-4, 6.0
     for _ in range(60):
         m = .5*(lo+hi)
@@ -152,13 +144,20 @@ res["trajectory"] = {"N": 6000, "runs": n, "t": grid,
 print(f"    trajectory done (N=6000, {n} runs, lambda={lam:.4f}, lambda_c={lc:.4f})")
 
 rows = []
-for N0, runs in ((500, 400), (1000, 400), (2000, 400), (4000, 400), (8000, 250)):
+for N0, runs in ((500, 600), (1000, 600), (2000, 800), (4000, 800), (8000, 500)):
     mS, seS, _, _, n = simulate(N0, runs, 1200+N0)
     dcl = sum(abs(mS[j]-clD[grid[j]][0]) for j in range(len(grid)))/len(grid)
     dmf = sum(abs(mS[j]-mfD[grid[j]][0]) for j in range(len(grid)))/len(grid)
     floor = sum(seS)/len(seS)*math.sqrt(2/math.pi)
-    rows.append({"N": N0, "runs": n, "closure": dcl, "meanfield": dmf, "noise": floor})
-    print(f"    N={N0:5d} runs={n:4d}  closure {dcl:.5f}  mean field {dmf:.5f}  noise {floor:.5f}")
+    # RMS deviation with the sampling variance removed in quadrature
+    def corrected(ref):
+        m2 = sum((mS[j]-ref[grid[j]][0])**2 for j in range(len(grid)))/len(grid)
+        v2 = sum(seS[j]**2 for j in range(len(grid)))/len(grid)
+        return math.sqrt(max(m2-v2, 0.0))
+    rows.append({"N": N0, "runs": n, "closure": dcl, "meanfield": dmf, "noise": floor,
+                 "closure_corr": corrected(clD), "meanfield_corr": corrected(mfD)})
+    print(f"    N={N0:5d} runs={n:4d}  closure {dcl:.5f} (corr {corrected(clD):.5f})"
+          f"  mean field {dmf:.5f}  noise {floor:.5f}")
 res["scaling"] = rows
 
 os.makedirs(os.path.dirname(OUT), exist_ok=True)

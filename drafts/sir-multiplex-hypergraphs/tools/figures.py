@@ -203,7 +203,7 @@ def figure1(d):
 
 # ------------------------------------------------------------- figure 2 ----
 def figure2(d):
-    fig, axes = plt.subplots(1, 3, figsize=(WIDTH, 2.05))
+    fig, axes = plt.subplots(1, 3, figsize=(7.5, 2.7))
 
     # (a) how the two closures' errors scale with N
     ax = axes[0]
@@ -234,35 +234,31 @@ def figure2(d):
     ax = axes[1]
     ca = d["cascade"]
     lams = sorted({r["lam"] for r in ca})
-    # A distinct sequential palette for lambda -- black/blue/orange are already
-    # spoken for elsewhere (simulation / closure / mean field), so reusing them
-    # here would mean the same colour carries two meanings across panels. Purples,
-    # light to dark, read as an ordered quantity and clash with nothing.
-    C_LAM = ["#C6A9D6", "#8C5AA8", "#4A1D6E"]
+    # Three plainly different, colour-vision-safe hues -- not a gradient, and not
+    # the black/blue/orange spoken for in panel (a). Colour encodes lambda; the
+    # legend names both the colours and the three line styles in one place.
+    C_LAM = ["#009E73", "#CC79A7", "#E69F00"]   # green, purple, amber
     for lam, col in zip(lams, C_LAM):
         rs = sorted([r for r in ca if r["lam"] == lam], key=lambda r: r["m"])
         if len(rs) < 2: continue
         m = [r["m"] for r in rs]
-        ax.plot(m, [r["recursion"] for r in rs], color=col, lw=1.0)
+        ax.plot(m, [r["recursion"] for r in rs], color=col, lw=1.2)
         ax.errorbar(m, [r["mc"] for r in rs], yerr=[2*r["mc_se"] for r in rs],
-                    color=col, marker="o", ls="none", ms=3, capsize=1.6,
+                    color=col, marker="o", ls="none", ms=3.2, capsize=1.6,
                     elinewidth=0.6)
-        ax.plot(m, [r["naive"] for r in rs], color=col, ls=":", lw=0.8)
-        # colour encodes lambda; name it at the end of each recursion curve
-        ax.annotate(f"$\\lambda={lam:g}$", (m[-1], rs[-1]["recursion"]),
-                    xytext=(3, 1), textcoords="offset points", color=col,
-                    fontsize=6, ha="left", va="bottom")
-    ax.set_xlim(1.9, 6.7)
+        ax.plot(m, [r["naive"] for r in rs], color=col, ls=":", lw=0.9)
+    ax.set_xlim(1.85, 6.15)
     ax.set_xlabel("Group size $m$")
     ax.set_ylabel("Cascade size $C$")
     ax.set_xticks([2, 3, 4, 5, 6])
     from matplotlib.lines import Line2D
-    ax.legend([Line2D([], [], color=C_REF, lw=1.0),
-               Line2D([], [], color=C_REF, marker="o", ls="none", ms=3),
-               Line2D([], [], color=C_REF, ls=":", lw=0.8)],
-              ["Recursion", "Monte Carlo", "$(m-1)T$"],
-              loc="upper left", handlelength=1.5, labelspacing=0.25,
-              borderpad=0.25, fontsize=6)
+    handles = [Line2D([], [], color=c, lw=1.2) for c in C_LAM] + [
+        Line2D([], [], color=C_REF, marker="o", ls="none", ms=3.2),
+        Line2D([], [], color=C_REF, ls=":", lw=0.9)]
+    labels = [f"$\\lambda={l:g}$ (recursion)" for l in lams] + [
+        "Monte Carlo", "$(m-1)T$"]
+    ax.legend(handles, labels, loc="upper left", handlelength=1.5,
+              labelspacing=0.28, borderpad=0.3, fontsize=6)
 
     # (c) two independent routes to the threshold
     ax = axes[2]

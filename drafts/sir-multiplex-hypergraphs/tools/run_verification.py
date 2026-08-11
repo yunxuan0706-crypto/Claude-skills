@@ -94,8 +94,9 @@ def C_mc(m, lam, theta=1, trials=400000, seed=3):
         tot += new
     return tot/trials
 rows = []
-for m, lam in ((2, 1.0), (3, 0.5), (3, 1.0), (4, 0.5), (4, 1.0), (5, 2.0), (6, 0.8)):
-    a = C(m, lam); b = C_mc(m, lam)
+for lam in (0.5, 1.0, 2.0):
+  for m in (2, 3, 4, 5, 6):
+    a = C(m, lam); b = C_mc(m, lam, seed=3+m+int(10*lam))
     se = math.sqrt(max(b, 1e-9)/400000)*2
     rows.append({"m": m, "lam": lam, "recursion": a, "mc": b, "mc_se": se,
                  "naive": (m-1)*lam/(1+lam)})

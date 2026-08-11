@@ -96,10 +96,12 @@ def check_text_overlap(fig, pad=0.5):
         # never drawn, so comparing their boxes invents collisions.
         for axis, kind in ((ax.xaxis, "x"), (ax.yaxis, "y")):
             lo, hi = sorted(ax.get_xlim() if kind == "x" else ax.get_ylim())
-            locs = axis.get_ticklocs()
-            labs = axis.get_ticklabels()
-            group += [(f"panel{i} {kind}tick {t.get_text()}", t)
-                      for v, t in zip(locs, labs) if lo <= v <= hi]
+            for minor in (False, True):
+                locs = axis.get_ticklocs(minor=minor)
+                labs = axis.get_ticklabels(minor=minor)
+                tag = f"{kind}tick" + ("(minor)" if minor else "")
+                group += [(f"panel{i} {tag} {t.get_text()}", t)
+                          for v, t in zip(locs, labs) if lo <= v <= hi]
         group += [(f"panel{i} text {t.get_text()[:18]}", t) for t in ax.texts]
         for name, t in group:
             if t.get_text().strip() and t.get_visible():
@@ -258,6 +260,12 @@ def figure2(d):
             label="6 configurations")
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xlim(lo, hi); ax.set_ylim(lo, hi)
+    ticks = [0.05, 0.1, 0.2, 0.4]
+    for axis in (ax.xaxis, ax.yaxis):
+        axis.set_major_locator(matplotlib.ticker.FixedLocator(ticks))
+        axis.set_major_formatter(matplotlib.ticker.FixedFormatter(
+            ["0.05", "0.1", "0.2", "0.4"]))
+        axis.set_minor_locator(matplotlib.ticker.NullLocator())
     ax.set_xlabel("$\\lambda_c$ from $\\rho(\\mathsf{N})=1$")
     ax.set_ylabel("$\\lambda_c$ from Jacobian")
     worst = max(r["rel"] for r in tc)

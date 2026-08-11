@@ -76,7 +76,7 @@ def gillespie(N, layers, betas, tmax, dt, eps, rng, thetas=None):
     t, out, nxt = 0.0, [], 0.0
     while t < tmax:
         while nxt <= t and nxt <= tmax:
-            out.append((nxt, state.count(S)/N)); nxt += dt
+            out.append((nxt, state.count(S)/N, len(inf)/N)); nxt += dt
         W = sum(betas[a]*s*len(l) for (a, s), l in buckets.items() if l)
         Rr = float(len(inf))
         tot = W + Rr
@@ -104,7 +104,7 @@ def gillespie(N, layers, betas, tmax, dt, eps, rng, thetas=None):
             for gid in of[v]:
                 old = bkey(gid); ginfo[gid][3] -= 1; brefresh(gid, old)
     while nxt <= tmax:
-        out.append((nxt, state.count(S)/N)); nxt += dt
+        out.append((nxt, state.count(S)/N, len(inf)/N)); nxt += dt
     return out
 
 # ---------------------------------------------------------------- closure --
@@ -181,7 +181,7 @@ class Closure:
         nsteps = int(round(tmax/dt))
         for k in range(nsteps+1):
             Phi = [sum(y[self.off[a]:self.off[a+1]]) for a in range(self.M)]
-            out.append((t, (1-eps)*self.Psi(Phi)))
+            Sv=(1-eps)*self.Psi(Phi); out.append((t, Sv, 1.0-Sv-y[-1]))
             k1 = self.rhs(y)
             k2 = self.rhs([y[i]+.5*dt*k1[i] for i in range(len(y))])
             k3 = self.rhs([y[i]+.5*dt*k2[i] for i in range(len(y))])

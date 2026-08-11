@@ -5,6 +5,21 @@ rho(N)=1 an integration-window artefact?
 Near threshold the growth rate vanishes, so a finite t_max fails to see growth
 and biases the measured threshold upward -- which is the observed sign. If that
 is the whole story the gap must fall monotonically with t_max.
+
+Result (anti-correlated degrees, m=(3,4), dt=0.05; prediction 0.082308):
+
+    t_max   ODE threshold   rel. deviation
+      100        0.092026         1.18e-01
+      200        0.086845         5.51e-02
+      400        0.084416         2.56e-02
+      800        0.083283         1.18e-02
+     1600        0.082757         5.45e-03
+
+Every doubling of t_max halves the deviation (ratios 2.14/2.15/2.17/2.17), i.e.
+it decays as 1/t_max; Richardson extrapolation gives 0.082231 against the
+predicted 0.082308, a relative difference of 9e-4. The 2.5% seen across all four
+audit configurations is exactly the t_max=400 point -- an integration-window
+artefact, not a defect in the theory.
 """
 import sys
 sys.path.insert(0, __file__.rsplit('/', 1)[0])

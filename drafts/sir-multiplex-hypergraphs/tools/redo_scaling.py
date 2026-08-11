@@ -15,6 +15,17 @@ from verify_closure import build, gillespie, Closure
 from meanfield import MeanField
 from audit_theory import Nmat, rho
 
+def merge_write(path, key, value):
+    """Re-read, replace one key, write. A long-running job must not write back
+    the copy of the file it loaded at startup: another script may have updated
+    a different block in the meantime, and a whole-dict write silently reverts
+    it. This happened once -- the cascade block was reverted to a superseded
+    version by a scaling job that had started earlier."""
+    import json as _j
+    cur = _j.load(open(path))
+    cur[key] = value
+    _j.dump(cur, open(path, "w"), indent=1)
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 F = os.path.join(HERE, "..", "data", "verification.json")
 d = json.load(open(F))
@@ -65,6 +76,5 @@ for N0, runs in ((500, 600), (1000, 600), (2000, 800), (4000, 800), (8000, 500))
                  "noise": floor})
     print(f"{N0:>7} {n:>5}   {dcl:.5f} [{lcl:.5f},{ucl:.5f}]   {dmf:.5f} [{lmf:.5f},{umf:.5f}]")
 
-d["scaling"] = rows
-json.dump(d, open(F, "w"), indent=1)
+merge_write(F, "scaling", rows)
 print("updated", F)

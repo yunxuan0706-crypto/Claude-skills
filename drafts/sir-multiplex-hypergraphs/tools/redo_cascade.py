@@ -9,6 +9,17 @@ import json, math, os, random, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from audit_theory import C
 
+def merge_write(path, key, value):
+    """Re-read, replace one key, write. A long-running job must not write back
+    the copy of the file it loaded at startup: another script may have updated
+    a different block in the meantime, and a whole-dict write silently reverts
+    it. This happened once -- the cascade block was reverted to a superseded
+    version by a scaling job that had started earlier."""
+    import json as _j
+    cur = _j.load(open(path))
+    cur[key] = value
+    _j.dump(cur, open(path, "w"), indent=1)
+
 HERE = os.path.dirname(os.path.abspath(__file__))
 F = os.path.join(HERE, "..", "data", "verification.json")
 
@@ -52,6 +63,5 @@ for lam in (0.5, 1.0, 2.0):
                      "naive": (m-1)*lam/(1+lam)})
         print(f"  m={m} lam={lam}: rec {a:.5f}  MC {b:.5f}+-{se:.5f}"
               f"  (m-1)T {(m-1)*lam/(1+lam):.5f}  gain {a/((m-1)*lam/(1+lam)):.3f}")
-d["cascade"] = rows
-json.dump(d, open(F, "w"), indent=1)
+merge_write(F, "cascade", rows)
 print("updated", F)

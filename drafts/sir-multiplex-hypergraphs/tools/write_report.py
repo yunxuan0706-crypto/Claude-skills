@@ -105,39 +105,56 @@ W("")
 
 W("## 5. 误差随系统规模的标度")
 W("")
-W("图 2(a) 给出两种闭合的偏差随 $N$ 的变化。每个数据点同时给出蒙特卡洛噪声底")
-W("（各时刻标准误的平均乘以 $\\sqrt{2/\\pi}$，即零偏差下 $|\\Delta S|$ 的期望）；")
-W("不给噪声底则无法把真实的闭合失效与运行次数不足造成的假象区分开。")
+W("图 2(a) 给出两种闭合的偏差随 $N$ 的变化。统计量为 $\\overline{|\\Delta S|}$，即各时刻")
+W("仿真均值与理论之差的绝对值在时间网格上的平均。其不确定度由**对实现的自举**给出")
+W("（每个 $N$ 重采样整条轨迹 2000 次）：逐点偏差在时间上的 lag-1 自相关约 $0.95$，")
+W("网格点远非独立，重采样整条轨迹可自动保留这一相关结构，无须对它作任何假设。")
 W("")
-W("| $N$ | 实现次数 | 群体闭合 | 度均场 | 噪声底 | 闭合/噪声 |")
-W("|---|---|---|---|---|---|")
+W("零假设的参照不是 $0$ 而是**噪声水平**。$\\overline{|\\Delta S|}$ 是绝对值的平均，恒为正，")
+W("其置信区间永不包含 $0$；真实偏差为零时它的期望等于各时刻抽样标准误的平均乘以")
+W("$\\sqrt{2/\\pi}$，这才是应当比较的基准。")
+W("")
+W("| $N$ | 实现次数 | 群体闭合 [95% CI] | 度均场 [95% CI] | 零假设水平 |")
+W("|---|---|---|---|---|")
 for r in d["scaling"]:
-    W("| %d | %d | %.5f | %.5f | %.5f | %.2f |"
-      % (r["N"], r["runs"], r["closure"], r["meanfield"], r["noise"],
-         r["closure"]/r["noise"]))
+    W("| %d | %d | %.5f [%.5f, %.5f] | %.5f [%.5f, %.5f] | %.5f |"
+      % (r["N"], r["runs"], r["closure"], r["closure_lo"], r["closure_hi"],
+         r["meanfield"], r["meanfield_lo"], r["meanfield_hi"], r["noise"]))
 sc = d["scaling"]
-lx = [math.log(r["N"]) for r in sc]
-lyc = [math.log(r["closure"]) for r in sc]
-lym = [math.log(r["meanfield"]) for r in sc]
-def slope(x, y):
-    n = len(x); sx = sum(x); sy = sum(y)
-    return (n*sum(a*b for a, b in zip(x, y))-sx*sy)/(n*sum(a*a for a in x)-sx*sx)
+def wfit(xs, ys, ws):
+    S = sum(ws); Sx = sum(w*x for w, x in zip(ws, xs)); Sy = sum(w*y for w, y in zip(ws, ys))
+    Sxx = sum(w*x*x for w, x in zip(ws, xs)); Sxy = sum(w*x*y for w, x, y in zip(ws, xs, ys))
+    det = S*Sxx-Sx*Sx
+    return (S*Sxy-Sx*Sy)/det, math.sqrt(S/det)
+use = [r for r in sc if r["closure"] > r["noise"]]
+sl, sle = wfit([math.log(r["N"]) for r in use], [math.log(r["closure"]) for r in use],
+               [1/((math.log(r["closure_hi"])-math.log(r["closure_lo"]))/3.92)**2 for r in use])
+xs = [1/r["N"] for r in sc]; ys = [r["meanfield"] for r in sc]
+ws = [1/(((r["meanfield_hi"]-r["meanfield_lo"])/3.92)**2) for r in sc]
+S = sum(ws); Sx = sum(w*x for w, x in zip(ws, xs)); Sy = sum(w*y for w, y in zip(ws, ys))
+Sxx = sum(w*x*x for w, x in zip(ws, xs)); Sxy = sum(w*x*y for w, x, y in zip(ws, xs, ys))
+det = S*Sxx-Sx*Sx; a = (Sxx*Sy-Sx*Sxy)/det; sa = math.sqrt(Sxx/det)
 W("")
-W("群体闭合的偏差单调下降，幂律拟合给出指数 $%.2f$；" % slope(lx, lyc))
-W("到 $N=%d$ 时已降至噪声底的 $%.2f$ 倍，不再可分辨。"
-  % (sc[-1]["N"], sc[-1]["closure"]/sc[-1]["noise"]))
-W("指数与位形模型中短回路密度的 $O(1/N)$ 相容；又因每个测量值都含噪声贡献，")
-W("表中数字是真实偏差的上界，真实衰减只会更陡。")
+W("群体闭合的偏差由 $N=500$ 处高出零假设水平 $%.1f$ 倍，单调降至 $N=8000$ 处的 $%.5f$，"
+  % (sc[0]["closure"]/sc[0]["noise"], sc[-1]["closure"]))
+W("已低于该水平（$%.5f$），即与「偏差为零」完全相容。只取高于零假设水平的 $%d$ 个点作"
+  % (sc[-1]["noise"], len(use)))
+W("加权幂律拟合，指数为 $%.2f\\pm%.2f$。" % (sl, sle))
+W("须说明两点：其一，各测量值都含噪声贡献因而是真实偏差的上界，真实衰减只会更陡；")
+W("其二，该指数比朴素预期的 $-1$（位形模型中短回路密度的量级）陡约 $%.1f\\sigma$，"
+  % (abs(sl+1)/sle))
+W("不宜简单声称「与 $O(1/N)$ 一致」。")
 W("")
-W("度均场的偏差则从 $%.5f$ 只降到 $%.5f$，拟合指数 $%.2f$，"
-  % (sc[0]["meanfield"], sc[-1]["meanfield"], slope(lx, lym)))
-W("在最大规模处仍是闭合的 $%.0f$ 倍、噪声底的 $%.0f$ 倍。"
-  % (sc[-1]["meanfield"]/sc[-1]["closure"], sc[-1]["meanfield"]/sc[-1]["noise"]))
-W("两者因而不是同一类误差：闭合的可以靠增大系统消除，均场的不能，因为那是闭合层级的误差。")
+W("度均场的偏差则只由 $%.5f$ 降到 $%.5f$，按 $a+b/N$ 外推得平台"
+  % (sc[0]["meanfield"], sc[-1]["meanfield"]))
+W("$a=%.5f\\pm%.5f$，即 $%.0f\\sigma$ 地不为零；在最大规模处它仍是零假设水平的 $%.0f$ 倍、"
+  % (a, sa, a/sa, sc[-1]["meanfield"]/sc[-1]["noise"]))
+W("闭合的 $%.0f$ 倍。两者因而不是同一类误差：闭合的可以靠增大系统消除，均场的不能，"
+  % (sc[-1]["meanfield"]/sc[-1]["closure"]))
+W("因为那是闭合层级的误差。")
 W("")
 W("![Figure 2](figures/fig2_verification.png){width=5.5}")
 W("")
-
 W("## 结论")
 W("")
 W("五项验证全部通过。方程组自洽（§1），阈值公式经两条独立路径互证（§2），群内级联量经")

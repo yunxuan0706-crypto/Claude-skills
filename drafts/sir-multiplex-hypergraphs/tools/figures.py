@@ -211,9 +211,13 @@ def figure2(d):
     N = np.array([r["N"] for r in sc], float)
     for key, col, mk, ls, lab in (("closure", C_CL, "o", "--", "Group closure"),
                                   ("meanfield", C_MF, "s", ":", "Mean field")):
-        ax.plot(N, [r[key] for r in sc], color=col, marker=mk, ls=ls, label=lab)
+        v = np.array([r[key] for r in sc])
+        lo = np.array([r[key+"_lo"] for r in sc])
+        hi = np.array([r[key+"_hi"] for r in sc])
+        ax.errorbar(N, v, yerr=[v-lo, hi-v], color=col, marker=mk, ls=ls,
+                    capsize=1.8, elinewidth=0.6, capthick=0.6, label=lab)
     ax.plot(N, [r["noise"] for r in sc], color=C_REF, ls="-.", lw=0.7,
-            label="Sampling floor")
+            label="Null level")
     ax.set_xscale("log"); ax.set_yscale("log")
     ax.set_xticks(N); ax.set_xticklabels([f"{int(v)}" for v in N])
     ax.xaxis.set_minor_locator(matplotlib.ticker.NullLocator())

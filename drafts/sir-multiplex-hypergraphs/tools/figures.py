@@ -225,8 +225,8 @@ def figure2(d):
     ax.set_ylabel("Mean $|\\Delta S|$")
     # Reserve a band below the smallest datum; on a log axis this costs little
     # and it is the only way a three-row legend fits without covering the data.
-    lo = min(min(r["closure"] for r in sc), min(r["noise"] for r in sc))
-    ax.set_ylim(bottom=lo/40)
+    lo = min(min(r["closure_lo"] for r in sc), min(r["noise"] for r in sc))
+    ax.set_ylim(bottom=lo/6)
     ax.legend(loc="lower left", handlelength=1.7, labelspacing=0.25,
               borderpad=0.25, fontsize=6)
 
@@ -234,7 +234,12 @@ def figure2(d):
     ax = axes[1]
     ca = d["cascade"]
     lams = sorted({r["lam"] for r in ca})
-    for lam, col in zip(lams, (C_CL, C_MF, C_SIM)):
+    # A distinct sequential palette for lambda -- black/blue/orange are already
+    # spoken for elsewhere (simulation / closure / mean field), so reusing them
+    # here would mean the same colour carries two meanings across panels. Purples,
+    # light to dark, read as an ordered quantity and clash with nothing.
+    C_LAM = ["#C6A9D6", "#8C5AA8", "#4A1D6E"]
+    for lam, col in zip(lams, C_LAM):
         rs = sorted([r for r in ca if r["lam"] == lam], key=lambda r: r["m"])
         if len(rs) < 2: continue
         m = [r["m"] for r in rs]
@@ -243,6 +248,11 @@ def figure2(d):
                     color=col, marker="o", ls="none", ms=3, capsize=1.6,
                     elinewidth=0.6)
         ax.plot(m, [r["naive"] for r in rs], color=col, ls=":", lw=0.8)
+        # colour encodes lambda; name it at the end of each recursion curve
+        ax.annotate(f"$\\lambda={lam:g}$", (m[-1], rs[-1]["recursion"]),
+                    xytext=(3, 1), textcoords="offset points", color=col,
+                    fontsize=6, ha="left", va="bottom")
+    ax.set_xlim(1.9, 6.7)
     ax.set_xlabel("Group size $m$")
     ax.set_ylabel("Cascade size $C$")
     ax.set_xticks([2, 3, 4, 5, 6])

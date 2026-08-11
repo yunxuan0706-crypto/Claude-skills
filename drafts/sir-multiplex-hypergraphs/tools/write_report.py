@@ -75,9 +75,15 @@ for r in d["cascade"]:
       % (r["m"], r["lam"], r["recursion"], r["mc"], r["mc_se"],
          abs(r["recursion"]-r["mc"]), r["naive"], gain))
 W("")
-W("两者在全部参数上一致，偏差均在蒙特卡洛的两倍标准误以内。末列给出级联相对于朴素计数")
-W("$(m-1)T$ 的增益：$m=2$ 时为 1，级联消失；群体越大增益越高，说明成员互相传染对激活时长")
-W("的延长不是可忽略的修正。")
+zs = [(r["recursion"]-r["mc"])/r["mc_se"] for r in d["cascade"]]
+zbar = sum(zs)/len(zs); nbig = sum(1 for z in zs if abs(z) > 2)
+W("标准误由样本方差给出（级联规模有上界 $m-1$ 且偏斜，并非 Poisson，故不用")
+W("$\\sqrt{\\bar x/n}$）。%d 格的标准化偏差 $z=(\\text{递推}-\\text{蒙特卡洛})/\\mathrm{SE}$"
+  % len(zs))
+W("均值为 $%+.2f$、$|z|>2$ 者 %d 格，与无系统偏差相容。"
+  % (zbar, nbig))
+W("末列给出级联相对于朴素计数 $(m-1)T$ 的增益：$m=2$ 时为 1，级联消失；群体越大增益越高，")
+W("说明成员互相传染对激活时长的延长不是可忽略的修正。")
 W("")
 
 W("## 4. 与精确仿真的含时比较")
@@ -152,6 +158,12 @@ W("$a=%.5f\\pm%.5f$，即 $%.0f\\sigma$ 地不为零；在最大规模处它仍�
 W("闭合的 $%.0f$ 倍。两者因而不是同一类误差：闭合的可以靠增大系统消除，均场的不能，"
   % (sc[-1]["meanfield"]/sc[-1]["closure"]))
 W("因为那是闭合层级的误差。")
+W("")
+sep = all(r["closure_hi"] < r["meanfield_lo"] for r in sc)
+W("这一区分不依赖对点估计的比较：两种闭合的自举 95%% 置信区间在全部 %d 个规模上%s重叠"
+  % (len(sc), "均不" if sep else "存在"))
+W("（例如 $N=%d$ 处，闭合的区间上界 $%.5f$ 低于均场的区间下界 $%.5f$）。"
+  % (sc[-1]["N"], sc[-1]["closure_hi"], sc[-1]["meanfield_lo"]))
 W("")
 W("![Figure 2](figures/fig2_verification.png){width=5.5}")
 W("")

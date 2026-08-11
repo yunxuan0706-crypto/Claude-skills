@@ -137,10 +137,19 @@ class Closure:
         Phi = [sum(x[self.off[a]:self.off[a+1]]) for a in range(M)]
         PhiA = [sum(x[self.off[a]+j] for j, (s, i, r) in enumerate(self.st[a]) if i >= self.th[a])
                 for a in range(M)]
+        # A large step can drive Phi slightly out of [0,1]; a negative base under
+        # a fractional power then makes psi_a NaN, and NaN*0 is NaN rather than 0,
+        # so the s = 0 guard below stops firing and the index runs off the state
+        # space. Clamp first, and fail loudly rather than corrupt the run.
+        Phi = [min(1.0, max(1e-300, p)) for p in Phi]
         h = []
         for a in range(M):
             ps, dp = self.psi_a(a, Phi)
+            if not (ps > 0.0):
+                raise FloatingPointError(f"psi_{a} = {ps}; reduce dt")
             h.append(sum(self.betas[c]*PhiA[c]*dp[c]/ps for c in range(M)))
+        if not all(x == x for x in h):
+            raise FloatingPointError(f"non-finite hazard {h}; reduce dt")
         o = [0.0]*(n+1)
         for a in range(M):
             b, ix = self.betas[a], self.ix[a]
@@ -148,7 +157,7 @@ class Closure:
                 v = x[self.off[a]+j]
                 if v == 0.0: continue
                 rate = (h[a] + (b if i >= self.th[a] else 0.0))*s
-                if rate:
+                if s >= 1 and rate:
                     o[self.off[a]+j] -= rate*v
                     o[self.off[a]+ix[(s-1, i+1, r)]] += rate*v
                 if i:

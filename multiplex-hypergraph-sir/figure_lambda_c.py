@@ -44,6 +44,7 @@ show = [("2-layer m=(3,4)", BLUE,   "2-layer $m{=}(3,4)$"),
         ("m=3 deg{2,3}",    AQUA,   "1-layer $m{=}3$")]
 axA.axvline(1.0, color=MUTED, lw=0.9, ls=(0, (4, 3)), zorder=1)
 axA.axhline(0, color=MUTED, lw=0.8, zorder=1)
+handles = []
 for name, col, lab in show:
     r = by[name]
     lc_rho = r["lc_rho"]
@@ -55,20 +56,22 @@ for name, col, lab in show:
     axA.plot(fitx, a + b * fitx * lc_rho, "--", color=col, lw=1.0,
              alpha=0.85, zorder=2)
     fxs = np.linspace(xn[0], xn[-1], 20)
-    axA.plot(fxs, a + b * fxs * lc_rho, "-", color=col, lw=1.7, zorder=3)
+    line, = axA.plot(fxs, a + b * fxs * lc_rho, "-", color=col, lw=1.7,
+                     zorder=3, marker="o", markevery=[0], ms=4.3,
+                     mfc=col, mec="white", mew=0.6, label=lab)
     axA.plot(xn, ys, "o", ms=4.3, mfc=col, mec="white", mew=0.6, zorder=4)
-    # label in the clear strip left of the data (lines only exist at x >= 0.90)
-    axA.annotate(lab, xy=(xn[0], ys[0]), xytext=(0.888, ys[0]),
-                 color=col, fontsize=8.1, va="center", ha="right",
-                 arrowprops=dict(arrowstyle="-", color=col, lw=0.7,
-                                 shrinkA=1.5, shrinkB=2.5))
-axA.set_xlim(0.812, 1.028)
+    handles.append(line)
+axA.set_xlim(0.876, 1.026)
 axA.set_ylim(-0.009, 0.098)
 axA.set_xlabel(r"$\lambda/\lambda_c\;[\rho(N)=1]$")
 axA.set_ylabel(r"$\varepsilon/R(\infty)$  (inverse outbreak size)")
 axA.xaxis.set_major_locator(MultipleLocator(0.05))
-axA.text(1.0, 0.093, r"$\lambda_c$", fontsize=9, color=SEC,
+axA.text(1.0, 0.0935, r"$\lambda_c$", fontsize=9, color=SEC,
          ha="center", va="bottom")
+# labels listed separately in a frameless legend, in the empty lower-left
+axA.legend(handles=handles, loc="lower left", frameon=False, fontsize=7.8,
+           handlelength=1.5, handletextpad=0.6, labelspacing=0.4,
+           borderaxespad=0.7)
 panel_tag(axA, "a")
 
 # ============================================================ (b) agreement

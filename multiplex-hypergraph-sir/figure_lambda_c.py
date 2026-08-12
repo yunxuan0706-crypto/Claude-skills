@@ -8,7 +8,11 @@ from matplotlib.ticker import MultipleLocator
 # ---------------------------------------------------------------- style
 INK, SEC, MUTED = "#1a1a1a", "#52514e", "#8a8985"
 GRID, SPINE = "#e9e8e3", "#bdbcb6"
-BLUE, ORANGE, AQUA = "#2a78d6", "#eb6834", "#1baf7a"
+# fresh, colorblind-safe palette (validated: worst all-pairs CVD dE 11.7,
+# normal-vision dE 23.4); thick lines + markers + legend supply the relief
+# for the sub-3:1 contrast of teal/coral.
+TEAL, CORAL, PERI = "#2BB3A3", "#F0785A", "#6C6FE0"
+PT = "#4B4FA6"   # single-series accent for panels (b) and (c)
 
 mpl.rcParams.update({
     "figure.dpi": 140, "savefig.dpi": 300,
@@ -29,8 +33,8 @@ mpl.rcParams.update({
 data = json.load(open("figure_data.json"))
 by = {r["name"]: r for r in data}
 
-fig, (axA, axB, axC) = plt.subplots(1, 3, figsize=(10.2, 3.25))
-fig.subplots_adjust(left=0.065, right=0.985, bottom=0.16, top=0.90, wspace=0.34)
+fig, (axA, axB, axC) = plt.subplots(1, 3, figsize=(10.2, 3.35))
+fig.subplots_adjust(left=0.065, right=0.985, bottom=0.155, top=0.845, wspace=0.34)
 
 def panel_tag(ax, s):
     ax.text(-0.20, 1.06, s, transform=ax.transAxes, fontsize=12,
@@ -39,9 +43,9 @@ def panel_tag(ax, s):
 # ============================================================ (a) method
 # plot in normalised lambda/lambda_c so the three configs share an axis and
 # their linear approach to zero crosses together at the rho(N)=1 point (x=1).
-show = [("2-layer m=(3,4)", BLUE,   "2-layer $m{=}(3,4)$"),
-        ("6-reg. pairwise", ORANGE, "6-reg. pairwise"),
-        ("m=3 deg{2,3}",    AQUA,   "1-layer $m{=}3$")]
+show = [("2-layer m=(3,4)", TEAL,  "2-layer $m{=}(3,4)$"),
+        ("6-reg. pairwise", CORAL, "6-reg. pairwise"),
+        ("m=3 deg{2,3}",    PERI,  "1-layer $m{=}3$")]
 axA.axvline(1.0, color=MUTED, lw=0.9, ls=(0, (4, 3)), zorder=1)
 axA.axhline(0, color=MUTED, lw=0.8, zorder=1)
 handles = []
@@ -68,10 +72,11 @@ axA.set_ylabel(r"$\varepsilon/R(\infty)$  (inverse outbreak size)")
 axA.xaxis.set_major_locator(MultipleLocator(0.05))
 axA.text(1.0, 0.0935, r"$\lambda_c$", fontsize=9, color=SEC,
          ha="center", va="bottom")
-# labels listed separately in a frameless legend, in the empty lower-left
-axA.legend(handles=handles, loc="lower left", frameon=False, fontsize=7.8,
-           handlelength=1.5, handletextpad=0.6, labelspacing=0.4,
-           borderaxespad=0.7)
+# labels listed separately, in a horizontal legend above the panel (out of the
+# plotting area) so nothing overlaps the frame or the curves
+axA.legend(handles=handles, loc="lower left", bbox_to_anchor=(0.0, 1.015),
+           ncol=3, frameon=False, fontsize=7.6, handlelength=1.4,
+           handletextpad=0.5, columnspacing=1.1, borderaxespad=0.0)
 panel_tag(axA, "a")
 
 # ============================================================ (b) agreement
@@ -80,8 +85,8 @@ lce = np.array([r["lc_extrap"] for r in data])
 sig = np.array([r["sigma"] for r in data])
 lo, hi = 0.06, 0.42
 axB.plot([lo, hi], [lo, hi], "-", color=MUTED, lw=1.0, zorder=1)
-axB.errorbar(lcr, lce, yerr=sig, fmt="D", ms=4.6, mfc=BLUE, mec="white",
-             mew=0.6, ecolor=BLUE, elinewidth=1.0, capsize=2, zorder=3)
+axB.errorbar(lcr, lce, yerr=sig, fmt="D", ms=4.6, mfc=PT, mec="white",
+             mew=0.6, ecolor=PT, elinewidth=1.0, capsize=2, zorder=3)
 axB.set_xlim(lo, hi); axB.set_ylim(lo, hi)
 axB.set_aspect("equal")
 axB.set_xlabel(r"$\lambda_c$ from $\rho(N)=1$")
@@ -100,7 +105,7 @@ x = lcr[order]; y = pull[order]
 axC.axhspan(-2, 2, color=GRID, zorder=0)
 axC.axhspan(-1, 1, color="#dcdbd4", zorder=0)
 axC.axhline(0, color=MUTED, lw=0.9, zorder=1)
-axC.plot(x, y, "o", ms=5.0, mfc=BLUE, mec="white", mew=0.7, zorder=3)
+axC.plot(x, y, "o", ms=5.0, mfc=PT, mec="white", mew=0.7, zorder=3)
 axC.set_ylim(-3, 3)
 axC.set_xlim(0.06, 0.42)
 axC.set_xlabel(r"$\lambda_c$")

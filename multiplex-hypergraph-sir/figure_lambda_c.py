@@ -33,8 +33,8 @@ mpl.rcParams.update({
 data = json.load(open("figure_data.json"))
 by = {r["name"]: r for r in data}
 
-fig, (axA, axB, axC) = plt.subplots(1, 3, figsize=(10.2, 3.35))
-fig.subplots_adjust(left=0.065, right=0.985, bottom=0.155, top=0.845, wspace=0.34)
+fig, (axA, axB, axC) = plt.subplots(1, 3, figsize=(10.2, 3.25))
+fig.subplots_adjust(left=0.065, right=0.985, bottom=0.16, top=0.90, wspace=0.34)
 
 def panel_tag(ax, s):
     ax.text(-0.20, 1.06, s, transform=ax.transAxes, fontsize=12,
@@ -46,7 +46,8 @@ def panel_tag(ax, s):
 show = [("2-layer m=(3,4)", TEAL,  "2-layer $m{=}(3,4)$"),
         ("6-reg. pairwise", CORAL, "6-reg. pairwise"),
         ("m=3 deg{2,3}",    PERI,  "1-layer $m{=}3$")]
-axA.axvline(1.0, color=MUTED, lw=0.9, ls=(0, (4, 3)), zorder=1)
+# short vertical marker at lambda_c (kept low so it clears the legend above)
+axA.plot([1.0, 1.0], [0.0, 0.052], color=MUTED, lw=0.9, ls=(0, (4, 3)), zorder=1)
 axA.axhline(0, color=MUTED, lw=0.8, zorder=1)
 handles = []
 for name, col, lab in show:
@@ -70,13 +71,13 @@ axA.set_ylim(-0.009, 0.098)
 axA.set_xlabel(r"$\lambda/\lambda_c\;[\rho(N)=1]$")
 axA.set_ylabel(r"$\varepsilon/R(\infty)$  (inverse outbreak size)")
 axA.xaxis.set_major_locator(MultipleLocator(0.05))
-axA.text(1.0, 0.0935, r"$\lambda_c$", fontsize=9, color=SEC,
+axA.text(1.0, 0.058, r"$\lambda_c$", fontsize=9, color=SEC,
          ha="center", va="bottom")
-# labels listed separately, in a horizontal legend above the panel (out of the
-# plotting area) so nothing overlaps the frame or the curves
-axA.legend(handles=handles, loc="lower left", bbox_to_anchor=(0.0, 1.015),
-           ncol=3, frameon=False, fontsize=7.6, handlelength=1.4,
-           handletextpad=0.5, columnspacing=1.1, borderaxespad=0.0)
+# labels listed separately, inside the panel in the empty upper-right region
+# above the descending curves
+axA.legend(handles=handles, loc="upper right", frameon=False, fontsize=7.5,
+           handlelength=1.4, handletextpad=0.5, labelspacing=0.4,
+           borderaxespad=0.6)
 panel_tag(axA, "a")
 
 # ============================================================ (b) agreement

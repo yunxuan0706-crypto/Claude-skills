@@ -19,6 +19,7 @@ across eight configurations.
 | `verify.py`         | reproduces the outline's analytic anchors (cascade values, Anchor A ρ=1.013, degenerate λc=1/3, θ≥2 drop-out) |
 | `verify_ode.py`     | closure self-checks: sum rule (2.6), identity (2.7), DFE Jacobian abscissa = 0 at λc |
 | `datacheck.py`      | independent cross-checks of the final-state data (branching formula, ε→0, t_max, sanity) |
+| `recheck_mc.py`     | direct single-group Gillespie MC for the cascade `C`; ODE behaviour across the transition; `ρ(λ)` monotonicity |
 | `figure_lambda_c.py`| draws Figure 2 from `figure_data.json` |
 | `figure2_lambda_c.pdf/.png` | Figure 2 |
 
@@ -29,6 +30,7 @@ pip install -r requirements.txt
 python3 verify.py         # analytic anchors           -> ALL PASS
 python3 verify_ode.py     # closure self-checks        -> ALL PASS
 python3 datacheck.py      # independent data checks     -> agreement < 1e-3
+python3 recheck_mc.py     # single-group Gillespie MC    -> C matches within noise
 python3 lambda_c_extrap.py# recompute figure_data.json
 python3 figure_lambda_c.py# redraw the figure
 ```
@@ -61,6 +63,12 @@ threshold.
 branching formula `1 + 1ᵀ(I−Nᵀ)⁻¹g`, `g_b=⟨k_b⟩C_b`, converging as ε→0
 (3.7e-3 → 1.1e-5 for ε=2e-4 → 1e-5); final states are t_max-converged
 (χ identical over t_max∈[2e4,1.2e5], activated-mass residual ≤ 1e-20).
+
+**Monte-Carlo re-check** (`recheck_mc.py`): a direct single-group Gillespie
+simulation reproduces the cascade `C(m,λ,θ)` within statistical noise (≤ ~1σ at
+1e6 samples, incl. `C=λ/(1+λ)` for m=2 and `C=0` for θ≥2); the closure `R(∞)`
+stays O(ε) below λc and lifts to an O(1) epidemic above it; `ρ(λ)` is strictly
+monotone (bisection well-posed).
 
 ## Result
 

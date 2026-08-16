@@ -15,9 +15,13 @@ from meanfield import factors, lambda_c_mf, lambda_c_switched
 # ---------------------------------------------------------------- style
 INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
 GRID, SPINE = "#ecebe5", "#c6c5bf"
-TEAL, CORAL, INDIGO = "#3FBCA8", "#FA8F6E", "#858DE6"   # lighter, validated
-PT = "#5960CE"
-SIMC = "#2F6FB5"
+# chosen from the author's palette; the one factor that pushes rho UP is warm,
+# the two that push it DOWN are cool (validated all-pairs: CVD dE 15.8,
+# normal-vision 21.3)
+C_UP, C_DN1, C_DN2 = "#FD7E21", "#1A9CFC", "#2F3DFA"
+PT = "#2F3DFA"          # single series, panel (c)
+SIMC = "#2F3DFA"        # simulation, panel (d)
+MFC = "#FF5359"         # mean field, panel (d)
 mpl.rcParams.update({
     "figure.dpi": 140, "savefig.dpi": 340,
     "font.family": "STIXGeneral", "mathtext.fontset": "stix", "font.size": 9.5,
@@ -32,11 +36,12 @@ mpl.rcParams.update({
     "legend.frameon": False, "axes.axisbelow": True,
     "lines.solid_capstyle": "round",
 })
-# diverging: blue <-> neutral grey <-> red  (never a hue at the midpoint)
-# pink <-> neutral <-> blue, with the pink arm carried a little deeper
+# author-specified scale for panel (b): blue -> light blue -> yellow -> orange
+# -> red. The five stops are evenly spaced and TwoSlopeNorm puts vcenter=0 at
+# the middle stop, so the yellow band sits exactly on the sign-flip boundary:
+# cool = mean field underestimates rho, warm = it overestimates.
 DIV = LinearSegmentedColormap.from_list(
-    "div", ["#1E5FA6", "#5794DA", "#AECCEE", "#F2F0EC",
-            "#F6B6CE", "#DE5F95", "#B92A64"])
+    "div", ["#5271AE", "#70ACDE", "#F5CC7D", "#FFA660", "#D85B59"])
 
 P = {(3, 3): 0.5, (5, 5): 0.5}          # k in {3,5}, two layers, m1 = m2 = m
 MS = list(range(2, 17))
@@ -68,14 +73,14 @@ def tag(ax, s):
 
 # ---- (a) the three factors, switched on one at a time -------------------
 axA.axhline(1.0, color=MUTED, lw=0.9, ls=(0, (4, 3)), zorder=1)
-axA.plot(LAMS, fC, "-", color=TEAL, lw=1.8, zorder=3, label=r"$f_C$  cascade")
-axA.plot(LAMS, fD * np.ones_like(LAMS), "-", color=INDIGO, lw=1.8, zorder=3,
+axA.plot(LAMS, fC, "-", color=C_UP, lw=1.8, zorder=3, label=r"$f_C$  cascade")
+axA.plot(LAMS, fD * np.ones_like(LAMS), "-", color=C_DN1, lw=1.8, zorder=3,
          label=r"$f_D$  excess $-\delta_{ab}$")
-axA.plot(LAMS, fT, "-", color=CORAL, lw=1.8, zorder=3, label=r"$f_T$  $\lambda\!\to\!T$")
+axA.plot(LAMS, fT, "-", color=C_DN2, lw=1.8, zorder=3, label=r"$f_T$  $\lambda\!\to\!T$")
 axA.plot(LAMS, net, "-", color=INK, lw=2.1, zorder=4, label=r"net  $=f_Tf_Df_C$")
 above = net > 1
 if above.any():
-    axA.fill_between(LAMS, 1, net, where=above, color=TEAL, alpha=0.16,
+    axA.fill_between(LAMS, 1, net, where=above, color=C_UP, alpha=0.15,
                      lw=0, zorder=2)
 axA.set_xscale("log")
 axA.set_xlim(LAMS[0], LAMS[-1]); axA.set_ylim(0.25, 2.02)
@@ -112,9 +117,9 @@ cb.set_label(r"$\log_2(\rho^{\mathrm{MF}}/\rho)$", fontsize=8.6)
 cb.ax.tick_params(labelsize=7.8, color=SEC, labelcolor=SEC)
 cb.outline.set_edgecolor(SPINE); cb.outline.set_linewidth(0.6)
 axB.text(0.60, 0.90, "MF under-\nestimates $\\rho$", transform=axB.transAxes,
-         fontsize=7.8, color="#164B85", ha="center", va="top", linespacing=1.35)
+         fontsize=7.8, color="#2F4A7A", ha="center", va="top", linespacing=1.35)
 axB.text(0.955, 0.10, "MF over-\nestimates $\\rho$", transform=axB.transAxes,
-         fontsize=7.8, color="#8E1E4B", ha="right", va="bottom", linespacing=1.35)
+         fontsize=7.8, color="#8E3230", ha="right", va="bottom", linespacing=1.35)
 tag(axB, "b")
 
 # ---- (c) the threshold consequence --------------------------------------
@@ -150,8 +155,8 @@ for frac, mk, fc in ((0.6, "o", "white"), (0.8, "s", SIMC)):
     axD.errorbar(xs, ys, yerr=es, fmt=mk, ms=5.0, mfc=fc, mec=SIMC, mew=1.2,
                  ecolor=SIMC, elinewidth=1.0, capsize=2.4, capthick=0.8,
                  zorder=4, ls="none", label=rf"sim, $\lambda={frac}\lambda_c$")
-    axD.plot(xs, [r["chi_mf"] / r["chi_exact"] for r in rs], "-", color=CORAL,
-             lw=1.6, marker=mk, ms=4.0, mfc="white", mec=CORAL, mew=1.1,
+    axD.plot(xs, [r["chi_mf"] / r["chi_exact"] for r in rs], "-", color=MFC,
+             lw=1.6, marker=mk, ms=4.0, mfc="white", mec=MFC, mew=1.1,
              zorder=3, label=rf"mean field, $\lambda={frac}\lambda_c$")
 axD.set_yscale("log")
 axD.set_xlim(2, 13); axD.set_ylim(0.75, 4.2)

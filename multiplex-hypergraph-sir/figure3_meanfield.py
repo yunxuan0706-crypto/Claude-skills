@@ -15,13 +15,14 @@ from meanfield import factors, lambda_c_mf, lambda_c_switched
 # ---------------------------------------------------------------- style
 INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
 GRID, SPINE = "#ecebe5", "#c6c5bf"
-# chosen from the author's palette; the one factor that pushes rho UP is warm,
-# the two that push it DOWN are cool (validated all-pairs: CVD dE 15.8,
-# normal-vision 21.3)
-C_UP, C_DN1, C_DN2 = "#FD7E21", "#1A9CFC", "#2F3DFA"
-PT = "#2F3DFA"          # single series, panel (c)
-SIMC = "#2F3DFA"        # simulation, panel (d)
-MFC = "#FF5359"         # mean field, panel (d)
+# lines for (a), (c), (d): a muted trio that sits in the same blue-orange
+# family as the (b) scale (validated all-pairs: CVD dE 10.7, normal-vision
+# 16.1). Assigned by meaning: the one factor that pushes rho UP is warm, the
+# two that push it DOWN are cool.
+C_UP, C_DN1, C_DN2 = "#E2703A", "#5FA88D", "#3E7CB1"
+PT = "#3E7CB1"          # single series, panel (c)
+SIMC = "#3E7CB1"        # simulation, panel (d)
+MFC = "#E2703A"         # mean field, panel (d)
 mpl.rcParams.update({
     "figure.dpi": 140, "savefig.dpi": 340,
     "font.family": "STIXGeneral", "mathtext.fontset": "stix", "font.size": 9.5,
@@ -40,8 +41,13 @@ mpl.rcParams.update({
 # -> red. The five stops are evenly spaced and TwoSlopeNorm puts vcenter=0 at
 # the middle stop, so the yellow band sits exactly on the sign-flip boundary:
 # cool = mean field underestimates rho, warm = it overestimates.
-DIV = LinearSegmentedColormap.from_list(
-    "div", ["#5271AE", "#70ACDE", "#F5CC7D", "#FFA660", "#D85B59"])
+# The stops are placed non-uniformly so the warm half turns over to orange and
+# red quickly, giving them most of the positive range; the cool half is
+# compressed to match. TwoSlopeNorm puts vcenter=0 at position 0.5, so the
+# yellow band still sits exactly on the sign-flip boundary.
+DIV = LinearSegmentedColormap.from_list("div", [
+    (0.00, "#5271AE"), (0.30, "#70ACDE"), (0.50, "#F5CC7D"),
+    (0.57, "#FFA660"), (0.76, "#D85B59"), (1.00, "#B8433F")])
 
 P = {(3, 3): 0.5, (5, 5): 0.5}          # k in {3,5}, two layers, m1 = m2 = m
 MS = list(range(2, 17))
@@ -64,11 +70,13 @@ fC = np.array([factors(P, (M_A, M_A), l)[2] for l in LAMS])
 net = fT * fD * fC
 
 # ---------------------------------------------------------------- figure
-fig, (axA, axB, axC, axD) = plt.subplots(1, 4, figsize=(13.4, 3.25))
-fig.subplots_adjust(left=0.049, right=0.988, bottom=0.165, top=0.905, wspace=0.42)
+fig, axes = plt.subplots(2, 2, figsize=(8.9, 6.7))
+(axA, axB), (axC, axD) = axes
+fig.subplots_adjust(left=0.085, right=0.975, bottom=0.082, top=0.955,
+                    wspace=0.34, hspace=0.30)
 
 def tag(ax, s):
-    ax.text(-0.24, 1.045, s, transform=ax.transAxes, fontsize=13,
+    ax.text(-0.155, 1.035, s, transform=ax.transAxes, fontsize=13,
             fontweight="bold", va="bottom", ha="left", color=INK)
 
 # ---- (a) the three factors, switched on one at a time -------------------
@@ -165,11 +173,11 @@ axD.set_ylabel(r"$\chi\,/\,\chi^{\rm exact}$")
 axD.set_xticks([3, 5, 8, 12])
 axD.set_yticks([1, 2, 3, 4]); axD.set_yticklabels(["1", "2", "3", "4"])
 axD.tick_params(which="both", top=False, right=False)
-axD.legend(loc="upper left", frameon=False, fontsize=7.0, handlelength=1.5,
-           handletextpad=0.5, labelspacing=0.3, borderaxespad=0.5)
-axD.text(0.965, 0.94, "points: Gillespie on the\nmultiplex hypergraph\n(agree with exact, $\\leq$1.3$\\sigma$)",
-         transform=axD.transAxes, fontsize=7.4, color=SEC, ha="right",
-         va="top", linespacing=1.4)
+axD.legend(loc="upper right", frameon=False, fontsize=7.4, handlelength=1.5,
+           handletextpad=0.5, labelspacing=0.32, borderaxespad=0.6)
+axD.text(0.035, 0.045, "points: Gillespie on the multiplex\nhypergraph (agree with exact, $\\leq$1.3$\\sigma$)",
+         transform=axD.transAxes, fontsize=7.4, color=SEC, ha="left",
+         va="bottom", linespacing=1.4)
 tag(axD, "d")
 
 fig.savefig("figure3_meanfield.pdf", bbox_inches="tight")

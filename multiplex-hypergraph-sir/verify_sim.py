@@ -4,7 +4,8 @@ Simulation validation for Figure 3.
 Figure 3 compares two closures (mean field vs group closure), so on its own it
 is theory against theory. This script supplies the missing ground truth in two
 parts, chosen to match a structural fact: the sign-flip region always sits at
-2.5-4.7 times lambda_c, i.e. it is *always supercritical*, so it cannot be
+at least 2.5 times lambda_c (measured 2.53-7.07 over m = 6-16 and four
+distributions), i.e. it is *always supercritical*, so it cannot be
 reached by a subcritical outbreak-size measurement. Therefore
 
   (1) the full next-generation bookkeeping N -- transmissibility T, the excess

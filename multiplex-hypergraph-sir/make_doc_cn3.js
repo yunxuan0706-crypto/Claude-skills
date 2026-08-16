@@ -105,7 +105,7 @@ k.push(P([R("残余偏差为线性律 (2.9) 的"), R("有限窗口效应", { bol
 // figure + caption
 const img = fs.readFileSync("figure2_lambda_c.png");
 k.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 160, after: 70 }, indent: { firstLine: 0 },
-  children: [new ImageRun({ type: "png", data: img, transformation: { width: 630, height: 203 } })] }));
+  children: [new ImageRun({ type: "png", data: img, transformation: { width: 592, height: 191 } })] }));
 k.push(new Paragraph({ alignment: AlignmentType.BOTH, spacing: { after: 180, line: 264 }, indent: { firstLine: 0 },
   children: [
     R("图 2", { bold: true, size: SMALL }),

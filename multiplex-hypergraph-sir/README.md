@@ -142,7 +142,8 @@ comparable in this form.
 Figure 3 compares two closures, so on its own it is theory against theory. The
 missing ground truth is supplied in `verify_sim.py`, in two parts dictated by a
 structural fact: **the sign-flip region is always supercritical** — its lower
-edge sits at 2.5–4.7 λc for every distribution and m tested — so it cannot be
+edge never falls below 2.5 λc (measured at 2.53–7.07 λc over m = 6–16 and four
+distributions) — so it cannot be
 reached by a subcritical outbreak-size measurement.
 
 1. **The full next-generation bookkeeping is validated where it can be.** Exact

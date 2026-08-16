@@ -15,8 +15,8 @@ from meanfield import factors, lambda_c_mf, lambda_c_switched
 # ---------------------------------------------------------------- style
 INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
 GRID, SPINE = "#ecebe5", "#c6c5bf"
-TEAL, CORAL, INDIGO = "#1C9B8E", "#E76F51", "#5A67C0"
-PT = "#454F9E"
+TEAL, CORAL, INDIGO = "#2BB3A3", "#F0785A", "#6C6FE0"
+PT = "#5960CE"
 mpl.rcParams.update({
     "figure.dpi": 140, "savefig.dpi": 340,
     "font.family": "STIXGeneral", "mathtext.fontset": "stix", "font.size": 9.5,
@@ -33,7 +33,7 @@ mpl.rcParams.update({
 })
 # diverging: blue <-> neutral grey <-> red  (never a hue at the midpoint)
 DIV = LinearSegmentedColormap.from_list(
-    "div", ["#184f95", "#5f97dd", "#c8d8ec", "#f0efec", "#f3c4b4", "#e0705c", "#a82b2b"])
+    "div", ["#0E7F72", "#3FB3A4", "#A6DBD2", "#F2F0EA", "#FBD2C1", "#F08D6C", "#C2542F"])
 
 P = {(3, 3): 0.5, (5, 5): 0.5}          # k in {3,5}, two layers, m1 = m2 = m
 MS = list(range(2, 17))
@@ -109,9 +109,9 @@ cb.set_label(r"$\log_2(\rho^{\mathrm{MF}}/\rho)$", fontsize=8.6)
 cb.ax.tick_params(labelsize=7.8, color=SEC, labelcolor=SEC)
 cb.outline.set_edgecolor(SPINE); cb.outline.set_linewidth(0.6)
 axB.text(0.60, 0.90, "MF under-\nestimates $\\rho$", transform=axB.transAxes,
-         fontsize=7.8, color="#10315e", ha="center", va="top", linespacing=1.35)
+         fontsize=7.8, color="#0A5D53", ha="center", va="top", linespacing=1.35)
 axB.text(0.955, 0.10, "MF over-\nestimates $\\rho$", transform=axB.transAxes,
-         fontsize=7.8, color="#6b1717", ha="right", va="bottom", linespacing=1.35)
+         fontsize=7.8, color="#8A3A1E", ha="right", va="bottom", linespacing=1.35)
 tag(axB, "b")
 
 # ---- (c) the threshold consequence --------------------------------------

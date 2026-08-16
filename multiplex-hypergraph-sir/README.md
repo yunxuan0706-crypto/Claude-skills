@@ -107,13 +107,29 @@ exact and `(0,0,0)` is mean field, verified to 1e-9.
   the gap narrows with m without changing sign. At m=3 the term-by-term
   thresholds are ×1.063 (T only), ×1.133 (D only), ×0.976 (C only) relative to
   mean field, so D is the largest single term and C opposes the other two.
-- **The net deviation of ρ does change sign** on the (m,λ) plane. For m ≥ 8 and
-  moderate λ the cascade term wins and mean field *under*estimates ρ: the window
-  is λ∈[0.086, 0.394] at m=8, widening with m (max `ρ/ρ^MF` = 1.58 at m=16).
+- **The net deviation of ρ does change sign** on the (m,λ) plane. Above a
+  critical group size, at moderate λ, the cascade term wins and mean field
+  *under*estimates ρ. For the figure's configuration the onset is m = 8, with
+  window λ∈[0.086, 0.394], widening with m (max `ρ/ρ^MF` = 1.58 at m=16).
   The outline lists this as an open question; the scan answers it in the
   affirmative, and `verify_mf.py` confirms the sign from next-generation
   matrices built directly, sharing no code with the factorisation.
+- **The onset is configuration dependent, the existence of the flip is not.**
+  It is set by `f_D = (X−1)/X` with `X = ⟨k^a k^b⟩/⟨k^a⟩`, so more heterogeneous
+  degrees flip earlier: across six distributions the onset spans m = 6–9
+  (m=6 for 10-regular and for a heavy tail k∈{2,20}; m=9 for 3-regular and
+  k∈{1,3}), and a flip exists in every one of them.
 - **But the flip never reaches the threshold.** λc lies far below the flip
   window for every m tested (λc = 0.018 vs window [0.086, 0.394] at m=8), so
-  λc^MF < λc always — the threshold statement and the reproduction-number
-  statement are genuinely different, and only the latter changes sign.
+  λc^MF < λc always — verified for all six distributions up to m = 30. The
+  threshold statement and the reproduction-number statement are genuinely
+  different, and only the latter changes sign.
+- At m = 2 the threshold ratio collapses to an exact identity,
+  `λc^MF/λc = (X−1)/X`, for any configuration with a uniform `X_ab`
+  (0.667 for 3-regular, 0.765 here, 0.900 for 10-regular; verified to 1e-9).
+  It does not hold when the layers are independent, since then `X_aa ≠ X_ab`.
+
+The comparison is for θ = 1 throughout: the mean-field closure (2.12) takes
+`Θ_a = 1−(1−φ_a)^{m_a−1}`, which presumes a single infected member activates a
+group. For θ ≥ 2 the exact side has `C = 0` and the two closures are not
+comparable in this form.

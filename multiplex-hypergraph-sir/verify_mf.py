@@ -98,18 +98,74 @@ for m, lam, want_flip in [(8, 0.2, True), (12, 0.2, True), (16, 0.15, True),
     allpass &= ok("   factor path == direct matrices",
                   abs(r_ex / r_mf - factors(P, (m, m), lam)[3]) < 1e-10)
 
-first = None
-for m in range(2, 25):
-    ls = np.geomspace(1e-3, 20, 2000)
-    if any(factors(P, (m, m), l)[3] > 1 for l in ls):
-        first = m
-        break
-allpass &= ok("first group size with a sign flip is m=8", first == 8, f"m={first}")
+def first_flip(Pd):
+    ls = np.geomspace(1e-3, 20, 1200)
+    for mm in range(2, 41):
+        if any(factors(Pd, (mm, mm), l)[3] > 1 for l in ls):
+            return mm
+    return None
 
-# at the threshold itself the flip never occurs in the explored range
-no_flip_at_lc = all(factors(P, (m, m), lambda_c_rho(P, (m, m)))[3] < 1
-                    for m in range(2, 21))
-allpass &= ok("no sign flip AT the threshold for m<=20 (so lam_c^MF < lam_c)",
-              no_flip_at_lc)
+allpass &= ok("first group size with a sign flip is m=8 for THIS config",
+              first_flip(P) == 8, f"m={first_flip(P)}")
+
+# ---- 8. how far do those statements generalise? ---------------------------
+# The onset of the flip is config dependent (it is set by f_D = (X-1)/X, so
+# more heterogeneous degrees flip earlier); the absence of a flip AT the
+# threshold is not. Both are reported honestly rather than assumed.
+OTHER = {
+    "k in {3,5} independent": {(3, 3): .25, (3, 5): .25, (5, 3): .25, (5, 5): .25},
+    "3-regular":              {(3, 3): 1.0},
+    "10-regular":             {(10, 10): 1.0},
+    "k in {2,20} heavy tail": {(2, 2): .9, (20, 20): .1},
+    "k in {1,3} sparse":      {(1, 1): .5, (3, 3): .5},
+}
+onsets = {"k in {3,5} corr": first_flip(P)}
+for nm, Pd in OTHER.items():
+    onsets[nm] = first_flip(Pd)
+allpass &= ok("a sign flip exists for every distribution tested",
+              all(v is not None for v in onsets.values()),
+              "onsets " + ", ".join(f"{k}:{v}" for k, v in onsets.items()))
+allpass &= ok("flip onset lies in m = 6..9 across those distributions",
+              all(6 <= v <= 9 for v in onsets.values()))
+
+for nm, Pd in list(OTHER.items()) + [("k in {3,5} corr", P)]:
+    no_flip = all(factors(Pd, (m, m), lambda_c_rho(Pd, (m, m)))[3] < 1
+                  for m in range(2, 31))
+    allpass &= ok(f"no flip AT threshold, m<=30  [{nm}]", no_flip)
+
+# ---- 9. analytic identity at m = 2 ----------------------------------------
+# For a config whose X_ab = <k^a k^b>/<k^a> is the same for every (a,b), the
+# m=2 threshold ratio collapses to f_D exactly:
+#   rho_ex = T(2X-1), rho_MF = 2X*lam  =>  lam_c = 1/(2X-2), lam_c^MF = 1/(2X)
+#   =>  lam_c^MF / lam_c = (X-1)/X.
+# (It does NOT hold when the layers are independent, since then X_aa != X_ab.)
+for nm, Pd in [("k in {3,5} corr", P), ("3-regular", {(3, 3): 1.0}),
+               ("10-regular", {(10, 10): 1.0}),
+               ("k in {2,20}", {(2, 2): .9, (20, 20): .1})]:
+    mk, cr = degree_moments(Pd, 2)
+    X = cr[0, 0] / mk[0]
+    r = lambda_c_mf(Pd, (2, 2)) / lambda_c_rho(Pd, (2, 2))
+    allpass &= ok(f"m=2 identity lam_c^MF/lam_c = (X-1)/X  [{nm}]",
+                  abs(r - (X - 1) / X) < 1e-9,
+                  f"{r:.10f} vs {(X-1)/X:.10f}")
+
+# ---- 10. mean-field ODE closes the loop around its own threshold -----------
+# The Jacobian check above is a linearisation; integrate the mean-field ODE
+# itself and confirm it is sub/supercritical on either side of lam_c^MF.
+from scipy.integrate import solve_ivp
+for m in (3, 6):
+    lc = lambda_c_mf(P, (m, m))
+    for frac, grows in ((0.85, False), (1.15, True)):
+        mf = MeanFieldODE(P, (m, m), frac * lc)
+        K = mf.K
+        y0 = np.concatenate([np.full(K, 1 - 1e-6), np.full(K, 1e-6)])
+        sol = solve_ivp(mf.rhs, [0, 400], y0, method="LSODA",
+                        rtol=1e-10, atol=1e-14)
+        final_i = sol.y[K:, -1].max()
+        peak_i = sol.y[K:, :].max()
+        took_off = peak_i > 1e-3
+        allpass &= ok(f"MF ODE {'super' if grows else 'sub'}critical at "
+                      f"{frac}*lam_c^MF (m={m})", took_off == grows,
+                      f"peak i={peak_i:.2e}, final i={final_i:.2e}")
 
 print("\n=== ALL PASS ===" if allpass else "\n!!! SOME FAILURES !!!")

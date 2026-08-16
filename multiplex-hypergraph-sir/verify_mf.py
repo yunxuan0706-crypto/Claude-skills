@@ -46,14 +46,16 @@ for m in (2, 3, 4, 6):
                   abs(ab) < 1e-7, f"lam_c^MF={lc:.8f}  abscissa={ab:.2e}")
 
 # ---- 5. factor directions: f_T<1, f_D<1, f_C>1, and they multiply ---------
-for m in (3, 5):
+# includes ASYMMETRIC layers: the per-layer definition of f_T/f_C used to pass
+# this test for m1==m2 while giving the wrong sign at e.g. m=(2,10)
+for m in [(3, 3), (5, 5), (2, 10), (3, 12), (2, 8), (4, 9)]:
     for lam in (0.05, 0.2, 1.0):
-        fT, fD, fC, net = factors(P, (m, m), lam)
+        fT, fD, fC, net = factors(P, m, lam)
         prod = fT * fD * fC
         allpass &= ok(f"factors multiply to net (m={m}, lam={lam})",
                       abs(prod - net) < 1e-10,
                       f"f_T={fT:.4f} f_D={fD:.4f} f_C={fC:.4f} -> {prod:.6f} vs {net:.6f}")
-        allpass &= ok(f"  directions  f_T<1<f_C, f_D<1 (m={m}, lam={lam})",
+        allpass &= ok(f"  directions  f_T<1, f_D<1, f_C>1 (m={m}, lam={lam})",
                       fT < 1 and fD < 1 and fC > 1)
 
 # ---- 6. term-by-term: which correction dominates ---------------------------

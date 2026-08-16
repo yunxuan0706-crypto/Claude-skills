@@ -73,8 +73,9 @@ branching formula `1 + 1ᵀ(I−Nᵀ)⁻¹g`, `g_b=⟨k_b⟩C_b`, converging as 
 (χ identical over t_max∈[2e4,1.2e5], activated-mass residual ≤ 1e-20).
 
 **Monte-Carlo re-check** (`recheck_mc.py`): a direct single-group Gillespie
-simulation reproduces the cascade `C(m,λ,θ)` within statistical noise (≤ ~1σ at
-1e6 samples, incl. `C=λ/(1+λ)` for m=2 and `C=0` for θ≥2); the closure `R(∞)`
+simulation reproduces the cascade `C(m,λ,θ)` within statistical noise (≤ ~1σ;
+the script samples 2×10⁵ per point, and a 10⁶ × 4-seed re-check of the m=2 case
+gave 0.64–1.12σ), incl. `C=λ/(1+λ)` for m=2 and `C=0` for θ≥2); the closure `R(∞)`
 stays O(ε) below λc and lifts to an O(1) epidemic above it; `ρ(λ)` is strictly
 monotone (bisection well-posed).
 
@@ -125,6 +126,8 @@ exact and `(0,0,0)` is mean field, verified to 1e-9.
 - **But the flip never reaches the threshold.** λc lies far below the flip
   window for every m tested (λc = 0.018 vs window [0.086, 0.394] at m=8), so
   λc^MF < λc always — verified for all six distributions up to m = 30. The
+  window's lower edge, in units of λc, falls with m (4.7 → 2.1 between m=8 and
+  m=50) but stays clear of 1. The
   threshold statement and the reproduction-number statement are genuinely
   different, and only the latter changes sign.
 - At m = 2 the threshold ratio collapses to an exact identity,
@@ -142,16 +145,17 @@ comparable in this form.
 Figure 3 compares two closures, so on its own it is theory against theory. The
 missing ground truth is supplied in `verify_sim.py`, in two parts dictated by a
 structural fact: **the sign-flip region is always supercritical** — its lower
-edge never falls below 2.5 λc (measured at 2.53–7.07 λc over m = 6–16 and four
-distributions) — so it cannot be
+edge stays above λc at every m tested — the ratio decreases with m (about 4.7 at
+m=8, 2.6 at m=16, 2.1 by m=50) but never approaches 1 — so it cannot be
 reached by a subcritical outbreak-size measurement.
 
 1. **The full next-generation bookkeeping is validated where it can be.** Exact
    Gillespie SIR on a configuration-model multiplex hypergraph (N = 40 000,
-   3 graphs × 3 000 seeds, real loops and finite-N effects, no closure) at
+   3 000 seeds spread over 3 independent graphs, real loops and finite-N
+   effects, no closure) at
    λ = 0.6 λc and 0.8 λc for m = 3, 5, 8, 12. The simulated mean outbreak size
    agrees with `χ = 1ᵀ(I−N)⁻¹v₀` at **|z| ≤ 1.3σ on all eight points**, while
-   the mean-field prediction is excluded by **3.3σ to 32.5σ**. This tests T,
+   the mean-field prediction is excluded by **3.5σ to 42.7σ**. This tests T,
    the excess subtraction and the cascade together. (At N = 12 000 one point
    sat at −3.1σ; raising N moved it to −0.4σ, confirming finite-N, not a
    discrepancy.)

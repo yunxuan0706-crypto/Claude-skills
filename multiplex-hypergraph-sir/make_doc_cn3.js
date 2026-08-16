@@ -10,7 +10,7 @@ const {
 const INK = "000000";
 const CJK = "SimSun", HEI = "SimHei", EQF = "Cambria Math";
 const BODY = 21, SMALL = 18;          // 10.5pt body, 9pt caption
-const CENTER = 4560, RIGHTT = 9120;   // tab stops inside the text block
+const CENTER = 4500, RIGHTT = 9000;   // A4 text block is 9026 twips   // tab stops inside the text block
 
 // plain run
 const R = (t, o = {}) => new TextRun({

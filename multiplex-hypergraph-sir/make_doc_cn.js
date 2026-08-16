@@ -113,7 +113,7 @@ kids.push(P([R("微小残余为线性律的"),R("有限窗口效应",{bold:true}
 
 // figure
 const img=fs.readFileSync("figure2_lambda_c.png");
-kids.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:80,after:60},children:[new ImageRun({type:"png",data:img,transformation:{width:640,height:206}})]}));
+kids.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:80,after:60},children:[new ImageRun({type:"png",data:img,transformation:{width:620,height:200}})]}));
 kids.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{after:150},children:[
   new TextRun({text:"图 2　由亚临界终态外推测定爆发阈值 ",font:CJK,italics:true,size:18,color:GREY}),
   new TextRun({text:"λc",font:EQF,italics:true,size:18,color:GREY}),

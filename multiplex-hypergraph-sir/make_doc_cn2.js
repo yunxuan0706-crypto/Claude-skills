@@ -91,7 +91,7 @@ kids.push(table([2260,1560,1560,1300,1340,1140],[
 ]));
 kids.push(P([R("微小残余为线性律 (5) 的"),R("有限窗口效应",{bold:true}),R("：逆规模仅在 "),...E("λ_{c}"),R(" 紧邻严格线性，故有限窗口拟合带一个偏置，其符号随窗口位置翻转、量级与 σ 相当，因而不可与真实偏离区分。")],{before:40,noindent:true}));
 const img=fs.readFileSync("figure2_lambda_c.png");
-kids.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:100,after:50},indent:{firstLine:0},children:[new ImageRun({type:"png",data:img,transformation:{width:648,height:209}})]}));
+kids.push(new Paragraph({alignment:AlignmentType.CENTER,spacing:{before:100,after:50},indent:{firstLine:0},children:[new ImageRun({type:"png",data:img,transformation:{width:612,height:197}})]}));
 kids.push(cap([new TextRun({text:"图 1　",font:CJK,bold:true,size:18,color:INK}),
   new TextRun({text:"由亚临界终态外推测定爆发阈值 ",font:CJK,size:18,color:GREY}),
   new TextRun({text:"λc",font:EQF,italics:true,size:18,color:GREY}),

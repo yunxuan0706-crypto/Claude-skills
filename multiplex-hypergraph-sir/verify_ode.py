@@ -54,12 +54,30 @@ for name, P, m, w, theta in configs:
                   f"max residual={maxres2:.2e}")
 
     # ---- DFE Jacobian spectral abscissa vs rho(N)=1 threshold ----
-    # At lambda_c, the DFE Jacobian should have max real part eigenvalue = 0.
+    # The abscissa vanishes for EVERY lambda <= lambda_c (the recovered /
+    # already-transmitted directions contribute structural zero eigenvalues),
+    # so "abscissa == 0 at lambda_c" is one-sided: it cannot detect a threshold
+    # that is too low. Bisect instead for the lambda at which the abscissa
+    # first turns positive, and compare THAT with lambda_c.
     lc = lambda_c_rho(P, m, w=w, theta=theta)
-    clo_c = Closure(P, m, lc, w=w, theta=theta, eps=0.0)
-    J = clo_c.jacobian_dfe()
-    max_re = float(np.max(np.real(np.linalg.eigvals(J))))
-    allpass &= ok(f"[{name}] DFE Jacobian abscissa=0 at lam_c", abs(max_re) < 1e-4,
-                  f"lam_c={lc:.6f}  max Re eig={max_re:.2e}")
+
+    def abscissa(L):
+        J = Closure(P, m, L, w=w, theta=theta, eps=0.0).jacobian_dfe()
+        return float(np.max(np.real(np.linalg.eigvals(J))))
+
+    lo, hi = 0.2 * lc, 3.0 * lc
+    assert abscissa(lo) <= 1e-9 < abscissa(hi)
+    for _ in range(60):
+        mid = 0.5 * (lo + hi)
+        if abscissa(mid) > 1e-9:
+            hi = mid
+        else:
+            lo = mid
+    lc_jac = 0.5 * (lo + hi)
+    allpass &= ok(f"[{name}] Jacobian instability onset == lam_c",
+                  abs(lc_jac / lc - 1) < 1e-6,
+                  f"lam_c={lc:.8f}  onset={lc_jac:.8f}  rel={abs(lc_jac/lc-1):.1e}")
+    allpass &= ok(f"[{name}]   and abscissa is 0 at lam_c, >0 just above",
+                  abs(abscissa(lc)) < 1e-9 and abscissa(1.02 * lc) > 1e-6)
 
 print("\n=== ALL PASS ===" if allpass else "\n!!! SOME FAILURES !!!")

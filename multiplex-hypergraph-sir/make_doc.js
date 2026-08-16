@@ -110,7 +110,7 @@ children.push(table([3050, 3050, 3460], [
 children.push(H("5  图 2 说明", HeadingLevel.HEADING_1));
 const img = fs.readFileSync("figure2_lambda_c.png");
 children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 60, after: 60 },
-  children: [new ImageRun({ type: "png", data: img, transformation: { width: 648, height: 209 } })] }));
+  children: [new ImageRun({ type: "png", data: img, transformation: { width: 620, height: 200 } })] }));
 children.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { after: 160 },
   children: [new TextRun({ text: "图 2  由亚临界终态外推测定爆发阈值 " + lam + "c，并与 " + rho + "(N)=1 独立比对。", font: FONT, italics: true, size: 18, color: GREY })] }));
 

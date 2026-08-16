@@ -30,7 +30,10 @@ Written multiplicatively, each switch s in {0,1}:
     N(s_T, s_D, s_C)_ab = (m_b-1) lam_b * f_T(b)^{s_T} * f_C(b)^{s_C}
                           * [ X_ab - s_D * delta_ab ]
 
-so (0,0,0) is the mean field and (1,1,1) is exact.
+so (0,0,0) is the mean field and (1,1,1) is exact. The per-layer scalars above
+are what the *matrix* is built from; the factors REPORTED by factors() are the
+sequential spectral ratios, which is the only definition whose product equals
+the net deviation when the layers differ (see that function).
 """
 import numpy as np
 
@@ -104,29 +107,26 @@ def factors(P, m, lam, w=None, theta=None):
     """Return (f_T, f_D, f_C, net) as they act on the spectral radius.
 
     net = rho_exact / rho_MF.  net < 1 means mean field overestimates R.
-    f_D is evaluated spectrally (it is not a per-layer scalar in general).
-    """
-    M = len(m)
-    if w is None:
-        w = np.ones(M)
-    if theta is None:
-        theta = np.ones(M, dtype=int)
-    lam_b = lam * np.asarray(w, float)
-    T_b = lam_b / (1.0 + lam_b)
-    f_T = float(np.mean(1.0 / (1.0 + lam_b)))                    # per-layer, = T/lam
-    C_b = np.array([cascade_C(m[b], lam_b[b], theta[b]) for b in range(M)])
-    with np.errstate(divide="ignore", invalid="ignore"):
-        fc = np.where((np.asarray(m) - 1) * T_b > 0,
-                      C_b / ((np.asarray(m) - 1) * T_b), 1.0)
-    f_C = float(np.mean(fc))
-    # spectral effect of the excess subtraction alone
-    r_with = rho_switched(P, m, lam, s_T=0, s_D=1, s_C=0, w=w, theta=theta)
-    r_without = rho_switched(P, m, lam, s_T=0, s_D=0, s_C=0, w=w, theta=theta)
-    f_D = r_with / r_without
-    net = (rho_switched(P, m, lam, s_T=1, s_D=1, s_C=1, w=w, theta=theta)
-           / r_without)
-    return f_T, f_D, f_C, net
 
+    The three factors are defined as *sequential* corrections, each the
+    marginal effect of switching on one more term in the order T, D, C:
+
+        f_T = rho(1,0,0)/rho(0,0,0)
+        f_D = rho(1,1,0)/rho(1,0,0)
+        f_C = rho(1,1,1)/rho(1,1,0)
+
+    so their product telescopes to rho(1,1,1)/rho(0,0,0) = net *exactly, for
+    any configuration*. Defining f_T and f_C instead as per-layer scalars
+    (T/lam and C/[(m-1)T]) reproduces net only when the layers are identical:
+    at m=(2,10), lam=0.2 the per-layer product is 0.879 while net is 1.023 --
+    the opposite sign of the deviation being described.
+    """
+    kw = dict(w=w, theta=theta)
+    r000 = rho_switched(P, m, lam, s_T=0, s_D=0, s_C=0, **kw)
+    r100 = rho_switched(P, m, lam, s_T=1, s_D=0, s_C=0, **kw)
+    r110 = rho_switched(P, m, lam, s_T=1, s_D=1, s_C=0, **kw)
+    r111 = rho_switched(P, m, lam, s_T=1, s_D=1, s_C=1, **kw)
+    return r100 / r000, r110 / r100, r111 / r110, r111 / r000
 
 # --------------------------------------------------------------------------
 # mean-field ODE (2.12) and its disease-free Jacobian
@@ -138,6 +138,13 @@ class MeanFieldODE:
             phi_a   = sum_k k_a P(k) i_k / <k^a>          (mu = 1)."""
 
     def __init__(self, P, m, lam, w=None, theta=None):
+        # Theta_a = 1-(1-phi_a)^{m_a-1} presumes a single infected member
+        # activates the group, i.e. theta = 1. Refuse rather than silently
+        # ignore theta, which the exact side (Closure, next_gen_matrix) honours.
+        if theta is not None and any(t != 1 for t in theta):
+            raise NotImplementedError(
+                "the degree mean field (2.12) is written for theta=1; "
+                f"got theta={tuple(theta)}")
         self.M = len(m)
         self.m = list(m)
         if w is None:

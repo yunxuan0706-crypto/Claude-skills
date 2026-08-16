@@ -175,7 +175,10 @@ axD.set_yticks([1, 2, 3, 4]); axD.set_yticklabels(["1", "2", "3", "4"])
 axD.tick_params(which="both", top=False, right=False)
 axD.legend(loc="upper right", frameon=False, fontsize=7.4, handlelength=1.5,
            handletextpad=0.5, labelspacing=0.32, borderaxespad=0.6)
-axD.text(0.035, 0.045, "points: Gillespie on the multiplex\nhypergraph (agree with exact, $\\leq$1.3$\\sigma$)",
+_mz = max(abs(r["chi_sim"] / r["chi_exact"] - 1) / (r["sem"] / r["chi_exact"])
+          for r in sim)
+axD.text(0.175, 0.045, "points: Gillespie on the multiplex\n"
+         rf"hypergraph (agree with exact, $\leq${_mz:.1f}$\sigma$)",
          transform=axD.transAxes, fontsize=7.4, color=SEC, ha="left",
          va="bottom", linespacing=1.4)
 tag(axD, "d")

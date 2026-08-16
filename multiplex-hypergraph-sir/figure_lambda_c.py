@@ -102,7 +102,8 @@ axB.text(0.145, 0.205, "identity", transform=axB.transAxes, fontsize=8.2,
          color=MUTED, ha="left", va="bottom", rotation=45,
          rotation_mode="anchor", style="italic")
 maxrel = np.max(np.abs(lce - lcr) / lcr)
-axB.text(0.965, 0.055, "max rel. dev.\n" + rf"$6\times10^{{-4}}$", transform=axB.transAxes,
+_e = int(np.floor(np.log10(maxrel))); _m = maxrel / 10 ** _e
+axB.text(0.965, 0.055, "max rel. dev.\n" + rf"${_m:.0f}\times10^{{{_e}}}$", transform=axB.transAxes,
          fontsize=8.6, color=SEC, ha="right", va="bottom", linespacing=1.4)
 tag(axB, "b")
 
@@ -122,7 +123,7 @@ axC.set_yticks([-2, -1, 0, 1, 2])
 minorticks(axC, nx=2, ny=1)
 axC.text(0.5, 0.955, r"$\pm1\sigma,\;\;\pm2\sigma$", transform=axC.transAxes,
          fontsize=8.6, color=SEC, ha="center", va="top")
-axC.text(0.965, 0.055, "max\n" + rf"$1.5\,\sigma$", transform=axC.transAxes,
+axC.text(0.965, 0.055, "max\n" + rf"${np.max(np.abs(pull)):.1f}\,\sigma$", transform=axC.transAxes,
          fontsize=8.8, color=SEC, ha="right", va="bottom", linespacing=1.4)
 tag(axC, "c")
 

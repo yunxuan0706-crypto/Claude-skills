@@ -69,8 +69,11 @@ if __name__ == "__main__":
         lc = lambda_c_rho(P, (m, m))
         for frac in (0.6, 0.8):
             lam = frac * lc
+            # distinct seed per (m, frac): sharing one seed would reuse the same
+            # graphs and seed nodes for both lambda points at a given m
             sim = mean_outbreak_size(P, (m, m), lam, N=40000, n_seeds=3000,
-                                     n_graphs=3, seed=100 + m)
+                                     n_graphs=3,
+                                     seed=100 + 10 * m + int(round(10 * frac)))
             ex = chi_exact(P, (m, m), lam)
             mf = chi_meanfield(P, (m, m), lam)
             z = (sim["chi"] - ex) / sim["sem"]
@@ -101,17 +104,25 @@ if __name__ == "__main__":
 
     # ---------------------------------------------------------------- part 3
     print("\n=== 3. the flip region is always supercritical (structural) ===")
-    worst = 1e9
+    # The edge/lambda_c ratio DECREASES with m (about 4.7 at m=8 down to ~2.1 by
+    # m=50), so no fixed lower bound like "2.5" survives; what is robust, and
+    # all the argument needs, is that the ratio stays above 1.
+    ratios, n_windows = [], 0
     for Pd in [P, {(10, 10): 1.0}, {(2, 2): .9, (20, 20): .1}, {(3, 3): 1.0}]:
-        for m in (8, 10, 12, 16):
+        for m in (8, 12, 16, 24, 32):
             lc = lambda_c_rho(Pd, (m, m))
-            ls = np.geomspace(1e-3, 20, 1500)
+            ls = np.geomspace(1e-4, 20, 700)
             nets = np.array([factors(Pd, (m, m), l)[3] for l in ls])
             w = ls[nets > 1]
             if len(w):
-                worst = min(worst, w.min() / lc)
-    allpass &= ok("flip window starts above lambda_c for every case",
-                  worst > 1.0, f"closest approach = {worst:.2f} x lambda_c")
+                n_windows += 1
+                ratios.append(w.min() / lc)
+    allpass &= ok("flip windows were actually found (test is not vacuous)",
+                  n_windows >= 15, f"{n_windows} windows")
+    allpass &= ok("every flip window starts above lambda_c",
+                  bool(ratios) and min(ratios) > 1.0,
+                  f"edge/lambda_c ranges {min(ratios):.2f}-{max(ratios):.2f}, "
+                  f"decreasing with m")
 
     json.dump(rows, open("figure3_sim.json", "w"), indent=2)
     print("\nwrote figure3_sim.json")

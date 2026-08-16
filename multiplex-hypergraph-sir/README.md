@@ -22,6 +22,8 @@ across eight configurations.
 | `recheck_mc.py`     | direct single-group Gillespie MC for the cascade `C`; ODE behaviour across the transition; `ρ(λ)` monotonicity |
 | `meanfield.py`      | degree mean-field closure (2.12–2.13) and the switchable next-generation matrix that turns each of the three deviations on/off |
 | `verify_mf.py`      | mean-field checks: the λc^MF/λc anchor, MF-matrix vs MF-ODE Jacobian, factor directions, and the sign-flip scan |
+| `simulate.py`       | exact Gillespie SIR on a configuration-model multiplex hypergraph (real loops, finite N) — the ground truth for Figure 3 |
+| `verify_sim.py`     | simulation validation of Figure 3: χ_sim vs exact N vs mean field, cascade C sampled at the flip-region parameters, and the supercriticality of the flip |
 | `figure3_meanfield.py` + `figure3_meanfield.{pdf,png}` | Figure 3: the three factors, the net deviation on the (m,λ) plane, and the threshold consequence |
 | `figure_lambda_c.py`| draws Figure 2 from `figure_data.json` |
 | `figure2_lambda_c.pdf/.png` | Figure 2 |
@@ -35,6 +37,7 @@ python3 verify_ode.py     # closure self-checks        -> ALL PASS
 python3 datacheck.py      # independent data checks     -> agreement < 1e-3
 python3 recheck_mc.py     # single-group Gillespie MC    -> C matches within noise
 python3 verify_mf.py      # mean-field checks            -> ALL PASS
+python3 verify_sim.py     # Gillespie ground truth       -> ALL PASS (slow)
 python3 figure3_meanfield.py  # redraw Figure 3
 python3 lambda_c_extrap.py# recompute figure_data.json
 python3 figure_lambda_c.py# redraw the figure
@@ -133,3 +136,30 @@ The comparison is for θ = 1 throughout: the mean-field closure (2.12) takes
 `Θ_a = 1−(1−φ_a)^{m_a−1}`, which presumes a single infected member activates a
 group. For θ ≥ 2 the exact side has `C = 0` and the two closures are not
 comparable in this form.
+
+### Simulation ground truth for Figure 3
+
+Figure 3 compares two closures, so on its own it is theory against theory. The
+missing ground truth is supplied in `verify_sim.py`, in two parts dictated by a
+structural fact: **the sign-flip region is always supercritical** — its lower
+edge sits at 2.5–4.7 λc for every distribution and m tested — so it cannot be
+reached by a subcritical outbreak-size measurement.
+
+1. **The full next-generation bookkeeping is validated where it can be.** Exact
+   Gillespie SIR on a configuration-model multiplex hypergraph (N = 40 000,
+   3 graphs × 3 000 seeds, real loops and finite-N effects, no closure) at
+   λ = 0.6 λc and 0.8 λc for m = 3, 5, 8, 12. The simulated mean outbreak size
+   agrees with `χ = 1ᵀ(I−N)⁻¹v₀` at **|z| ≤ 1.3σ on all eight points**, while
+   the mean-field prediction is excluded by **3.3σ to 32.5σ**. This tests T,
+   the excess subtraction and the cascade together. (At N = 12 000 one point
+   sat at −3.1σ; raising N moved it to −0.4σ, confirming finite-N, not a
+   discrepancy.)
+2. **The term that drives the flip is validated inside the flip region.** The
+   cascade `C(m,λ)` is sampled by direct single-group Gillespie at the
+   flip-region parameters themselves — (m,λ) = (8, 0.15), (8, 0.30), (10, 0.20),
+   (12, 0.30), (16, 0.15), all with net > 1 — and matches the recursion to
+   ≤ 1.1σ at 2×10⁵ realisations.
+
+So every ingredient the flip is built from is independently validated; the flip
+itself is a prediction of that validated matrix in a regime where the epidemic
+has already taken off, and is labelled as such.

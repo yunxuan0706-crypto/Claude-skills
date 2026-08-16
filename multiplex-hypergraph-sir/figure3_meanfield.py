@@ -15,8 +15,9 @@ from meanfield import factors, lambda_c_mf, lambda_c_switched
 # ---------------------------------------------------------------- style
 INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
 GRID, SPINE = "#ecebe5", "#c6c5bf"
-TEAL, CORAL, INDIGO = "#2BB3A3", "#F0785A", "#6C6FE0"
+TEAL, CORAL, INDIGO = "#3FBCA8", "#FA8F6E", "#858DE6"   # lighter, validated
 PT = "#5960CE"
+SIMC = "#2F6FB5"
 mpl.rcParams.update({
     "figure.dpi": 140, "savefig.dpi": 340,
     "font.family": "STIXGeneral", "mathtext.fontset": "stix", "font.size": 9.5,
@@ -32,8 +33,10 @@ mpl.rcParams.update({
     "lines.solid_capstyle": "round",
 })
 # diverging: blue <-> neutral grey <-> red  (never a hue at the midpoint)
+# pink <-> neutral <-> blue, with the pink arm carried a little deeper
 DIV = LinearSegmentedColormap.from_list(
-    "div", ["#0E7F72", "#3FB3A4", "#A6DBD2", "#F2F0EA", "#FBD2C1", "#F08D6C", "#C2542F"])
+    "div", ["#1E5FA6", "#5794DA", "#AECCEE", "#F2F0EC",
+            "#F6B6CE", "#DE5F95", "#B92A64"])
 
 P = {(3, 3): 0.5, (5, 5): 0.5}          # k in {3,5}, two layers, m1 = m2 = m
 MS = list(range(2, 17))
@@ -56,11 +59,11 @@ fC = np.array([factors(P, (M_A, M_A), l)[2] for l in LAMS])
 net = fT * fD * fC
 
 # ---------------------------------------------------------------- figure
-fig, (axA, axB, axC) = plt.subplots(1, 3, figsize=(10.4, 3.3))
-fig.subplots_adjust(left=0.062, right=0.975, bottom=0.165, top=0.905, wspace=0.40)
+fig, (axA, axB, axC, axD) = plt.subplots(1, 4, figsize=(13.4, 3.25))
+fig.subplots_adjust(left=0.049, right=0.988, bottom=0.165, top=0.905, wspace=0.42)
 
 def tag(ax, s):
-    ax.text(-0.205, 1.045, s, transform=ax.transAxes, fontsize=13,
+    ax.text(-0.24, 1.045, s, transform=ax.transAxes, fontsize=13,
             fontweight="bold", va="bottom", ha="left", color=INK)
 
 # ---- (a) the three factors, switched on one at a time -------------------
@@ -109,9 +112,9 @@ cb.set_label(r"$\log_2(\rho^{\mathrm{MF}}/\rho)$", fontsize=8.6)
 cb.ax.tick_params(labelsize=7.8, color=SEC, labelcolor=SEC)
 cb.outline.set_edgecolor(SPINE); cb.outline.set_linewidth(0.6)
 axB.text(0.60, 0.90, "MF under-\nestimates $\\rho$", transform=axB.transAxes,
-         fontsize=7.8, color="#0A5D53", ha="center", va="top", linespacing=1.35)
+         fontsize=7.8, color="#164B85", ha="center", va="top", linespacing=1.35)
 axB.text(0.955, 0.10, "MF over-\nestimates $\\rho$", transform=axB.transAxes,
-         fontsize=7.8, color="#8A3A1E", ha="right", va="bottom", linespacing=1.35)
+         fontsize=7.8, color="#8E1E4B", ha="right", va="bottom", linespacing=1.35)
 tag(axB, "b")
 
 # ---- (c) the threshold consequence --------------------------------------
@@ -135,6 +138,34 @@ axC.text(0.955, 0.26, "mean field always\nunderestimates $\\lambda_c$",
          transform=axC.transAxes, fontsize=8.2, color=SEC, ha="right",
          va="center", linespacing=1.4)
 tag(axC, "c")
+
+# ---- (d) simulation validation -----------------------------------------
+sim = json.load(open("figure3_sim.json"))
+axD.axhline(1.0, color=MUTED, lw=0.9, ls=(0, (4, 3)), zorder=1)
+for frac, mk, fc in ((0.6, "o", "white"), (0.8, "s", SIMC)):
+    rs = [r for r in sim if abs(r["frac"] - frac) < 1e-9]
+    xs = [r["m"] for r in rs]
+    ys = [r["chi_sim"] / r["chi_exact"] for r in rs]
+    es = [r["sem"] / r["chi_exact"] for r in rs]
+    axD.errorbar(xs, ys, yerr=es, fmt=mk, ms=5.0, mfc=fc, mec=SIMC, mew=1.2,
+                 ecolor=SIMC, elinewidth=1.0, capsize=2.4, capthick=0.8,
+                 zorder=4, ls="none", label=rf"sim, $\lambda={frac}\lambda_c$")
+    axD.plot(xs, [r["chi_mf"] / r["chi_exact"] for r in rs], "-", color=CORAL,
+             lw=1.6, marker=mk, ms=4.0, mfc="white", mec=CORAL, mew=1.1,
+             zorder=3, label=rf"mean field, $\lambda={frac}\lambda_c$")
+axD.set_yscale("log")
+axD.set_xlim(2, 13); axD.set_ylim(0.75, 4.2)
+axD.set_xlabel(r"group size $m$")
+axD.set_ylabel(r"$\chi\,/\,\chi^{\rm exact}$")
+axD.set_xticks([3, 5, 8, 12])
+axD.set_yticks([1, 2, 3, 4]); axD.set_yticklabels(["1", "2", "3", "4"])
+axD.tick_params(which="both", top=False, right=False)
+axD.legend(loc="upper left", frameon=False, fontsize=7.0, handlelength=1.5,
+           handletextpad=0.5, labelspacing=0.3, borderaxespad=0.5)
+axD.text(0.965, 0.94, "points: Gillespie on the\nmultiplex hypergraph\n(agree with exact, $\\leq$1.3$\\sigma$)",
+         transform=axD.transAxes, fontsize=7.4, color=SEC, ha="right",
+         va="top", linespacing=1.4)
+tag(axD, "d")
 
 fig.savefig("figure3_meanfield.pdf", bbox_inches="tight")
 fig.savefig("figure3_meanfield.png", bbox_inches="tight", dpi=210)

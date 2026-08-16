@@ -20,6 +20,9 @@ across eight configurations.
 | `verify_ode.py`     | closure self-checks: sum rule (2.6), identity (2.7), DFE Jacobian abscissa = 0 at λc |
 | `datacheck.py`      | independent cross-checks of the final-state data (branching formula, ε→0, t_max, sanity) |
 | `recheck_mc.py`     | direct single-group Gillespie MC for the cascade `C`; ODE behaviour across the transition; `ρ(λ)` monotonicity |
+| `meanfield.py`      | degree mean-field closure (2.12–2.13) and the switchable next-generation matrix that turns each of the three deviations on/off |
+| `verify_mf.py`      | mean-field checks: the λc^MF/λc anchor, MF-matrix vs MF-ODE Jacobian, factor directions, and the sign-flip scan |
+| `figure3_meanfield.py` + `figure3_meanfield.{pdf,png}` | Figure 3: the three factors, the net deviation on the (m,λ) plane, and the threshold consequence |
 | `figure_lambda_c.py`| draws Figure 2 from `figure_data.json` |
 | `figure2_lambda_c.pdf/.png` | Figure 2 |
 
@@ -31,6 +34,8 @@ python3 verify.py         # analytic anchors           -> ALL PASS
 python3 verify_ode.py     # closure self-checks        -> ALL PASS
 python3 datacheck.py      # independent data checks     -> agreement < 1e-3
 python3 recheck_mc.py     # single-group Gillespie MC    -> C matches within noise
+python3 verify_mf.py      # mean-field checks            -> ALL PASS
+python3 figure3_meanfield.py  # redraw Figure 3
 python3 lambda_c_extrap.py# recompute figure_data.json
 python3 figure_lambda_c.py# redraw the figure
 ```
@@ -79,3 +84,36 @@ with **max relative deviation 6×10⁻⁴**, every configuration consistent with
 finite-window curvature of the linear law (1/χ is strictly linear only near λc);
 its sign flips with window placement and its size is comparable to σ, so it
 cannot be distinguished from a true deviation.
+
+## Mean-field deviations, term by term (Figure 3)
+
+The degree mean-field next-generation matrix `N^MF_ab = (m_b−1)λ_b⟨k^a k^b⟩/⟨k^a⟩`
+differs from the exact `N_ab` in exactly three places, with two competing
+directions. Written as multiplicative factors on the spectral radius:
+
+| switch | what mean field gets wrong | factor | direction |
+|---|---|---|---|
+| **T** | uses λ instead of `T=λ/(1+λ)` — ignores that a group is used up on a member once it transmits | `f_T = 1/(1+λ) < 1` | MF **over**estimates ρ |
+| **D** | omits the excess subtraction `−δ_ab` — lets infection turn back along the group it arrived by | `f_D < 1` (0.882 here) | MF **over**estimates ρ |
+| **C** | uses `(m−1)T` instead of the cascade `C` — cannot see that intra-group infections lengthen the active period | `f_C = C/[(m−1)T] > 1` | MF **under**estimates ρ |
+
+`ngm_switched(..., s_T, s_D, s_C)` turns each on independently; `(1,1,1)` is
+exact and `(0,0,0)` is mean field, verified to 1e-9.
+
+**Result.** With `P={(3,3),(5,5)}` (k∈{3,5}, two layers, m₁=m₂=m):
+
+- λc^MF/λc = 0.765, 0.849, 0.879, 0.903, 0.913 for m = 2,3,4,6,8, rising
+  monotonically to 0.93 at m=16 — mean field **always underestimates λc**, and
+  the gap narrows with m without changing sign. At m=3 the term-by-term
+  thresholds are ×1.063 (T only), ×1.133 (D only), ×0.976 (C only) relative to
+  mean field, so D is the largest single term and C opposes the other two.
+- **The net deviation of ρ does change sign** on the (m,λ) plane. For m ≥ 8 and
+  moderate λ the cascade term wins and mean field *under*estimates ρ: the window
+  is λ∈[0.086, 0.394] at m=8, widening with m (max `ρ/ρ^MF` = 1.58 at m=16).
+  The outline lists this as an open question; the scan answers it in the
+  affirmative, and `verify_mf.py` confirms the sign from next-generation
+  matrices built directly, sharing no code with the factorisation.
+- **But the flip never reaches the threshold.** λc lies far below the flip
+  window for every m tested (λc = 0.018 vs window [0.086, 0.394] at m=8), so
+  λc^MF < λc always — the threshold statement and the reproduction-number
+  statement are genuinely different, and only the latter changes sign.

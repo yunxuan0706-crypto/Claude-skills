@@ -111,9 +111,9 @@ allpass &= ok("first group size with a sign flip is m=8 for THIS config",
               first_flip(P) == 8, f"m={first_flip(P)}")
 
 # ---- 8. how far do those statements generalise? ---------------------------
-# The onset of the flip is config dependent (it is set by f_D = (X-1)/X, so
-# more heterogeneous degrees flip earlier); the absence of a flip AT the
-# threshold is not. Both are reported honestly rather than assumed.
+# The onset of the flip is config dependent (it is set by f_D, so more
+# heterogeneous degrees flip earlier); the absence of a flip AT the threshold
+# is not. Both are reported honestly rather than assumed.
 OTHER = {
     "k in {3,5} independent": {(3, 3): .25, (3, 5): .25, (5, 3): .25, (5, 5): .25},
     "3-regular":              {(3, 3): 1.0},
@@ -129,6 +129,28 @@ allpass &= ok("a sign flip exists for every distribution tested",
               "onsets " + ", ".join(f"{k}:{v}" for k, v in onsets.items()))
 allpass &= ok("flip onset lies in m = 6..9 across those distributions",
               all(6 <= v <= 9 for v in onsets.values()))
+
+# f_D is NOT (X-1)/X. Every X here has positive entries, so subtracting the
+# identity shifts all eigenvalues by -1 and f_D = 1 - 1/rho(X) exactly; for
+# M=2 uniform-X configs that is (2X-1)/(2X), not (X-1)/X. The wrong form is
+# checked too, so a regression to it cannot pass silently.
+print("\nf_D vs the degree ratio, and the onset it sets:")
+pairs = []
+for nm, Pd in list(OTHER.items()) + [("k in {3,5} corr", P)]:
+    mk, cr = degree_moments(Pd, 2)
+    Xm = cr / mk[:, None]
+    rX = spectral_radius(Xm)
+    fD = factors(Pd, (5, 5), 0.2)[1]
+    allpass &= ok(f"f_D = 1 - 1/rho(X)  [{nm}]", abs(fD - (1 - 1 / rX)) < 1e-12,
+                  f"f_D={fD:.6f}  1-1/rho(X)={1 - 1/rX:.6f}  "
+                  f"(X-1)/X={(Xm[0,0]-1)/Xm[0,0]:.6f}")
+    allpass &= ok(f"   and f_D != (X-1)/X  [{nm}]",
+                  abs(fD - (Xm[0, 0] - 1) / Xm[0, 0]) > 1e-3)
+    pairs.append((rX, onsets[nm], nm))
+pairs.sort()
+allpass &= ok("onset is monotone non-increasing in rho(X)",
+              all(pairs[i][1] >= pairs[i + 1][1] for i in range(len(pairs) - 1)),
+              "  ".join(f"{nm}:rho={r:.2f}->m={o}" for r, o, nm in pairs))
 
 for nm, Pd in list(OTHER.items()) + [("k in {3,5} corr", P)]:
     no_flip = all(factors(Pd, (m, m), lambda_c_rho(Pd, (m, m)))[3] < 1

@@ -1,0 +1,8 @@
+{
+  "name": "multiplex-hypergraph-sir-docs",
+  "private": true,
+  "description": "Word generators for the Section 2 / Section 3 manuscript text",
+  "dependencies": {
+    "docx": "^9.7.1"
+  }
+}

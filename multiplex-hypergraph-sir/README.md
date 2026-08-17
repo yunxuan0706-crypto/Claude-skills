@@ -7,7 +7,7 @@ extrapolation from subcritical final states** (research outline §3.1, Figure 2)
 The threshold is measured a *second, independent way* from the eigenvalue
 condition ρ(N)=1: the nonlinear closure is integrated to its subcritical final
 state, and the reciprocal outbreak size ε/R(∞) is extrapolated linearly to its
-zero-crossing. The two paths share no code and agree to **6×10⁻⁴ (≤ 1.5σ)**
+zero-crossing. The two paths share no code and agree to **6.5×10⁻⁴ (≤ 1.51σ)**
 across eight configurations.
 
 ## Files
@@ -83,8 +83,9 @@ monotone (bisection well-posed).
 
 Across eight configurations spanning λc ∈ [0.08, 0.40] (single-layer higher-order,
 pairwise-degenerate, and two-layer), the subcritical extrapolation recovers λc
-with **max relative deviation 6×10⁻⁴**, every configuration consistent with
-ρ(N)=1 within **1.5σ** of the regression uncertainty. The residual is the known
+with **max relative deviation 6.5×10⁻⁴**, every configuration consistent with
+ρ(N)=1 within **1.51σ** of the regression uncertainty (the eight pulls are
++1.51, +1.38, +1.26, +1.03, +0.76, +0.57, +0.55, +0.47). The residual is the known
 finite-window curvature of the linear law (1/χ is strictly linear only near λc);
 its sign flips with window placement and its size is comparable to σ, so it
 cannot be distinguished from a true deviation.
@@ -119,10 +120,14 @@ exact and `(0,0,0)` is mean field, verified to 1e-9.
   affirmative, and `verify_mf.py` confirms the sign from next-generation
   matrices built directly, sharing no code with the factorisation.
 - **The onset is configuration dependent, the existence of the flip is not.**
-  It is set by `f_D = (X−1)/X` with `X = ⟨k^a k^b⟩/⟨k^a⟩`, so more heterogeneous
-  degrees flip earlier: across six distributions the onset spans m = 6–9
-  (m=6 for 10-regular and for a heavy tail k∈{2,20}; m=9 for 3-regular and
-  k∈{1,3}), and a flip exists in every one of them.
+  It is set by `f_D`. For every configuration here `X` has positive entries, so
+  subtracting the identity shifts all eigenvalues by −1 and `f_D = 1 − 1/ρ(X)`
+  exactly; more heterogeneous degrees mean larger `ρ(X)`, `f_D` closer to 1,
+  a weaker overestimate from D, and an earlier flip. Across six distributions
+  `ρ(X)` = 5.00, 6.00, 8.25, 8.50, 20.0, 22.9 give onsets m = 9, 9, 8, 8, 6, 6
+  — monotone term by term (m=9 for k∈{1,3} and 3-regular; m=8 for k∈{3,5}
+  independent and correlated; m=6 for 10-regular and the heavy tail k∈{2,20}).
+  A flip exists in every one of them.
 - **But the flip never reaches the threshold.** λc lies far below the flip
   window for every m tested (λc = 0.018 vs window [0.086, 0.394] at m=8), so
   λc^MF < λc always — verified for all six distributions up to m = 30. The
@@ -155,7 +160,7 @@ reached by a subcritical outbreak-size measurement.
    effects, no closure) at
    λ = 0.6 λc and 0.8 λc for m = 3, 5, 8, 12. The simulated mean outbreak size
    agrees with `χ = 1ᵀ(I−N)⁻¹v₀` at **|z| ≤ 1.3σ on all eight points**, while
-   the mean-field prediction is excluded by **3.5σ to 42.7σ**. This tests T,
+   the mean-field prediction is excluded by **3.4σ to 42.7σ**. This tests T,
    the excess subtraction and the cascade together. (At N = 12 000 one point
    sat at −3.1σ; raising N moved it to −0.4σ, confirming finite-N, not a
    discrepancy.)

@@ -52,7 +52,7 @@ def minorticks(ax, nx=5, ny=2):
 # ============================================================ (a) method
 show = [("2-layer m=(3,4)", TEAL,   "2-layer $m=(3,4)$"),
         ("6-reg. pairwise", CORAL,  "6-reg. pairwise"),
-        ("m=3 deg{2,3}",    INDIGO, "1-layer $m=3$")]
+        ("m=3 deg{2,3}",    INDIGO, r"1-layer $m=3$, $k\in\{2,3\}$")]
 axA.plot([1.0, 1.0], [0.0, 0.052], color=MUTED, lw=0.9, ls=(0, (4, 3)), zorder=1)
 axA.axhline(0, color=MUTED, lw=0.8, zorder=1)
 handles = []
@@ -71,7 +71,9 @@ for name, col, lab in show:
                      mew=0.7, label=lab)
     axA.plot(xn, ys, "o", ms=4.2, mfc=col, mec="white", mew=0.7, zorder=4)
     handles.append(line)
-# hollow marker at the common zero-crossing (rho(N)=1 point)
+# hollow marker at the rho(N)=1 prediction, i.e. x = 1 exactly. The three fits
+# cross zero at 1.000616 / 1.000386 / 1.000336 -- to the right of it and of each
+# other, but by less than a pixel on this axis.
 axA.plot([1.0], [0.0], "o", ms=6.5, mfc="white", mec=SEC, mew=1.0, zorder=5)
 axA.set_xlim(0.876, 1.026)
 axA.set_ylim(-0.009, 0.098)
@@ -103,7 +105,9 @@ axB.text(0.145, 0.205, "identity", transform=axB.transAxes, fontsize=8.2,
          rotation_mode="anchor", style="italic")
 maxrel = np.max(np.abs(lce - lcr) / lcr)
 _e = int(np.floor(np.log10(maxrel))); _m = maxrel / 10 ** _e
-axB.text(0.965, 0.055, "max rel. dev.\n" + rf"${_m:.0f}\times10^{{{_e}}}$", transform=axB.transAxes,
+if round(_m, 1) >= 10:            # keep the mantissa in [1,10)
+    _m, _e = _m / 10, _e + 1
+axB.text(0.965, 0.055, "max rel. dev.\n" + rf"${_m:.1f}\times10^{{{_e}}}$", transform=axB.transAxes,
          fontsize=8.6, color=SEC, ha="right", va="bottom", linespacing=1.4)
 tag(axB, "b")
 
@@ -123,7 +127,7 @@ axC.set_yticks([-2, -1, 0, 1, 2])
 minorticks(axC, nx=2, ny=1)
 axC.text(0.5, 0.955, r"$\pm1\sigma,\;\;\pm2\sigma$", transform=axC.transAxes,
          fontsize=8.6, color=SEC, ha="center", va="top")
-axC.text(0.965, 0.055, "max\n" + rf"${np.max(np.abs(pull)):.1f}\,\sigma$", transform=axC.transAxes,
+axC.text(0.965, 0.055, "max\n" + rf"${np.max(np.abs(pull)):.2f}\,\sigma$", transform=axC.transAxes,
          fontsize=8.8, color=SEC, ha="right", va="bottom", linespacing=1.4)
 tag(axC, "c")
 

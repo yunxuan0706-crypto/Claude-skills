@@ -37,13 +37,11 @@ mpl.rcParams.update({
     "legend.frameon": False, "axes.axisbelow": True,
     "lines.solid_capstyle": "round",
 })
-# author-specified scale for panel (b): blue -> light blue -> yellow -> orange
-# -> red. The five stops are evenly spaced and TwoSlopeNorm puts vcenter=0 at
-# the middle stop, so the yellow band sits exactly on the sign-flip boundary:
-# cool = mean field underestimates rho, warm = it overestimates.
-# The stops are placed non-uniformly so the warm half turns over to orange and
-# red quickly, giving them most of the positive range; the cool half is
-# compressed to match. TwoSlopeNorm puts vcenter=0 at position 0.5, so the
+# scale for panel (b): blue -> light blue -> yellow -> orange -> red, i.e.
+# cool = mean field underestimates rho, warm = it overestimates. The stops are
+# placed NON-uniformly so the warm half turns over to orange and red quickly,
+# giving them most of the positive range; the cool half is compressed to match.
+# TwoSlopeNorm puts vcenter=0 at position 0.5, which is the yellow stop, so the
 # yellow band still sits exactly on the sign-flip boundary.
 DIV = LinearSegmentedColormap.from_list("div", [
     (0.00, "#5271AE"), (0.30, "#70ACDE"), (0.50, "#F5CC7D"),
@@ -125,9 +123,9 @@ cb.set_label(r"$\log_2(\rho^{\mathrm{MF}}/\rho)$", fontsize=8.6)
 cb.ax.tick_params(labelsize=7.8, color=SEC, labelcolor=SEC)
 cb.outline.set_edgecolor(SPINE); cb.outline.set_linewidth(0.6)
 axB.text(0.60, 0.90, "MF under-\nestimates $\\rho$", transform=axB.transAxes,
-         fontsize=7.8, color="#2F4A7A", ha="center", va="top", linespacing=1.35)
+         fontsize=7.8, color="#14243D", ha="center", va="top", linespacing=1.35)
 axB.text(0.955, 0.10, "MF over-\nestimates $\\rho$", transform=axB.transAxes,
-         fontsize=7.8, color="#8E3230", ha="right", va="bottom", linespacing=1.35)
+         fontsize=7.8, color="#4A1917", ha="right", va="bottom", linespacing=1.35)
 tag(axB, "b")
 
 # ---- (c) the threshold consequence --------------------------------------
@@ -173,14 +171,14 @@ axD.set_ylabel(r"$\chi\,/\,\chi^{\rm exact}$")
 axD.set_xticks([3, 5, 8, 12])
 axD.set_yticks([1, 2, 3, 4]); axD.set_yticklabels(["1", "2", "3", "4"])
 axD.tick_params(which="both", top=False, right=False)
-axD.legend(loc="upper right", frameon=False, fontsize=7.4, handlelength=1.5,
+axD.legend(loc="center right", frameon=False, fontsize=7.4, handlelength=1.5,
            handletextpad=0.5, labelspacing=0.32, borderaxespad=0.6)
 _mz = max(abs(r["chi_sim"] / r["chi_exact"] - 1) / (r["sem"] / r["chi_exact"])
           for r in sim)
-axD.text(0.175, 0.045, "points: Gillespie on the multiplex\n"
+axD.text(0.035, 0.985, "points: Gillespie on the multiplex\n"
          rf"hypergraph (agree with exact, $\leq${_mz:.1f}$\sigma$)",
          transform=axD.transAxes, fontsize=7.4, color=SEC, ha="left",
-         va="bottom", linespacing=1.4)
+         va="top", linespacing=1.4)
 tag(axD, "d")
 
 fig.savefig("figure3_meanfield.pdf", bbox_inches="tight")

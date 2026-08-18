@@ -11,7 +11,12 @@ layer 2, arranged so that groups genuinely share the focal node.
 
   (a) the multiplex hypergraph and the layer degree;
   (b) the intra-group cascade, labelled by the (i,s) counts the recursion uses;
-  (c) the group-level branching step and the excess subtraction.
+  (c) the group-level branching step and the excess subtraction. A node reached
+      via a layer-a group re-ignites its other groups; with X_ab = <k^a k^b>/<k^a>
+      it belongs to X_ab groups of layer b, but the arrival group -- itself a
+      layer-a group -- is already spent, so N_ab = C(m_b)[X_ab - delta_ab]. The
+      subtraction is diagonal: a layer-a successor carries X_aa-1, a layer-b
+      successor the full X_ab.
 """
 import numpy as np
 import matplotlib as mpl
@@ -142,34 +147,47 @@ axB.set_xlim(-2.45, 2.55); axB.set_ylim(-2.95, 1.95)
 panel_label(axB, "b", "intra-group cascade")
 
 # ================================================================ (c)
-rc = 0.58
-cIn = rc * np.array([-1.0, 0.0])
-c1 = rc * np.array([np.cos(np.deg2rad(58)), np.sin(np.deg2rad(58))])
-c2 = rc * np.array([np.cos(np.deg2rad(-58)), np.sin(np.deg2rad(-58))])
-gIn = group(axC, cIn, rc, 3, np.deg2rad(0), color=GRY)
-g1 = group(axC, c1, rc, 3, np.deg2rad(58 - 180))
-g2 = group(axC, c2, rc, 4, np.deg2rad(-58 - 180), dashed=True)
-for p in gIn[1:]:
-    node(axC, p, fill=F_R, ec=GRY, lw=0.75)
-for p in g1[1:] + g2[1:]:
-    node(axC, p)
-arrow(axC, gIn[1], np.zeros(2), color=RED, lw=1.05)
-node(axC, np.zeros(2), fill=F_I, r=0.112, lw=1.15)
+# A node reached VIA a layer-a group (type a) re-ignites its other groups.
+# Among its layer-a groups the arrival one is already spent, so it is removed
+# -> the -delta subtraction. Because the arrival is a layer-a group, that
+# removal only touches the same-layer (a=b) count: a layer-a successor carries
+# X_aa-1, a layer-b successor carries the full X_ab.
+rc = 0.52
+u = np.zeros(2)
+cIn = np.array([-1.24, -0.02])                       # arrival group (layer a)
+ca = np.array([0.74, 0.86])                          # layer-a successor
+cb = np.array([0.98, -0.70])                         # layer-b successor
 
-axC.plot([cIn[0] - 0.095, cIn[0] + 0.095], [-0.095, 0.095], "-",
-         color=GRY, lw=1.25, zorder=7)
-axC.plot([cIn[0] - 0.095, cIn[0] + 0.095], [0.095, -0.095], "-",
-         color=GRY, lw=1.25, zorder=7)
-axC.text(cIn[0], -0.80, r"$-\,\delta_{ab}$", fontsize=10, color=GRY,
-         ha="center", va="center")
-axC.text(*(c1 + 0.80 * c1 / np.linalg.norm(c1)), r"$C$", fontsize=10.5,
-         ha="center", va="center", color=RED)
-axC.text(*(c2 + 0.80 * c2 / np.linalg.norm(c2)), r"$C$", fontsize=10.5,
-         ha="center", va="center", color=RED)
-axC.text(*(c1 + [0.05, 0.30]), r"layer $b$", fontsize=8.6, color=GRY, ha="center")
-axC.text(*(c2 + [0.05, -0.34]), r"layer $b'$", fontsize=8.6, color=GRY, ha="center")
-axC.text(cIn[0], 0.80, r"layer $a$", fontsize=8.6, color=GRY, ha="center")
-axC.set_xlim(-1.85, 1.85); axC.set_ylim(-2.50, 1.95)
+gIn = group(axC, cIn, rc, 3, np.deg2rad(-18), color=GRY)   # solid = layer a
+ga = group(axC, ca, rc, 3, np.deg2rad(205))               # solid = layer a
+gb = group(axC, cb, rc, 4, np.deg2rad(150), dashed=True)  # dashed = layer b
+for p in gIn[1:]:
+    node(axC, p, fill=F_R, ec=GRY, lw=0.75)               # arrival: spent members
+for p in ga[1:] + gb[1:]:
+    node(axC, p)
+arrow(axC, gIn[1], u, color=RED, lw=1.05)                 # arrival -> u
+arrow(axC, u, ga[0], color=RED, lw=0.95, rad=-0.12)       # u re-ignites layer a
+arrow(axC, u, gb[0], color=RED, lw=0.95, rad=0.12)        # u re-ignites layer b
+node(axC, u, fill=F_I, r=0.112, lw=1.15)
+
+# cross the arrival group out: it is the -delta term (removed from the count)
+axC.plot([cIn[0] - 0.1, cIn[0] + 0.1], [cIn[1] - 0.1, cIn[1] + 0.1], "-",
+         color=BLK, lw=1.3, zorder=8)
+axC.plot([cIn[0] - 0.1, cIn[0] + 0.1], [cIn[1] + 0.1, cIn[1] - 0.1], "-",
+         color=BLK, lw=1.3, zorder=8)
+
+axC.text(cIn[0], cIn[1] + 0.80, r"layer $a$", fontsize=8.6, color=GRY, ha="center")
+axC.text(cIn[0], cIn[1] - 0.86, r"$-\,\delta_{ab}$  ($a\!=\!b$ only)",
+         fontsize=9, color=BLK, ha="center", va="center")
+axC.text(ca[0] + 0.72, ca[1] + 0.10, r"layer $a$", fontsize=8.6, color=GRY, ha="left")
+axC.text(ca[0] + 0.72, ca[1] - 0.24, r"$C\,(X_{aa}\!-\!1)$", fontsize=9,
+         color=BLK, ha="left", va="center")
+axC.text(cb[0] + 0.72, cb[1] + 0.10, r"layer $b$", fontsize=8.6, color=GRY, ha="left")
+axC.text(cb[0] + 0.72, cb[1] - 0.24, r"$C\,X_{ab}$", fontsize=9,
+         color=BLK, ha="left", va="center")
+axC.text(0.30, -2.02, r"$N_{ab} = C\,(X_{ab} - \delta_{ab})$", ha="center",
+         va="center", fontsize=10.5)
+axC.set_xlim(-1.95, 2.55); axC.set_ylim(-2.50, 1.95)
 panel_label(axC, "c", "group-level branching")
 
 fig.savefig("figure1_mechanism.pdf", bbox_inches="tight")

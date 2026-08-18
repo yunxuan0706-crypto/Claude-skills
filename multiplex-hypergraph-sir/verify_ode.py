@@ -8,11 +8,17 @@ def ok(name, cond, detail=""):
 
 allpass = True
 
-# Configs to test
+# Six representative configurations (doc sec. 1.6): pairwise-degenerate,
+# anti-correlated degrees, asymmetric rates and group sizes, three layers,
+# and two standard multiplex cases. (theta>=2 drop-out is Anchor B in verify.py.)
 configs = [
-    ("single m=3",     {(2,):0.5,(3,):0.5}, (3,), None, None),
-    ("2-layer (3,4)",  {(2,2):0.5,(3,3):0.5}, (3,4), None, None),
-    ("2-layer theta",  {(2,2):0.5,(3,3):0.5}, (3,4), None, (1,2)),
+    ("pairwise 5-reg (lc=1/3)", {(5,): 1.0}, (2,), None, None),
+    ("anti-correlated {2,4}",   {(2, 4): 0.5, (4, 2): 0.5}, (3, 4), None, None),
+    ("asymmetric m=(3,5) w=(1,2)", {(2, 2): 0.5, (3, 3): 0.5}, (3, 5),
+                                np.array([1.0, 2.0]), None),
+    ("three-layer M=3",         {(2, 2, 2): 0.5, (3, 3, 3): 0.5}, (3, 3, 3), None, None),
+    ("2-layer (3,4)",           {(2, 2): 0.5, (3, 3): 0.5}, (3, 4), None, None),
+    ("single m=3",              {(2,): 0.5, (3,): 0.5}, (3,), None, None),
 ]
 
 for name, P, m, w, theta in configs:
@@ -74,8 +80,11 @@ for name, P, m, w, theta in configs:
         else:
             lo = mid
     lc_jac = 0.5 * (lo + hi)
+    # central-difference Jacobian (theory.py) matches rho(N)=1 to the bisection
+    # resolution ~1e-9; the old forward difference floored at ~1e-7 and would
+    # fail this bound -- a guard against regressing that.
     allpass &= ok(f"[{name}] Jacobian instability onset == lam_c",
-                  abs(lc_jac / lc - 1) < 1e-6,
+                  abs(lc_jac / lc - 1) < 1e-8,
                   f"lam_c={lc:.8f}  onset={lc_jac:.8f}  rel={abs(lc_jac/lc-1):.1e}")
     allpass &= ok(f"[{name}]   and abscissa is 0 at lam_c, >0 just above",
                   abs(abscissa(lc)) < 1e-9 and abscissa(1.02 * lc) > 1e-6)

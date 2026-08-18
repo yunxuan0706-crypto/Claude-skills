@@ -267,9 +267,17 @@ class Closure:
         S = (1 - self.eps) * self.gf.Psi(Phi)
         return 1.0 - S, Phi, sol
 
-    def jacobian_dfe(self):
+    def jacobian_dfe(self, d=1e-6):
         """Numerical Jacobian of the ODE at the disease-free fixed point
-        (eps=0, all mass in all-susceptible state)."""
+        (eps=0, all mass in all-susceptible state).
+
+        Central differences: the forward difference carries an O(d) truncation
+        error (~1e-7 here) that sets a ~1e-7 floor on the threshold recovered
+        from the abscissa's zero-crossing, an order of magnitude coarser than
+        the eigenvalue condition it is meant to reproduce. Central differences
+        drop that to O(d^2) (~1e-11). The minus side pushes a compartment
+        slightly negative, which is harmless: the rhs is a smooth polynomial.
+        (meanfield.py uses central differences for the same reason.)"""
         import numpy as np
         y0 = np.zeros(self.dim)
         for a in range(self.M):
@@ -278,10 +286,9 @@ class Closure:
             y0[self.offsets[a] + j] = 1.0
         n = self.dim
         J = np.zeros((n, n))
-        d = 1e-7
-        f0 = self.rhs(0.0, y0)
         for kdim in range(n):
-            yp = y0.copy()
+            yp, ym = y0.copy(), y0.copy()
             yp[kdim] += d
-            J[:, kdim] = (self.rhs(0.0, yp) - f0) / d
+            ym[kdim] -= d
+            J[:, kdim] = (self.rhs(0.0, yp) - self.rhs(0.0, ym)) / (2 * d)
         return J

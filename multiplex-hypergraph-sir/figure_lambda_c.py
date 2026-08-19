@@ -1,4 +1,5 @@
-"""Figure 2: lambda_c by subcritical-final-state extrapolation vs rho(N)=1.
+"""Figure 3: lambda_c by subcritical-final-state extrapolation vs rho(N)=1.
+(Figure 1 = mechanism schematic, Figure 2 = time evolution, both in Part 1.)
 
 Refined journal styling: STIX serif typography, hairline chrome, minor ticks,
 a colour-blind-safe jewel-tone palette (validated).
@@ -131,7 +132,7 @@ axC.text(0.965, 0.055, "max\n" + rf"${np.max(np.abs(pull)):.2f}\,\sigma$", trans
          fontsize=8.8, color=SEC, ha="right", va="bottom", linespacing=1.4)
 tag(axC, "c")
 
-fig.savefig("figure2_lambda_c.pdf", bbox_inches="tight")
-fig.savefig("figure2_lambda_c.png", bbox_inches="tight", dpi=210)
+fig.savefig("figure3_lambda_c.pdf", bbox_inches="tight")
+fig.savefig("figure3_lambda_c.png", bbox_inches="tight", dpi=210)
 print("saved; max pull = %.2f sigma ; max rel dev = %.2e"
       % (np.max(np.abs(pull)), maxrel))

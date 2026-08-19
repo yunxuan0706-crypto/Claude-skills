@@ -23,7 +23,7 @@ across eight configurations.
 | `simulate.py`       | exact Gillespie SIR on a configuration-model multiplex hypergraph (real loops, finite N) — the microscopic ground truth |
 | `figure2_evolution.py` + `figure2_evolution.{pdf,png}` | time-evolution figure: group closure vs exact Gillespie simulation for S(t), I(t) (Fenwick-tree Gillespie; N=6000, 400 runs) |
 | `figure_lambda_c.py`| draws the λc figure from `figure_data.json` |
-| `figure2_lambda_c.pdf/.png` | the λc figure (extrapolation vs ρ(N)=1) |
+| `figure3_lambda_c.pdf/.png` | the λc figure (extrapolation vs ρ(N)=1) |
 
 ## Reproduce
 

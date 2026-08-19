@@ -20,13 +20,10 @@ across eight configurations.
 | `verify_ode.py`     | closure self-checks: sum rule (2.6), identity (2.7), DFE Jacobian abscissa = 0 at λc |
 | `datacheck.py`      | independent cross-checks of the final-state data (branching formula, ε→0, t_max, sanity) |
 | `recheck_mc.py`     | direct single-group Gillespie MC for the cascade `C`; ODE behaviour across the transition; `ρ(λ)` monotonicity |
-| `meanfield.py`      | degree mean-field closure (2.12–2.13) and the switchable next-generation matrix that turns each of the three deviations on/off |
-| `verify_mf.py`      | mean-field checks: the λc^MF/λc anchor, MF-matrix vs MF-ODE Jacobian, factor directions, and the sign-flip scan |
-| `simulate.py`       | exact Gillespie SIR on a configuration-model multiplex hypergraph (real loops, finite N) — the ground truth for Figure 3 |
-| `verify_sim.py`     | simulation validation of Figure 3: χ_sim vs exact N vs mean field, cascade C sampled at the flip-region parameters, and the supercriticality of the flip |
-| `figure3_meanfield.py` + `figure3_meanfield.{pdf,png}` | Figure 3: the three factors, the net deviation on the (m,λ) plane, and the threshold consequence |
-| `figure_lambda_c.py`| draws Figure 2 from `figure_data.json` |
-| `figure2_lambda_c.pdf/.png` | Figure 2 |
+| `simulate.py`       | exact Gillespie SIR on a configuration-model multiplex hypergraph (real loops, finite N) — the microscopic ground truth |
+| `figure2_evolution.py` + `figure2_evolution.{pdf,png}` | time-evolution figure: group closure vs exact Gillespie simulation for S(t), I(t) (Fenwick-tree Gillespie; N=6000, 400 runs) |
+| `figure_lambda_c.py`| draws the λc figure from `figure_data.json` |
+| `figure2_lambda_c.pdf/.png` | the λc figure (extrapolation vs ρ(N)=1) |
 
 ## Reproduce
 
@@ -36,11 +33,9 @@ python3 verify.py         # analytic anchors           -> ALL PASS
 python3 verify_ode.py     # closure self-checks        -> ALL PASS
 python3 datacheck.py      # independent data checks     -> agreement < 1e-3
 python3 recheck_mc.py     # single-group Gillespie MC    -> C matches within noise
-python3 verify_mf.py      # mean-field checks            -> ALL PASS
-python3 verify_sim.py     # Gillespie ground truth       -> ALL PASS (slow)
-python3 figure3_meanfield.py  # redraw Figure 3
+python3 figure2_evolution.py  # closure vs Gillespie, S(t)/I(t) (slow)
 python3 lambda_c_extrap.py# recompute figure_data.json
-python3 figure_lambda_c.py# redraw the figure
+python3 figure_lambda_c.py# redraw the λc figure
 ```
 
 ## Method (Figure 2)
@@ -90,86 +85,12 @@ finite-window curvature of the linear law (1/χ is strictly linear only near λc
 its sign flips with window placement and its size is comparable to σ, so it
 cannot be distinguished from a true deviation.
 
-## Mean-field deviations, term by term (Figure 3)
+## Time-evolution validation
 
-The degree mean-field next-generation matrix `N^MF_ab = (m_b−1)λ_b⟨k^a k^b⟩/⟨k^a⟩`
-differs from the exact `N_ab` in exactly three places, with two competing
-directions. Written as multiplicative factors on the spectral radius:
-
-| switch | what mean field gets wrong | factor | direction |
-|---|---|---|---|
-| **T** | uses λ instead of `T=λ/(1+λ)` — ignores that a group is used up on a member once it transmits | `f_T = 1/(1+λ) < 1` | MF **over**estimates ρ |
-| **D** | omits the excess subtraction `−δ_ab` — lets infection turn back along the group it arrived by | `f_D < 1` (0.882 here) | MF **over**estimates ρ |
-| **C** | uses `(m−1)T` instead of the cascade `C` — cannot see that intra-group infections lengthen the active period | `f_C = C/[(m−1)T] > 1` | MF **under**estimates ρ |
-
-`ngm_switched(..., s_T, s_D, s_C)` turns each on independently; `(1,1,1)` is
-exact and `(0,0,0)` is mean field, verified to 1e-9.
-
-**Result.** With `P={(3,3),(5,5)}` (k∈{3,5}, two layers, m₁=m₂=m):
-
-- λc^MF/λc = 0.765, 0.849, 0.879, 0.903, 0.913 for m = 2,3,4,6,8, rising
-  monotonically to 0.93 at m=16 — mean field **always underestimates λc**, and
-  the gap narrows with m without changing sign. At m=3 the term-by-term
-  thresholds are ×1.063 (T only), ×1.133 (D only), ×0.976 (C only) relative to
-  mean field, so D is the largest single term and C opposes the other two.
-- **The net deviation of ρ does change sign** on the (m,λ) plane. Above a
-  critical group size, at moderate λ, the cascade term wins and mean field
-  *under*estimates ρ. For the figure's configuration the onset is m = 8, with
-  window λ∈[0.086, 0.394], widening with m (max `ρ/ρ^MF` = 1.58 at m=16).
-  The outline lists this as an open question; the scan answers it in the
-  affirmative, and `verify_mf.py` confirms the sign from next-generation
-  matrices built directly, sharing no code with the factorisation.
-- **The onset is configuration dependent, the existence of the flip is not.**
-  It is set by `f_D`. For every configuration here `X` has positive entries, so
-  subtracting the identity shifts all eigenvalues by −1 and `f_D = 1 − 1/ρ(X)`
-  exactly; more heterogeneous degrees mean larger `ρ(X)`, `f_D` closer to 1,
-  a weaker overestimate from D, and an earlier flip. Across six distributions
-  `ρ(X)` = 5.00, 6.00, 8.25, 8.50, 20.0, 22.9 give onsets m = 9, 9, 8, 8, 6, 6
-  — monotone term by term (m=9 for k∈{1,3} and 3-regular; m=8 for k∈{3,5}
-  independent and correlated; m=6 for 10-regular and the heavy tail k∈{2,20}).
-  A flip exists in every one of them.
-- **But the flip never reaches the threshold.** λc lies far below the flip
-  window for every m tested (λc = 0.018 vs window [0.086, 0.394] at m=8), so
-  λc^MF < λc always — verified for all six distributions up to m = 30. The
-  window's lower edge, in units of λc, falls with m (4.7 → 2.1 between m=8 and
-  m=50) but stays clear of 1. The
-  threshold statement and the reproduction-number statement are genuinely
-  different, and only the latter changes sign.
-- At m = 2 the threshold ratio collapses to an exact identity,
-  `λc^MF/λc = (X−1)/X`, for any configuration with a uniform `X_ab`
-  (0.667 for 3-regular, 0.765 here, 0.900 for 10-regular; verified to 1e-9).
-  It does not hold when the layers are independent, since then `X_aa ≠ X_ab`.
-
-The comparison is for θ = 1 throughout: the mean-field closure (2.12) takes
-`Θ_a = 1−(1−φ_a)^{m_a−1}`, which presumes a single infected member activates a
-group. For θ ≥ 2 the exact side has `C = 0` and the two closures are not
-comparable in this form.
-
-### Simulation ground truth for Figure 3
-
-Figure 3 compares two closures, so on its own it is theory against theory. The
-missing ground truth is supplied in `verify_sim.py`, in two parts dictated by a
-structural fact: **the sign-flip region is always supercritical** — its lower
-edge stays above λc at every m tested — the ratio decreases with m (about 4.7 at
-m=8, 2.6 at m=16, 2.1 by m=50) but never approaches 1 — so it cannot be
-reached by a subcritical outbreak-size measurement.
-
-1. **The full next-generation bookkeeping is validated where it can be.** Exact
-   Gillespie SIR on a configuration-model multiplex hypergraph (N = 40 000,
-   3 000 seeds spread over 3 independent graphs, real loops and finite-N
-   effects, no closure) at
-   λ = 0.6 λc and 0.8 λc for m = 3, 5, 8, 12. The simulated mean outbreak size
-   agrees with `χ = 1ᵀ(I−N)⁻¹v₀` at **|z| ≤ 1.3σ on all eight points**, while
-   the mean-field prediction is excluded by **3.4σ to 42.7σ**. This tests T,
-   the excess subtraction and the cascade together. (At N = 12 000 one point
-   sat at −3.1σ; raising N moved it to −0.4σ, confirming finite-N, not a
-   discrepancy.)
-2. **The term that drives the flip is validated inside the flip region.** The
-   cascade `C(m,λ)` is sampled by direct single-group Gillespie at the
-   flip-region parameters themselves — (m,λ) = (8, 0.15), (8, 0.30), (10, 0.20),
-   (12, 0.30), (16, 0.15), all with net > 1 — and matches the recursion to
-   ≤ 1.1σ at 2×10⁵ realisations.
-
-So every ingredient the flip is built from is independently validated; the flip
-itself is a prediction of that validated matrix in a regime where the epidemic
-has already taken off, and is labelled as such.
+Beyond the threshold, the group closure reproduces the full transient. At
+M=2, m=(3,4), N=6000, λ=1.6λc, ε=0.02, the closure S(t)/I(t) (Eq. 2.5 plus
+one quadrature Ṙ=μI to split I from R) sits on top of an exact continuous-time
+Gillespie simulation (`figure2_evolution.py`, Fenwick-tree group sampling,
+400 independent runs): max deviation 0.0019 in S and 0.0006 in I — both under a
+line width — with matching peak height (~0.3%) and peak time (t≈4.4). The
+residual is a finite-size effect that vanishes as N grows.

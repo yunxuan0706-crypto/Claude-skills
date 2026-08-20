@@ -13,8 +13,8 @@ from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 # ---------------------------------------------------------------- palette
 INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
 GRID, SPINE = "#ecebe5", "#c6c5bf"
-TEAL, CORAL, INDIGO = "#1C9B8E", "#E76F51", "#5A67C0"      # validated, all >=3:1
-PT = "#454F9E"                                             # single-series accent
+TEAL, CORAL, INDIGO = "#1C9B8E", "#E76F51", "#4F8AC9"      # teal / coral / fresh blue
+PT = "#3E6BA6"                                             # clean blue single-series accent
 BAND2, BAND1 = "#f0efe9", "#e4e3db"                        # +-2sigma / +-1sigma
 
 mpl.rcParams.update({

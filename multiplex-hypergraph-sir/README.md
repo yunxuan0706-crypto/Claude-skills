@@ -24,6 +24,7 @@ across eight configurations.
 | `figure2_evolution.py` + `figure2_evolution.{pdf,png}` | time-evolution figure: group closure vs exact Gillespie simulation for S(t), I(t) (Fenwick-tree Gillespie; N=6000, 400 runs) |
 | `figure_lambda_c.py`| draws the λc figure from `figure_data.json` |
 | `figure3_lambda_c.pdf/.png` | the λc figure (extrapolation vs ρ(N)=1) |
+| `figure4_rho12.py` + `figure4_rho12.{pdf,png}` | Figure 4: λc vs inter-layer participation correlation ρ12 — exact ρ(N)=1 curve vs bootstrap box plots of the Gillespie threshold; sim data cached in `figure4_data.json` |
 
 ## Reproduce
 

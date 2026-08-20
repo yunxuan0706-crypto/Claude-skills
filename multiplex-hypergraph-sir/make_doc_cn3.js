@@ -130,7 +130,7 @@ k.push(P([R("阈值只经由度矩进入 N，故可取一族"), R("边缘固定�
 k.push(P([R("在 "), ...E("m=(3,3)"), R(" 下，对角元 "), ...E("N_{aa}=C(λ)(⟨k^{2}⟩/⟨k⟩−1)=(7/3)C(λ)"), R(" 与 "), ...E("ρ_{12}"), R(" 无关，非对角元 "), ...E("N_{ab}=C(λ)⟨k^{(1)}k^{(2)}⟩/⟨k⟩"), R(" 随 "), ...E("ρ_{12}"), R(" 线性增大，故 "), ...E("ρ(N)=C(λ)(16+ρ_{12})/3"), R("，阈值由 "), ...E("C(λ_{c})=3/(16+ρ_{12})"), R(" 定出——"), R("λ_c 随 ρ_12 单调下降", { bold: true }), R("。图 4 的实线即此曲线："), ...E("λ_{c}"), R(" 从 "), ...E("ρ_{12}=−1"), R(" 处的 0.1062 降到 "), ...E("ρ_{12}=+1"), R(" 处的 0.0930，共约 12.5%。同一族在位形模型多重超图上的直接 Gillespie 仿真（由亚临界簇规模外推 "), ...E("1/χ→0"), R("、"), ...E("N=2×10^{4}"), R("）在六个 "), ...E("ρ_{12}"), R(" 上复现该曲线，偏离最大 1.9σ、相对差不超过 1.1%。相同节点在两层同时充当枢纽，会在边缘结构不变的前提下集中跨层传播能力、压低阈值；反相关则抬高阈值。")]));
 const img4 = fs.readFileSync("figure4_rho12.png");
 k.push(new Paragraph({ alignment: AlignmentType.CENTER, spacing: { before: 160, after: 70 }, indent: { firstLine: 0 },
-  children: [new ImageRun({ type: "png", data: img4, transformation: { width: 400, height: 293 } })] }));
+  children: [new ImageRun({ type: "png", data: img4, transformation: { width: 486, height: 151 } })] }));
 k.push(new Paragraph({ alignment: AlignmentType.BOTH, spacing: { after: 180, line: 264 }, indent: { firstLine: 0 },
   children: [
     R("图 4", { bold: true, size: SMALL }),
@@ -138,11 +138,23 @@ k.push(new Paragraph({ alignment: AlignmentType.BOTH, spacing: { after: 180, lin
     R(" 对爆发阈值的移动。层度边缘分布固定（每层 ", { size: SMALL }), ...E("k∈{2,4}", SMALL),
     R(" 各半、群体基数 ", { size: SMALL }), ...E("m=(3,3)", SMALL),
     R("），仅调节两层度的 Pearson 相关 ", { size: SMALL }), ...E("ρ_{12}", SMALL),
-    R("。蓝线为 ", { size: SMALL }), ...E("ρ(N)=1", SMALL),
-    R(" 的精确阈值，箱线图为多重超图上直接 Gillespie 仿真所得阈值的自助分布（亚临界簇规模外推 ", { size: SMALL }), ...E("1/χ→0", SMALL),
-    R("、", { size: SMALL }), ...E("N=2×10^{4}", SMALL), R("；箱体为四分位距、须为 5–95 百分位、中线为中位数）。", { size: SMALL }),
+    R("。（a）结果：蓝线为 ", { size: SMALL }), ...E("ρ(N)=1", SMALL),
+    R(" 的精确阈值，箱线为多重超图上直接 Gillespie 仿真所得阈值的自助分布（", { size: SMALL }), ...E("N=2×10^{4}", SMALL),
+    R("；箱体为四分位距、须为 5–95 百分位、中线为中位数），", { size: SMALL }),
     ...E("λ_{c}", SMALL), R(" 随 ", { size: SMALL }), ...E("ρ_{12}", SMALL),
-    R(" 单调下降约 12.5%，理论与仿真在六点上一致至 1.9σ。", { size: SMALL }),
+    R(" 单调下降约 12.5%，六点上一致至 1.9σ。（b）测量：各 ", { size: SMALL }), ...E("ρ_{12}", SMALL),
+    R(" 下亚临界逆平均簇规模 ", { size: SMALL }), ...E("1/χ", SMALL),
+    R(" 随 ", { size: SMALL }), ...E("λ", SMALL),
+    R(" 线性趋零，其 ", { size: SMALL }), ...E("x", SMALL),
+    R(" 截距（空心圈）即 ", { size: SMALL }), ...E("λ_{c}", SMALL),
+    R("，按 ", { size: SMALL }), ...E("ρ_{12}", SMALL),
+    R(" 着色即（a）中各箱之来源。（c）机制：固定 ", { size: SMALL }), ...E("λ", SMALL),
+    R(" 时次代矩阵谱半径 ", { size: SMALL }), ...E("ρ(N)", SMALL),
+    R(" 随 ", { size: SMALL }), ...E("ρ_{12}", SMALL),
+    R(" 上升，", { size: SMALL }), ...E("λ=λ_{c}(0)", SMALL),
+    R(" 一线恰在 ", { size: SMALL }), ...E("ρ_{12}=0", SMALL),
+    R(" 越过 ", { size: SMALL }), ...E("ρ(N)=1", SMALL),
+    R("——相关参与集中跨层传播能力、压低阈值的机制。", { size: SMALL }),
   ] }));
 
 // ---------------- 2.5 ----------------

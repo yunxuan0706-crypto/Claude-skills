@@ -161,22 +161,35 @@ def closure_SI(tgrid):
 
 
 def main():
-    Sc, Ic = closure_SI(TGRID)
-    rng = np.random.default_rng(20240601)
-    Ss = np.empty((NRUNS, len(TGRID)))
-    Is = np.empty((NRUNS, len(TGRID)))
-    for r in range(NRUNS):
-        Ss[r], Is[r] = gillespie_traj(P, m, N, LAM, EPS, TGRID, rng)
-    Sm, Im = Ss.mean(0), Is.mean(0)
-    Sci = 1.96 * Ss.std(0, ddof=1) / np.sqrt(NRUNS)
-    Ici = 1.96 * Is.std(0, ddof=1) / np.sqrt(NRUNS)
+    import json, os
+    # sim trajectories cached (delete figure2_data.json to rerun the Gillespie)
+    if os.path.exists("figure2_data.json"):
+        d = json.load(open("figure2_data.json"))
+        TG = np.array(d["t"])
+        Sm, Sci, Im, Ici = (np.array(d[k]) for k in ("Sm", "Sci", "Im", "Ici"))
+        Sc, Ic = np.array(d["Sc"]), np.array(d["Ic"])
+    else:
+        TG = TGRID
+        Sc, Ic = closure_SI(TG)
+        rng = np.random.default_rng(20240601)
+        Ss = np.empty((NRUNS, len(TG)))
+        Is = np.empty((NRUNS, len(TG)))
+        for r in range(NRUNS):
+            Ss[r], Is[r] = gillespie_traj(P, m, N, LAM, EPS, TG, rng)
+        Sm, Im = Ss.mean(0), Is.mean(0)
+        Sci = 1.96 * Ss.std(0, ddof=1) / np.sqrt(NRUNS)
+        Ici = 1.96 * Is.std(0, ddof=1) / np.sqrt(NRUNS)
+        json.dump({"t": TG.tolist(), "Sm": Sm.tolist(), "Sci": Sci.tolist(),
+                   "Im": Im.tolist(), "Ici": Ici.tolist(), "Sc": Sc.tolist(),
+                   "Ic": Ic.tolist(), "N": N, "nruns": NRUNS},
+                  open("figure2_data.json", "w"))
     devS, devI = np.abs(Sm - Sc).max(), np.abs(Im - Ic).max()
     peak_sim, peak_clo = Im.max(), Ic.max()
 
-    # ---- plot ----
+    # ---- plot (fresh jewel palette, consistent with the lambda_c figure) ----
     INK, SEC = "#20201e", "#565550"
-    SIM, CLO = "#20201e", "#2f5fd0"
-    BAND = "#c9c9c4"
+    SIM, CLO = "#1C9B8E", "#E76F51"        # teal simulation / coral group closure
+    BAND = "#e4e3db"
     mpl.rcParams.update({
         "figure.dpi": 140, "savefig.dpi": 340,
         "font.family": "STIXGeneral", "mathtext.fontset": "stix", "font.size": 9.5,
@@ -189,9 +202,9 @@ def main():
     fig.subplots_adjust(left=0.075, right=0.985, bottom=0.155, top=0.9, wspace=0.24)
     for ax, (ym, yci, yc, lab) in ((axS, (Sm, Sci, Sc, r"$S(t)$")),
                                    (axI, (Im, Ici, Ic, r"$I(t)$"))):
-        ax.fill_between(TGRID, ym - yci, ym + yci, color=BAND, lw=0, zorder=1)
-        ax.plot(TGRID, ym, "-", color=SIM, lw=1.5, zorder=3, label="simulation")
-        ax.plot(TGRID, yc, "--", color=CLO, lw=1.6, dashes=(4, 2.4), zorder=4,
+        ax.fill_between(TG, ym - yci, ym + yci, color=BAND, lw=0, zorder=1)
+        ax.plot(TG, ym, "-", color=SIM, lw=1.5, zorder=3, label="simulation")
+        ax.plot(TG, yc, "--", color=CLO, lw=1.6, dashes=(4, 2.4), zorder=4,
                 label="group closure")
         ax.set_xlim(0, 20)
         ax.set_xlabel(r"time $t$")
@@ -208,7 +221,7 @@ def main():
     print(f"saved figure2_evolution.png/.pdf  (N={N}, {NRUNS} runs, lam=1.6 lc)")
     print(f"max |S_sim-S_clo| = {devS:.4f}   max |I_sim-I_clo| = {devI:.4f}")
     print(f"peak I: sim {peak_sim:.4f}  closure {peak_clo:.4f}  "
-          f"at t={TGRID[Im.argmax()]:.2f}/{TGRID[Ic.argmax()]:.2f}")
+          f"at t={TG[Im.argmax()]:.2f}/{TG[Ic.argmax()]:.2f}")
 
 
 if __name__ == "__main__":

@@ -108,7 +108,7 @@ def main():
 
     # ---- plot: exact curve + bootstrap box plots ----
     INK, SEC = "#20201e", "#565550"
-    THEORY, BOX, MED = "#2f5fd0", "#8fb4f2", "#1a3a7a"
+    THEORY, BOX, MED = "#2f5fd0", "#f4c08a", "#bf5a17"    # blue line vs warm-orange boxes
     mpl.rcParams.update({
         "figure.dpi": 140, "savefig.dpi": 340,
         "font.family": "STIXGeneral", "mathtext.fontset": "stix", "font.size": 10,

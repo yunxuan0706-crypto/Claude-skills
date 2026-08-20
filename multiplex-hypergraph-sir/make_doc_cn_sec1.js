@@ -158,8 +158,12 @@ k.push(lead("阈值自洽。", [R("阈值公式 (1.10) 与方程组自身在无�
 k.push(lead("含时复现。", [R("如图 2 所示，群体闭合与精确仿真在整个时间演化上逐点吻合，"), ...E("S(t)"), R(" 与 "), ...E("I(t)"), R(" 的最大偏差均小于线宽（0.0019 与 0.0006），感染峰高相差约 0.3%、峰位均在 "), ...E("t≈4.4"), R("。仿真为 "), ...E("N=6000"), R("、400 次独立实现（脚本 figure2_evolution.py，含 Fenwick 树加速的精确 Gillespie）。残余偏差随系统规模增大而单调趋零，是可由增大系统消除的有限尺寸效应，而非闭合层级的系统偏差。")]));
 k.push(lead("独立复算。", [R("上述结果均由与原推导不共享路径的方式复核："), ...E("m=2"), R("（成对）退化情形下方程组可解析积出终态不动点，与 RK4 积分的 "), ...E("R(∞)"), R(" 相差 "), ...E("3×10^{−14}"), R("；群内级联 C 由孤立群体的直接蒙特卡洛复核，全部十五组参数（"), ...E("m=2,…,6"), R(" 与 "), ...E("λ=0.5,1,2"), R("）的标准化偏差均不超过 "), ...E("2.5σ"), R("、与无系统偏差相容；阈值本身亦由亚临界终态外推独立测得，与 (1.10) 的解析值相容。")]));
 
-const doc = new Document({
-  styles: { default: { document: { run: { font: CJK, size: BODY, color: INK } } } },
-  sections: [{ properties: { page: { margin: { top: 1400, bottom: 1400, left: 1440, right: 1440 } } }, children: k }],
-});
-Packer.toBuffer(doc).then(b => { fs.writeFileSync("section1_cn.docx", b); console.log("wrote section1_cn.docx", b.length); });
+module.exports = { children: k };
+
+if (require.main === module) {
+  const doc = new Document({
+    styles: { default: { document: { run: { font: CJK, size: BODY, color: INK } } } },
+    sections: [{ properties: { page: { margin: { top: 1400, bottom: 1400, left: 1440, right: 1440 } } }, children: k }],
+  });
+  Packer.toBuffer(doc).then(b => { fs.writeFileSync("section1_cn.docx", b); console.log("wrote section1_cn.docx", b.length); });
+}

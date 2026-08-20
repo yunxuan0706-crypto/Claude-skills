@@ -159,8 +159,12 @@ k.push(lead("蒙特卡洛复核。", [R("级联递推 (2.5) 由单群体的直�
 
 k.push(P([R("综上，由亚临界终态外推测得的 "), ...E("λ_{c}"), R(" 与 "), ...E("ρ(N)=1"), R(" 在八组构型上一致到 "), ...E("6.5×10^{−4}"), R("、偏离最大者 1.51σ。这是对爆发阈值的一次全非线性的独立确认，与前述 Jacobian 复核互补——后者检验线性化谱，前者检验非线性终态所继承的同一阈值。")]));
 
-const doc = new Document({
-  styles: { default: { document: { run: { font: CJK, size: BODY, color: INK } } } },
-  sections: [{ properties: { page: { margin: { top: 1400, bottom: 1400, left: 1440, right: 1440 } } }, children: k }],
-});
-Packer.toBuffer(doc).then(b => { fs.writeFileSync("lambda_c_section_cn.docx", b); console.log("wrote lambda_c_section_cn.docx", b.length); });
+module.exports = { children: k };
+
+if (require.main === module) {
+  const doc = new Document({
+    styles: { default: { document: { run: { font: CJK, size: BODY, color: INK } } } },
+    sections: [{ properties: { page: { margin: { top: 1400, bottom: 1400, left: 1440, right: 1440 } } }, children: k }],
+  });
+  Packer.toBuffer(doc).then(b => { fs.writeFileSync("lambda_c_section_cn.docx", b); console.log("wrote lambda_c_section_cn.docx", b.length); });
+}

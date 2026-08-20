@@ -13,9 +13,9 @@ from matplotlib.ticker import MultipleLocator, AutoMinorLocator
 # ---------------------------------------------------------------- palette
 INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
 GRID, SPINE = "#ecebe5", "#c6c5bf"
-TEAL, CORAL, INDIGO = "#1C9B8E", "#E76F51", "#4F8AC9"      # teal / coral / fresh blue
-PT = "#3E6BA6"                                             # clean blue single-series accent
-BAND2, BAND1 = "#f0efe9", "#e4e3db"                        # +-2sigma / +-1sigma
+TEAL, CORAL, BLUE = "#1C9B8E", "#E76F51", "#2F5FD0"       # shared jewel triad (figs 2 & 4)
+PT = "#2F5FD0"                                             # royal-blue single-series accent
+BAND2, BAND1 = "#eef2f6", "#dbe3ec"                        # cool +-2sigma / +-1sigma tints
 
 mpl.rcParams.update({
     "figure.dpi": 140, "savefig.dpi": 340,
@@ -53,7 +53,7 @@ def minorticks(ax, nx=5, ny=2):
 # ============================================================ (a) method
 show = [("2-layer m=(3,4)", TEAL,   "2-layer $m=(3,4)$"),
         ("6-reg. pairwise", CORAL,  "6-reg. pairwise"),
-        ("m=3 deg{2,3}",    INDIGO, r"1-layer $m=3$, $k\in\{2,3\}$")]
+        ("m=3 deg{2,3}",    BLUE,   r"1-layer $m=3$, $k\in\{2,3\}$")]
 axA.plot([1.0, 1.0], [0.0, 0.052], color=MUTED, lw=0.9, ls=(0, (4, 3)), zorder=1)
 axA.axhline(0, color=MUTED, lw=0.8, zorder=1)
 handles = []

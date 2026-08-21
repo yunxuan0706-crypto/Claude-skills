@@ -33,6 +33,7 @@
 | 文献综述构建 | [`external/literature-survey-skill`](external/literature-survey-skill) | [SNL-UCSB/literature-survey-skill](https://github.com/SNL-UCSB/literature-survey-skill) | 把一堆论文整理为对该领域"已知/未知/可推进方向"的系统性综述 |
 | AI 科研技能库 | [`external/AI-Research-SKILLs`](external/AI-Research-SKILLs) | [Orchestra-Research/AI-Research-SKILLs](https://github.com/Orchestra-Research/AI-Research-SKILLs) | 覆盖模型架构、训练、评测、RAG、Agent 等方向的大型开源 AI 科研技能库 |
 | Nature 系列科研套件 | [`external/nature-skills`](external/nature-skills) | [Yuan1z0825/nature-skills](https://github.com/Yuan1z0825/nature-skills) | 对齐 Nature/CNS 期刊标准的科研技能合集(Apache-2.0,共 19 个子技能)。常用的 5 个:`nature-academic-search`(多源文献检索 + 引文核对)、`nature-reader`(中英对照精读)、`nature-figure`(投稿级科研配图)、`nature-polishing`(Nature 风格英文润色,保真不改证据)、`nature-citation`(按段落自动补 Nature/CNS 引用)。子技能较多,建议只软链接需要的那几个 |
+| Origin 绘图(COM 自动化) | [`external/codex-origin-plot`](external/codex-origin-plot) | [guoleizhen717/codex-origin-plot](https://github.com/guoleizhen717/codex-origin-plot) | 通过 COM 自动化驱动 OriginLab Origin 出投稿级原生图表(`.opju` + PNG/PDF),含 COM 踩坑参考与可独立运行脚本(MIT)。**需 Windows + 已安装 Origin 2021/2022/2023 + `pywin32`,无法在本 Linux 沙箱内运行**;偏机械/矿业切削力分析领域,但 COM 工作流与参考可复用于一般 Origin 绘图。原为 Codex skill,`SKILL.md` 格式与 Claude Code 通用 |
 
 > 以上外部项目均为第三方维护,子模块只固定了当前接入时的 commit,使用前请查看各自仓库的 License 与更新状态。
 

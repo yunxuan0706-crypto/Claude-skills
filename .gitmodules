@@ -28,3 +28,6 @@
 [submodule "external/nature-skills"]
 	path = external/nature-skills
 	url = https://github.com/Yuan1z0825/nature-skills.git
+[submodule "external/codex-origin-plot"]
+	path = external/codex-origin-plot
+	url = https://github.com/guoleizhen717/codex-origin-plot.git

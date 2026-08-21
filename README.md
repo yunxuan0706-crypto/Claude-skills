@@ -32,6 +32,7 @@
 | 统计结果自检 | [`external/claude-statistical-analysis-skill`](external/claude-statistical-analysis-skill) | [TerryFYL/claude-statistical-analysis-skill](https://github.com/TerryFYL/claude-statistical-analysis-skill) | 分析前先诊断数据质量与统计假设是否成立,自动选择合适方法,输出 APA 格式结果 |
 | 文献综述构建 | [`external/literature-survey-skill`](external/literature-survey-skill) | [SNL-UCSB/literature-survey-skill](https://github.com/SNL-UCSB/literature-survey-skill) | 把一堆论文整理为对该领域"已知/未知/可推进方向"的系统性综述 |
 | AI 科研技能库 | [`external/AI-Research-SKILLs`](external/AI-Research-SKILLs) | [Orchestra-Research/AI-Research-SKILLs](https://github.com/Orchestra-Research/AI-Research-SKILLs) | 覆盖模型架构、训练、评测、RAG、Agent 等方向的大型开源 AI 科研技能库 |
+| Nature 系列科研套件 | [`external/nature-skills`](external/nature-skills) | [Yuan1z0825/nature-skills](https://github.com/Yuan1z0825/nature-skills) | 对齐 Nature/CNS 期刊标准的科研技能合集(Apache-2.0,共 19 个子技能)。常用的 5 个:`nature-academic-search`(多源文献检索 + 引文核对)、`nature-reader`(中英对照精读)、`nature-figure`(投稿级科研配图)、`nature-polishing`(Nature 风格英文润色,保真不改证据)、`nature-citation`(按段落自动补 Nature/CNS 引用)。子技能较多,建议只软链接需要的那几个 |
 
 > 以上外部项目均为第三方维护,子模块只固定了当前接入时的 commit,使用前请查看各自仓库的 License 与更新状态。
 
@@ -53,7 +54,7 @@ Claude Code 会扫描 `~/.claude/skills/`(全局)或项目内 `.claude/skills/`(
 # 全局可用(推荐,任何项目里都能触发)
 ln -s "$(pwd)/external/paper-rag" ~/.claude/skills/paper-rag
 ln -s "$(pwd)/external/claude-skill-citation-checker" ~/.claude/skills/cite-verify
-# 其余 8 个同理,把 external/<name> 软链到 ~/.claude/skills/<你喜欢的名字>
+# 其余的同理,把 external/<name>(或 external/nature-skills/skills/<子技能>)软链到 ~/.claude/skills/<你喜欢的名字>
 ```
 
 **3. 调用方式**

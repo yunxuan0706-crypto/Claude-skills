@@ -25,3 +25,6 @@
 [submodule "external/latex-precision-skill"]
 	path = external/latex-precision-skill
 	url = https://github.com/MagicMonkey-XK/latex-precision-skill.git
+[submodule "external/nature-skills"]
+	path = external/nature-skills
+	url = https://github.com/Yuan1z0825/nature-skills.git

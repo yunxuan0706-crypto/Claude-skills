@@ -168,11 +168,13 @@ def plot(os_, opair, lcs, ses, lams_all, y_all, ye_all):
 
     INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
     TEAL, CORAL, BLUE = "#1C9B8E", "#E76F51", "#2F5FD0"
-    # warm sequential ramp: every level stays legible (the earlier teal ramp
-    # washed out at its light end) and it does not collide with the blue theory
-    # line or the teal measurement points of panel (a)
+    # Two-hue ramp running teal -> coral, the two signature colours of the
+    # figure set: o = 0 (where the tree closure holds) is drawn in the teal of
+    # panel (a)'s measurements, o = 1 in the coral of its analytic limit, so the
+    # two panels read together. A saturated olive bridge keeps the middle levels
+    # from going muddy, which a straight teal-to-coral interpolation would.
     SEQ = LinearSegmentedColormap.from_list(
-        "o", ["#F3B98E", "#E8825A", "#D2492A", "#9E2F17", "#5E1A0C"])
+        "o", [TEAL, "#6FAE6E", "#C2A742", "#E08A46", CORAL])
     NORM = Normalize(0.0, 1.0)
 
     mpl.rcParams.update({

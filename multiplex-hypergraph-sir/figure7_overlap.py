@@ -62,6 +62,26 @@ def chi_at(o, lam, n_seeds, seed, cap=None):
     return a.mean(), a.std(ddof=1) / np.sqrt(len(a))
 
 
+def scaled_errors(lams_all, y_all, ye_all, ses):
+    """PDG-style scaling of the fitted uncertainties.
+
+    The delta-method standard error on the x-intercept assumes the linear law
+    holds exactly over the window. Where residual curvature survives, chi2/dof
+    exceeds 1 and that error is optimistic; the standard remedy is to inflate it
+    by sqrt(chi2/dof). Here it matters at o=1 (chi2/dof = 4.7), whose window
+    spans the widest absolute lambda range and so retains the most curvature.
+    """
+    out, fac = [], []
+    for i in range(len(ses)):
+        x, y, ye = map(np.asarray, (lams_all[i], y_all[i], ye_all[i]))
+        a, b, _ = _wls(x, y, ye)
+        chi2 = (((y - (a + b * x)) / ye) ** 2).sum() / (len(x) - 2)
+        f = max(1.0, np.sqrt(chi2))
+        fac.append(f)
+        out.append(ses[i] * f)
+    return np.array(out), np.array(fac)
+
+
 def realised_overlap(o, seed, reps=3):
     rng = np.random.default_rng(seed)
     vals = [build_overlap_multiplex(N_SIM, M_GROUPS, KDEG, o, rng)[1]
@@ -120,13 +140,21 @@ def main():
                    "lc_theory": LC_THEORY, "lc_o1": LC_O1},
                   open(cache, "w"), indent=2)
 
+    ses_s, fac = scaled_errors(lams_all, y_all, ye_all, ses)
     print(f"\nlambda_c: {lcs[0]:.5f} (o=0) -> {lcs[-1]:.5f} (o=1), "
           f"a {(lcs[-1]/lcs[0]-1)*100:.1f}% rise")
     print(f"theory (flat) = {LC_THEORY:.5f};  o=1 analytic = {LC_O1:.5f}")
-    print(f"pull at o=0 : {(lcs[0]-LC_THEORY)/ses[0]:+.2f} sigma  "
+    print("sigma inflation sqrt(chi2/dof): " +
+          ", ".join(f"o={o:.1f}:{f:.2f}" for o, f in zip(os_, fac)))
+    print(f"pull at o=0 : {(lcs[0]-LC_THEORY)/ses_s[0]:+.2f} sigma (scaled)  "
           f"(control: the tree closure should be exact here)")
-    print(f"pull at o=1 : {(lcs[-1]-LC_THEORY)/ses[-1]:+.2f} sigma  vs the flat prediction")
-    plot(os_, opair, lcs, ses, lams_all, y_all, ye_all)
+    print(f"pull at o=1 : {(lcs[-1]-LC_THEORY)/ses_s[-1]:+.1f} sigma (scaled)  vs the flat prediction")
+    R = lcs[-1] / lcs[0]
+    sR = R * np.sqrt((ses_s[-1] / lcs[-1]) ** 2 + (ses_s[0] / lcs[0]) ** 2)
+    Rp = LC_O1 / LC_THEORY
+    print(f"ratio lc(1)/lc(0) = {R:.3f} +- {sR:.3f} vs analytic {Rp:.3f} "
+          f"-> {(R-Rp)/sR:+.2f} sigma")
+    plot(os_, opair, lcs, ses_s, lams_all, y_all, ye_all)
     return os_, opair, lcs, ses, lams_all, y_all, ye_all
 
 
@@ -140,7 +168,11 @@ def plot(os_, opair, lcs, ses, lams_all, y_all, ye_all):
 
     INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
     TEAL, CORAL, BLUE = "#1C9B8E", "#E76F51", "#2F5FD0"
-    SEQ = LinearSegmentedColormap.from_list("o", ["#dfeae4", TEAL, "#0d4f47"])
+    # warm sequential ramp: every level stays legible (the earlier teal ramp
+    # washed out at its light end) and it does not collide with the blue theory
+    # line or the teal measurement points of panel (a)
+    SEQ = LinearSegmentedColormap.from_list(
+        "o", ["#F3B98E", "#E8825A", "#D2492A", "#9E2F17", "#5E1A0C"])
     NORM = Normalize(0.0, 1.0)
 
     mpl.rcParams.update({

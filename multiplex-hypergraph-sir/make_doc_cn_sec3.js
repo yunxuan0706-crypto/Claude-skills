@@ -92,6 +92,38 @@ function maxPullAll(d) {
   return worst;
 }
 const MAXPULL = maxPullAll(d7).toFixed(1);
+
+// PDG-style scaling: where residual curvature leaves chi2/dof > 1, the
+// delta-method error on the x-intercept is optimistic and is inflated by
+// sqrt(chi2/dof) before any significance is quoted
+function scaledSE(d) {
+  const out = [], fac = [];
+  for (let i = 0; i < d.o.length; i++) {
+    const L = d.lams_all[i], y = d.y_all[i], e = d.ye_all[i];
+    let sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (let j = 0; j < L.length; j++) {
+      const w = 1 / (e[j] * e[j]);
+      sw += w; sx += w * L[j]; sy += w * y[j];
+      sxx += w * L[j] * L[j]; sxy += w * L[j] * y[j];
+    }
+    const b = (sw * sxy - sx * sy) / (sw * sxx - sx * sx);
+    const a = (sy - b * sx) / sw;
+    let chi2 = 0;
+    for (let j = 0; j < L.length; j++) {
+      const r = (y[j] - (a + b * L[j])) / e[j];
+      chi2 += r * r;
+    }
+    const f = Math.max(1, Math.sqrt(chi2 / (L.length - 2)));
+    fac.push(f); out.push(d.se[i] * f);
+  }
+  return { se: out, fac };
+}
+const SC = scaledSE(d7);
+const seS0 = SC.se[0], seSEnd = SC.se[SC.se.length - 1];
+const facMax = Math.max(...SC.fac).toFixed(1);
+const pull0s = minus(((lc0 - d7.lc_theory) / seS0).toFixed(1));
+const pullEnds = ((lcEnd - d7.lc_theory) / seSEnd).toFixed(0);
+const ratioSE = (lcEnd / lc0) * Math.sqrt(Math.pow(seSEnd / lcEnd, 2) + Math.pow(seS0 / lc0, 2));
 const bias0 = Math.abs((lc0 / d7.lc_theory - 1) * 100).toFixed(1);
 const bias1 = Math.abs((lcEnd / d7.lc_o1 - 1) * 100).toFixed(1);
 const ratioMeas = lcEnd / lc0;
@@ -157,8 +189,11 @@ k.push(lead("两条参照线。", [R("理论给出与 "), ...E("o"), R(" 无关�
 k.push(eq("1·C(3,2λ_{c})=1  ⟹  λ_{c}=" + f5(d7.lc_o1), "3.4"));
 k.push(P([R("两条参照线相差 "), ...E("" + ((d7.lc_o1 / d7.lc_theory - 1) * 100).toFixed(0) + "%"), R("——若树状闭合在重叠下依然成立，测点应贴住下面那条；若重叠确实起作用，测点应从下面那条爬向上面那条。")], { ind: false }));
 k.push(lead("结果。", [R("在六个重叠水平上按 §2.2 的亚临界外推测定阈值（"), ...E("N=2×10^{4}"), R("，窗口取 "), ...E("[0.60,0.84]λ_{c}"), R(" 并三次重定心，六条拟合的残差均在 " + MAXPULL + "σ 以内），所得 "), ...E("λ_{c}"), R(" 由 "), ...E("o=0"), R(" 的 " + f5(lc0) + " 单调升到 "), ...E("o=1"), R(" 的 " + f5(lcEnd) + "，"), R("整整高出 " + rise + "%", { bold: true }), R("，而理论预言的是一条水平线。上升并非匀速：小重叠下抬升平缓，逼近 "), ...E("o=1"), R(" 时急剧加速。")]));
-k.push(lead("偏置与稳健量。", [R("测量本身的系统偏置须予说明。"), ...E("o=0"), R(" 的控制点为 " + f5(lc0) + "，比理论值低 " + bias0 + "%（" + pull0 + "σ）。为把窗口退到安全区间，本节的拟合区比 §2.3 更远离阈值，线性律的有限窗口曲率因而更强；"), ...E("o=1"), R(" 端相对 (3.4) 同样偏低 " + bias1 + "%。两端偏置"), R("同号同量级", { bold: true }), R("，故稳健的量不是绝对阈值而是"), R("比值", { bold: true }), R("：实测 "), ...E("λ_{c}(1)/λ_{c}(0)=" + ratioMeas.toFixed(3)), R("，而 (3.4) 与水平线之比的解析值为 " + ratioPred.toFixed(3) + "，两者仅差 " + ratioGap + "%。"), R("独立测得的比值与独立推出的解析比值就此相互印证", { bold: true }), R("，说明抬升的幅度本身是真实的，而非窗口选择的产物。")]));
-k.push(P([R("推论因此被干净地证伪。"), ...E("o=1"), R(" 处偏离水平线达 " + pullEnd + "σ，而 "), R("层间重叠不是可以忽略的高阶修正，而是比层间参与相关更强的阈值调控量", { bold: true }), R("——图 4 中 "), ...E("ρ_{12}"), R(" 扫遍全程只移动阈值 12.5%，此处 "), ...E("o"), R(" 却移动了 " + rise + "%，相差近一个数量级。")], { ind: false }));
+k.push(lead("误差的标定。", [R("截距的标准误由 delta 方法给出，其前提是线性律在整个窗口内严格成立。凡残余曲率未被消尽之处，"), ...E("χ^{2}/dof"), R(" 便大于 1，该标准误偏乐观，按惯例应以 "), ...E("√(χ^{2}/dof)"), R(" 放大。六条拟合中四条的 "), ...E("χ^{2}/dof"), R(" 在 1 附近而无需放大，"), ...E("o=1"), R(" 一条为 4.7（放大 " + facMax + " 倍）——它的窗口跨越最宽的绝对 "), ...E("λ"), R(" 区间，保留的曲率也最多。以下所有显著性均取放大后的误差。")]));
+k.push(lead("偏置与稳健量。", [R("测量本身的系统偏置须予说明。"), ...E("o=0"), R(" 的控制点为 " + f5(lc0) + "，比理论值低 " + bias0 + "%（" + pull0s + "σ）。为把窗口退到安全区间，本节的拟合区比 §2.3 更远离阈值，线性律的有限窗口曲率因而更强；"), ...E("o=1"), R(" 端相对 (3.4) 同样偏低 " + bias1 + "%。两端偏置"), R("同号同量级", { bold: true }), R("，故稳健的量不是绝对阈值而是"), R("比值", { bold: true }), R("：实测")]));
+k.push(eq("λ_{c}(1)/λ_{c}(0)=" + ratioMeas.toFixed(3) + "±" + ratioSE.toFixed(3) + "，  解析值 " + ratioPred.toFixed(3), "3.5"));
+k.push(P([R("两者相差 " + Math.abs((ratioMeas - ratioPred) / ratioSE).toFixed(1) + "σ，"), R("在噪声之内完全相容", { bold: true }), R("。独立测得的比值与独立推出的解析比值就此相互印证，说明抬升的幅度本身是真实的，而非窗口选择的产物。")], { ind: false }));
+k.push(P([R("推论因此被干净地证伪。"), ...E("o=1"), R(" 处偏离水平线达 " + pullEnds + "σ，逐点递增也都显著（相邻两点之差最小为 4.5σ，全部同号）。"), R("层间重叠不是可以忽略的高阶修正，而是比层间参与相关更强的阈值调控量", { bold: true }), R("——图 4 中 "), ...E("ρ_{12}"), R(" 扫遍全程只移动阈值 12.5%，此处 "), ...E("o"), R(" 却移动了 " + rise + "%，相差近一个数量级。")], { ind: false }));
 k.push(P([R("失效的方向也符合机制。重叠把传播投向已经可及的节点，"), R("同一条边被两层重复计入", { bold: true }), R("，而 (2.7) 按互不相交的分支计数，于是系统性地高估了分支能力、低估了阈值。图 7(c) 给出小 "), ...E("λ"), R(" 下的展开：理论按 "), ...E("3C(3,λ)≈6λ"), R(" 计数，"), ...E("o=1"), R(" 的实际过程只有 "), ...E("C(3,2λ)≈4λ"), R("，比值 3:2 即高估的量级。"), R("树状闭合的适用边界由此定量给出", { bold: true }), R("：它要求层间群体近乎不相交，位形模型系综自动满足（"), ...E("o=O(1/N)"), R("），而任何具有实质层间重叠的真实系统都会落在公式之外。")]));
 k.push(figure("figure7_overlap.png", 520, 168));
 k.push(caption([

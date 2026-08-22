@@ -201,7 +201,7 @@ def plot(os_, opair, lcs, ses, lams_all, y_all, ye_all):
     axB.set_ylabel(r"$1/\chi$")
     axB.set_ylim(bottom=-0.006)
     minor(axB)
-    cax = axB.inset_axes([0.075, 0.60, 0.035, 0.34])
+    cax = axB.inset_axes([0.90, 0.56, 0.032, 0.36])
     cb = fig.colorbar(ScalarMappable(norm=NORM, cmap=SEQ), cax=cax)
     cb.set_ticks([0, 1])
     cb.ax.tick_params(labelsize=7.5, length=2.2, color=SEC)

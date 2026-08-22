@@ -68,8 +68,35 @@ const f5 = (x) => Number(x).toFixed(5);
 const lc0 = d7.lc[0], lcEnd = d7.lc[d7.lc.length - 1];
 const se0 = d7.se[0], seEnd = d7.se[d7.se.length - 1];
 const rise = ((lcEnd / lc0 - 1) * 100).toFixed(0);
-const pull0 = ((lc0 - d7.lc_theory) / se0).toFixed(1);
+const minus = (s) => String(s).replace(/-/g, "−");   // typographic minus
+const pull0 = minus(((lc0 - d7.lc_theory) / se0).toFixed(1));
 const pullEnd = ((lcEnd - d7.lc_theory) / seEnd).toFixed(0);
+
+// worst residual pull over the six weighted linear fits, so the prose cannot
+// claim a fit quality the data does not have
+function maxPullAll(d) {
+  let worst = 0;
+  for (let i = 0; i < d.o.length; i++) {
+    const L = d.lams_all[i], y = d.y_all[i], e = d.ye_all[i];
+    let sw = 0, sx = 0, sy = 0, sxx = 0, sxy = 0;
+    for (let j = 0; j < L.length; j++) {
+      const w = 1 / (e[j] * e[j]);
+      sw += w; sx += w * L[j]; sy += w * y[j];
+      sxx += w * L[j] * L[j]; sxy += w * L[j] * y[j];
+    }
+    const b = (sw * sxy - sx * sy) / (sw * sxx - sx * sx);
+    const a = (sy - b * sx) / sw;
+    for (let j = 0; j < L.length; j++)
+      worst = Math.max(worst, Math.abs((y[j] - (a + b * L[j])) / e[j]));
+  }
+  return worst;
+}
+const MAXPULL = maxPullAll(d7).toFixed(1);
+const bias0 = Math.abs((lc0 / d7.lc_theory - 1) * 100).toFixed(1);
+const bias1 = Math.abs((lcEnd / d7.lc_o1 - 1) * 100).toFixed(1);
+const ratioMeas = lcEnd / lc0;
+const ratioPred = d7.lc_o1 / d7.lc_theory;
+const ratioGap = (Math.abs(ratioMeas / ratioPred - 1) * 100).toFixed(1);
 
 const k = [];
 
@@ -129,7 +156,9 @@ k.push(lead("构造。", [R("取每节点层度 "), ...E("(2,2)"), R("、"), ...
 k.push(lead("两条参照线。", [R("理论给出与 "), ...E("o"), R(" 无关的水平线 "), ...E("3C(3,λ_{c})=1"), R("，即 "), ...E("λ_{c}=" + f5(d7.lc_theory)), R("。另一端 "), ...E("o=1"), R(" 可解析求出：层 2 成为层 1 的副本后，每个"), R("物理", { italics: true }), R("群体同时承载两层的传播、速率合为 "), ...E("2λ"), R("，而节点只剩 2 个物理群体、余度为 1，阈值条件退化为")]));
 k.push(eq("1·C(3,2λ_{c})=1  ⟹  λ_{c}=" + f5(d7.lc_o1), "3.4"));
 k.push(P([R("两条参照线相差 "), ...E("" + ((d7.lc_o1 / d7.lc_theory - 1) * 100).toFixed(0) + "%"), R("——若树状闭合在重叠下依然成立，测点应贴住下面那条；若重叠确实起作用，测点应从下面那条爬向上面那条。")], { ind: false }));
-k.push(lead("结果。", [R("在六个重叠水平上按 §2.2 的亚临界外推测定阈值（"), ...E("N=2×10^{4}"), R("），所得 "), ...E("λ_{c}"), R(" 由 "), ...E("o=0"), R(" 的 " + f5(lc0) + " 单调升到 "), ...E("o=1"), R(" 的 " + f5(lcEnd) + "，"), R("整整高出 " + rise + "%", { bold: true }), R("，而理论预言的是一条水平线。"), ...E("o=0"), R(" 的控制点与理论相差 " + pull0 + "σ（相对偏差 " + ((lc0 / d7.lc_theory - 1) * 100).toFixed(1) + "%），与图 3、图 4 中同量级的有限尺寸偏置一致，说明测量流程本身无偏；而 "), ...E("o=1"), R(" 处偏离水平线达 " + pullEnd + "σ。推论因此被干净地证伪："), R("层间重叠不是可以忽略的高阶修正，而是与层间参与相关同量级、甚至更强的阈值调控量", { bold: true }), R("——图 4 中 "), ...E("ρ_{12}"), R(" 扫遍全程只移动阈值 12.5%，此处 "), ...E("o"), R(" 却移动了 " + rise + "%。")]));
+k.push(lead("结果。", [R("在六个重叠水平上按 §2.2 的亚临界外推测定阈值（"), ...E("N=2×10^{4}"), R("，窗口取 "), ...E("[0.60,0.84]λ_{c}"), R(" 并三次重定心，六条拟合的残差均在 " + MAXPULL + "σ 以内），所得 "), ...E("λ_{c}"), R(" 由 "), ...E("o=0"), R(" 的 " + f5(lc0) + " 单调升到 "), ...E("o=1"), R(" 的 " + f5(lcEnd) + "，"), R("整整高出 " + rise + "%", { bold: true }), R("，而理论预言的是一条水平线。上升并非匀速：小重叠下抬升平缓，逼近 "), ...E("o=1"), R(" 时急剧加速。")]));
+k.push(lead("偏置与稳健量。", [R("测量本身的系统偏置须予说明。"), ...E("o=0"), R(" 的控制点为 " + f5(lc0) + "，比理论值低 " + bias0 + "%（" + pull0 + "σ）。为把窗口退到安全区间，本节的拟合区比 §2.3 更远离阈值，线性律的有限窗口曲率因而更强；"), ...E("o=1"), R(" 端相对 (3.4) 同样偏低 " + bias1 + "%。两端偏置"), R("同号同量级", { bold: true }), R("，故稳健的量不是绝对阈值而是"), R("比值", { bold: true }), R("：实测 "), ...E("λ_{c}(1)/λ_{c}(0)=" + ratioMeas.toFixed(3)), R("，而 (3.4) 与水平线之比的解析值为 " + ratioPred.toFixed(3) + "，两者仅差 " + ratioGap + "%。"), R("独立测得的比值与独立推出的解析比值就此相互印证", { bold: true }), R("，说明抬升的幅度本身是真实的，而非窗口选择的产物。")]));
+k.push(P([R("推论因此被干净地证伪。"), ...E("o=1"), R(" 处偏离水平线达 " + pullEnd + "σ，而 "), R("层间重叠不是可以忽略的高阶修正，而是比层间参与相关更强的阈值调控量", { bold: true }), R("——图 4 中 "), ...E("ρ_{12}"), R(" 扫遍全程只移动阈值 12.5%，此处 "), ...E("o"), R(" 却移动了 " + rise + "%，相差近一个数量级。")], { ind: false }));
 k.push(P([R("失效的方向也符合机制。重叠把传播投向已经可及的节点，"), R("同一条边被两层重复计入", { bold: true }), R("，而 (2.7) 按互不相交的分支计数，于是系统性地高估了分支能力、低估了阈值。图 7(c) 给出小 "), ...E("λ"), R(" 下的展开：理论按 "), ...E("3C(3,λ)≈6λ"), R(" 计数，"), ...E("o=1"), R(" 的实际过程只有 "), ...E("C(3,2λ)≈4λ"), R("，比值 3:2 即高估的量级。"), R("树状闭合的适用边界由此定量给出", { bold: true }), R("：它要求层间群体近乎不相交，位形模型系综自动满足（"), ...E("o=O(1/N)"), R("），而任何具有实质层间重叠的真实系统都会落在公式之外。")]));
 k.push(figure("figure7_overlap.png", 520, 168));
 k.push(caption([

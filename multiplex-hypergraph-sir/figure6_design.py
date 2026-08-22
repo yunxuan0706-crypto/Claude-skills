@@ -93,17 +93,16 @@ def main():
     axA.axhline(1.0, color=MUTED, lw=0.9, ls=(0, (4, 2.6)), zorder=2)
     axA.set_xlim(0, 1)
     axA.set_yscale("log")
-    axA.set_ylim(0.66, 2.7)
-    axA.set_yticks([0.7, 0.8, 1.0, 1.5, 2.0, 2.5])
-    axA.set_yticklabels(["0.7", "0.8", "1.0", "1.5", "2.0", "2.5"])
+    axA.set_ylim(0.66, 3.75)          # headroom so the legend clears every curve
+    axA.set_yticks([0.7, 0.8, 1.0, 1.5, 2.0, 2.5, 3.0])
+    axA.set_yticklabels(["0.7", "0.8", "1.0", "1.5", "2.0", "2.5", "3.0"])
     axA.set_xlabel(r"$w_1/(w_1{+}w_2)$")
     axA.set_ylabel(r"$\lambda_c\,/\,\lambda_c^{\mathrm{pure}}$")
     axA.xaxis.set_minor_locator(AutoMinorLocator(2))
     axA.tick_params(which="both", top=False, right=False)
-    axA.legend(loc="lower left", fontsize=7.6, handlelength=1.5,
-               handletextpad=0.5, labelspacing=0.4, borderaxespad=0.6,
-               frameon=True, facecolor="white", framealpha=0.88,
-               edgecolor="none")
+    axA.legend(loc="upper center", ncol=2, fontsize=7.4, handlelength=1.4,
+               handletextpad=0.45, labelspacing=0.35, columnspacing=1.0,
+               borderaxespad=0.5)
     tag(axA, "a")
 
     # ============================== (b) granularity at fixed groups-per-node

@@ -9,6 +9,7 @@ const { Document, Packer, Paragraph, TextRun, AlignmentType } = require("docx");
 
 const part1 = require("./make_doc_cn_sec1.js").children;
 const part2 = require("./make_doc_cn3.js").children;
+const part3 = require("./make_doc_cn_sec3.js").children;
 
 const CJK = "SimSun", HEI = "SimHei", INK = "000000", BODY = 21;
 
@@ -25,11 +26,12 @@ const doc = new Document({
   styles: { default: { document: { run: { font: CJK, size: BODY, color: INK } } } },
   sections: [{
     properties: { page: { margin: { top: 1400, bottom: 1400, left: 1440, right: 1440 } } },
-    children: [title, ...part1, ...part2],
+    children: [title, ...part1, ...part2, ...part3],
   }],
 });
 Packer.toBuffer(doc).then(b => {
   fs.writeFileSync("combined_cn.docx", b);
   console.log("wrote combined_cn.docx", b.length,
-              "(", part1.length, "+", part2.length, "paragraphs + title )");
+              "(", part1.length, "+", part2.length, "+", part3.length,
+              "paragraphs + title )");
 });

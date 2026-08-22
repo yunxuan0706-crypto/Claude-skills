@@ -25,6 +25,10 @@ across eight configurations.
 | `figure_lambda_c.py`| draws the λc figure from `figure_data.json` |
 | `figure3_lambda_c.pdf/.png` | the λc figure (extrapolation vs ρ(N)=1) |
 | `figure4_rho12.py` + `figure4_rho12.{pdf,png}` | Figure 4: λc vs inter-layer participation correlation ρ12 — exact ρ(N)=1 curve vs bootstrap box plots of the Gillespie threshold; sim data cached in `figure4_data.json` |
+| `figure5_synergy.py` + `figure5_synergy.{pdf,png}` | Figure 5: the synergy region in the (λ1,λ2) plane — ρ(N)=1 as a curve, intersected with the single-layer conditions N_aa=1 |
+| `figure6_design.py` + `figure6_design.{pdf,png}` | Figure 6: channel allocation at fixed budget (worst split is interior) and group granularity under two normalisations (opposite answers) |
+| `overlap.py`        | degree-exact construction of a family with fixed P(k), m and tunable inter-layer group overlap o, plus the pair-overlap statistic |
+| `figure7_overlap.py` + `figure7_overlap.{pdf,png}` | Figure 7: the falsifiability test — λc measured against o, which (2.7) cannot see; sim data cached in `figure7_data.json` |
 
 ## Reproduce
 
@@ -85,6 +89,58 @@ with **max relative deviation 6.5×10⁻⁴**, every configuration consistent wi
 finite-window curvature of the linear law (1/χ is strictly linear only near λc);
 its sign flips with window placement and its size is comparable to σ, so it
 cannot be distinguished from a true deviation.
+
+## Structural dependence of the threshold
+
+**Synergy region** (`figure5_synergy.py`). Letting the two layers carry
+independent rates turns ρ(N)=1 into a curve in the (λ1,λ2) plane. Against the
+single-layer conditions N_aa=1 it carves out the wedge where *both* channels are
+subcritical alone yet supercritical together. For P={(2,2),(3,3)}, m=(3,3):
+each layer alone needs λ=0.400567, the symmetric union only 0.128162 — **68.0%
+lower** — and the analytic anchor λ=0.13 (ρ=1.0132) sits just inside. Across the
+Figure-4 correlation family the marginals pin both single-layer lines, so only
+the critical curve moves (symmetric threshold 0.106203 → 0.092956, matching
+Figure 4's endpoints exactly).
+
+**Worst channel allocation** (`figure6_design.py`, panel a). At fixed total
+budget Σw_a, the most dangerous split is **interior in every case tested** —
+never "put everything in the strongest channel", because a pure allocation zeroes
+out the cross-layer entries of N. Symmetric m=(3,3), k=(3,3): worst at w1=0.5,
+29.3% below the best pure allocation. Asymmetric m=(2,5), k=(4,2): worst at
+w1=0.32, 13.8% below. Even when asymmetry pushes the optimum almost to an
+endpoint (m=(3,5): w1=0.079, 0.45%), it stays strictly interior. Single layers
+have no allocation freedom, so the question is multiplex-specific.
+
+**Group granularity** (`figure6_design.py`, panels b, c). "Few large groups" vs
+"many small groups" has **opposite answers under the two natural
+normalisations**, and the naive expectation holds only under the first:
+
+- fixed groups-per-node k=4: λc falls 0.500000 (m=2) → 0.044149 (m=8) — bigger
+  groups far more dangerous, as the superlinear growth of C in m suggests;
+- fixed contact budget k(m−1)=12: λc **rises** 0.100000 (m=2) → 0.148224 (m=7) —
+  many small groups more dangerous.
+
+The single-layer condition is (k−1)·C(m,λc,θ)=1: growing m buys a superlinear C
+(0.0909 → 1.0000 along that budget line) but pays a linear collapse of the excess
+degree k−1 (11 → 1), and the collapse wins. At k=1 the excess is 0 and the layer
+can never spread on its own, however large its groups.
+
+## Falsifiability: inter-layer overlap
+
+`overlap.py` + `figure7_overlap.py`. Eq. (2.7) reads only P(k) and m, so it is
+blind to inter-layer group overlap — a layer-2 group re-using a node pair that
+already shares a layer-1 group, which closes a 4-cycle the local-tree assumption
+discards. Holding P(k), m and θ fixed and varying only
+
+    o = #{pairs sharing a layer-1 AND a layer-2 group} / #{pairs sharing a layer-1 group}
+
+the theory predicts a flat λc. The construction copies a fraction of layer-1's
+groups verbatim into layer 2 and wires the residual degrees at random, so every
+node's (k1,k2) and every group size are exactly preserved (verified per node and
+per group). Two reference lines bracket the effect: 3C(3,λc)=1 gives the
+overlap-blind λc=0.186141, while at o=1 layer 2 is a copy, each physical group
+carries rate 2λ and a node has 2 physical groups, so 1·C(3,2λc)=1 gives
+λc=0.409743 — **120% higher**. See the figure for the measured curve.
 
 ## Time-evolution validation
 

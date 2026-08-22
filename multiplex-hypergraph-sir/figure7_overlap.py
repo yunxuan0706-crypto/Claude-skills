@@ -31,7 +31,13 @@ M_GROUPS = (3, 3)
 KDEG = 2
 N_SIM = 20000
 NGRAPHS = 4
-WINDOW = np.array([0.72, 0.77, 0.82, 0.87, 0.92])
+# The window must stay clear of lambda_c: 1/chi is linear only asymptotically,
+# and close to the threshold chi grows until the outbreak cap truncates it. A
+# first attempt with [0.72,0.92] put the top point within 3% of lambda_c for the
+# intermediate overlaps -- where the initial guess was weakest -- and the fits
+# came back with 15-sigma residual curvature. Backing the window off and letting
+# it re-centre three times keeps every point comfortably subcritical.
+WINDOW = np.array([0.60, 0.66, 0.72, 0.78, 0.84])
 O_SIM = [0.0, 0.2, 0.4, 0.6, 0.8, 1.0]
 
 P_FAM = {(KDEG, KDEG): 1.0}
@@ -42,7 +48,7 @@ LC_O1 = brentq(lambda L: cascade_C(3, L, 1) - 1.0, 1e-9, 60, xtol=1e-14) / 2
 def chi_at(o, lam, n_seeds, seed, cap=None):
     """Mean subcritical outbreak size, averaged over NGRAPHS realisations."""
     rng = np.random.default_rng(seed)
-    cap = cap or max(2000, N_SIM // 10)
+    cap = cap or N_SIM // 4          # generous: truncating the tail biases chi low
     sizes = []
     for _ in range(NGRAPHS):
         groups, _o = build_overlap_multiplex(N_SIM, M_GROUPS, KDEG, o, rng)
@@ -64,10 +70,11 @@ def realised_overlap(o, seed, reps=3):
 
 
 def lambda_c_of_o(o, seed):
-    """Two passes: locate lambda_c coarsely, then measure on a window placed
-    just below it."""
+    """Three passes: two cheap ones to re-centre the window on lambda_c, then a
+    high-statistics measurement. Returns the fit and its residual pulls, so a
+    badly placed window cannot pass silently."""
     guess = LC_THEORY + o * (LC_O1 - LC_THEORY)          # bracketing interpolation
-    for npass, nseed in ((0, 1200), (1, 5000)):
+    for npass, nseed in ((0, 1200), (1, 2000), (2, 6000)):
         lams = WINDOW * guess
         y, ye = [], []
         for L in lams:
@@ -76,8 +83,10 @@ def lambda_c_of_o(o, seed):
             ye.append(se / c ** 2)
         y, ye = np.array(y), np.array(ye)
         lc, selc = _xintercept(lams, y, ye)
-        guess = lc                                        # re-centre for pass 2
-    return lc, selc, lams, y, ye
+        guess = lc
+    a, b, _ = _wls(lams, y, ye)
+    pulls = (y - (a + b * lams)) / ye
+    return lc, selc, lams, y, ye, pulls
 
 
 def main():
@@ -93,12 +102,14 @@ def main():
         os_, lcs, ses, opair = [], [], [], []
         lams_all, y_all, ye_all = [], [], []
         for i, o in enumerate(O_SIM):
-            lc, se, lams, y, ye = lambda_c_of_o(o, seed=500 + 31 * i)
+            lc, se, lams, y, ye, pulls = lambda_c_of_o(o, seed=500 + 31 * i)
             op = realised_overlap(o, seed=9000 + i)
             os_.append(o); lcs.append(lc); ses.append(se); opair.append(op)
             lams_all.append(lams); y_all.append(y); ye_all.append(ye)
             print(f"o={o:.2f} (pair {op:.4f}): lambda_c={lc:.5f}+-{se:.5f}"
-                  f"  theory={LC_THEORY:.5f}  ratio={lc/LC_THEORY:.3f}", flush=True)
+                  f"  theory={LC_THEORY:.5f}  ratio={lc/LC_THEORY:.3f}"
+                  f"  | fit max|pull|={np.abs(pulls).max():.1f}"
+                  f"  top lam/lc={lams[-1]/lc:.3f}", flush=True)
         os_, lcs, ses, opair = map(np.array, (os_, lcs, ses, opair))
         json.dump({"o": os_.tolist(), "o_pair": opair.tolist(),
                    "lc": lcs.tolist(), "se": ses.tolist(),

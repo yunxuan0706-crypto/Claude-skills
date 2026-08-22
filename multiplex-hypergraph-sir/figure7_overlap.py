@@ -168,13 +168,13 @@ def plot(os_, opair, lcs, ses, lams_all, y_all, ye_all):
 
     INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
     TEAL, CORAL, BLUE = "#1C9B8E", "#E76F51", "#2F5FD0"
-    # Two-hue ramp running teal -> coral, the two signature colours of the
-    # figure set: o = 0 (where the tree closure holds) is drawn in the teal of
-    # panel (a)'s measurements, o = 1 in the coral of its analytic limit, so the
-    # two panels read together. A saturated olive bridge keeps the middle levels
-    # from going muddy, which a straight teal-to-coral interpolation would.
+    # Two-hue ramp running blue -> red: o = 0 (where the tree closure holds)
+    # carries the blue of panel (a)'s rho(N)=1 line, o = 1 the red of its
+    # analytic limit, so the two panels read together. The path goes round
+    # through purple rather than straight across: interpolating blue to red
+    # directly passes through grey, which would wash out the middle levels.
     SEQ = LinearSegmentedColormap.from_list(
-        "o", [TEAL, "#6FAE6E", "#C2A742", "#E08A46", CORAL])
+        "o", ["#1B3FA0", "#5A46B5", "#9A3C9E", "#C8447A", "#DC5A4A"])
     NORM = Normalize(0.0, 1.0)
 
     mpl.rcParams.update({

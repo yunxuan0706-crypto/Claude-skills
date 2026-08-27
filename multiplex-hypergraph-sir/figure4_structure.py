@@ -27,10 +27,9 @@ from theory import cascade_C, next_gen_matrix, spectral_radius
 INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
 TEAL, CORAL, BLUE, PLUM = "#1C9B8E", "#E76F51", "#2F5FD0", "#7D6B9E"
 
-CASES = [(r"$m{=}(3,3),k{=}(3,3)$", {(3, 3): 1.0}, (3, 3), TEAL),
-         (r"$m{=}(2,5),k{=}(4,2)$", {(4, 2): 1.0}, (2, 5), CORAL),
-         (r"$m{=}(3,5),k{=}(3,3)$", {(3, 3): 1.0}, (3, 5), BLUE),
-         (r"$m{=}(3,3),k{=}(4,2)$", {(4, 2): 1.0}, (3, 3), PLUM)]
+CASES = [(r"$m{=}(3,3),\,k{=}(3,3)$", {(3, 3): 1.0}, (3, 3), TEAL),
+         (r"$m{=}(2,5),\,k{=}(4,2)$", {(4, 2): 1.0}, (2, 5), CORAL),
+         (r"$m{=}(3,5),\,k{=}(3,3)$", {(3, 3): 1.0}, (3, 5), BLUE)]
 BUDGET = 12
 
 
@@ -89,8 +88,8 @@ def main():
     axA.set_yticklabels(["0.7", "0.8", "1.0", "1.5", "2.0", "2.5", "3.0"])
     axA.set_xlabel(r"$w_1/(w_1{+}w_2)$"); axA.set_ylabel(r"$\lambda_c/\lambda_c^{\mathrm{pure}}$")
     axA.xaxis.set_minor_locator(AutoMinorLocator(2)); axA.tick_params(which="both", top=False, right=False)
-    axA.legend(loc="upper center", ncol=2, fontsize=7.2, handlelength=1.3,
-               handletextpad=0.4, labelspacing=0.35, columnspacing=0.9, borderaxespad=0.5)
+    axA.legend(loc="upper left", fontsize=7.6, handlelength=1.5,
+               handletextpad=0.5, labelspacing=0.4, borderaxespad=0.7)
     tag(axA, "a")
 
     # -------------------------------------------------- (b) granularity reversal
@@ -118,17 +117,19 @@ def main():
         a, b = wls(x, y, ye); chi2 = (((y - (a + b * x)) / ye) ** 2).sum() / (len(x) - 2)
         fac.append(max(1.0, np.sqrt(chi2)))
     se_s = se * np.array(fac)
-    axC.axhline(d7["lc_theory"], color=BLUE, lw=1.6, zorder=2, label=r"$\rho(N)=1$")
-    axC.axhline(d7["lc_o1"], color=CORAL, lw=1.6, ls=(0, (4, 2.4)), zorder=2,
-                label=r"$C(3,2\lambda_c)=1$")
+    axC.axhline(d7["lc_theory"], color=BLUE, lw=1.6, zorder=2)
+    axC.axhline(d7["lc_o1"], color=CORAL, lw=1.6, ls=(0, (4, 2.4)), zorder=2)
     axC.errorbar(o, lc, yerr=se_s, fmt="o", ms=5.0, mfc=PLUM, mec="white", mew=0.8,
                  ecolor=PLUM, elinewidth=1.1, capsize=2.4, capthick=0.9, zorder=4)
     axC.plot(o, lc, "-", color=PLUM, lw=1.2, zorder=3)
-    axC.set_xlim(-0.06, 1.06)
+    axC.set_xlim(-0.06, 1.06); axC.set_ylim(d7["lc_theory"] - 0.02, d7["lc_o1"] + 0.03)
     axC.set_xlabel(r"inter-layer overlap $o$"); axC.set_ylabel(r"$\lambda_c$")
     minor(axC)
-    axC.legend(loc="upper left", fontsize=8.2, handlelength=1.7, handletextpad=0.6,
-               labelspacing=0.45)
+    # inline labels on the two reference lines, placed clear of the curve and edges
+    axC.text(0.97, d7["lc_theory"] + 0.006, r"$\rho(N)=1$", color=BLUE, fontsize=8.4,
+             ha="right", va="bottom")
+    axC.text(0.03, d7["lc_o1"] - 0.006, r"$C(3,2\lambda_c)=1$", color=CORAL, fontsize=8.4,
+             ha="left", va="top")
     tag(axC, "c")
 
     # -------------------------------------------------- (d) mechanism

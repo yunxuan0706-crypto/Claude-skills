@@ -15,11 +15,11 @@ recursion.
       group alone already replaces its seed -- is the one heavy contour;
   (d) the recursion's internal state lattice u(i,s) for m=6, lambda=1, values
       printed on the cells and the one cell the closure reads off marked;
+  (e) recursion vs Gillespie on twelve (m,lambda,theta) settings;
+  (f) the same comparison in units of the Monte-Carlo standard error.
 
 Both maps are colour-vision-safe and monotone in lightness, so the panels
 reproduce in greyscale; overlays are cased rather than the maps altered.
-  (e) recursion vs Gillespie on twelve (m,lambda,theta) settings;
-  (f) the same comparison in units of the Monte-Carlo standard error.
 
 MC results are cached in figure_cascade_data.json; delete it to re-measure.
 """
@@ -225,7 +225,7 @@ def main():
     axC.tick_params(which="both", top=False, right=False)
     tag(axC, "c")
 
-    # ------------------------------------- (d) the recursion lattice u(i,s), m=8
+    # --------------------------------------- (d) the recursion lattice u(i,s)
     # An annotated lattice is a different object from the continuous field of
     # (c), so it takes a different scale -- a single-hue sequential ramp, the
     # conventional choice for a table one reads numbers off, and likewise
@@ -252,19 +252,17 @@ def main():
                      fontsize=6.4 if absorbing else 6.9,
                      alpha=0.55 if absorbing else 1.0,
                      color=("white" if dark else INK))
+    # the cell the closure reads off is boxed and named in the empty cell
+    # beside it -- no leader line, and the value is not restated, since the
+    # cell already carries it
     axD.add_patch(Rectangle((m0 - 1.5, 0.5), 1.0, 1.0, fill=False, ec=CORAL,
-                            lw=2.0, zorder=6, path_effects=cased(3.6, "white")))
-    axD.annotate(rf"$C=u(1,m{{-}}1)={U[1, m0 - 1]:.3f}$",
-                 xy=(m0 - 1, 1.58), xytext=(m0 - 1.6, 5.25),
-                 fontsize=8.4, color=CORAL, ha="center",
-                 path_effects=cased(2.4, "white"),
-                 arrowprops=dict(arrowstyle="->", color=CORAL, lw=1.1,
-                                 connectionstyle="arc3,rad=-0.16",
-                                 shrinkA=3, shrinkB=3,
-                                 path_effects=cased(2.8, "white")))
+                            lw=2.0, zorder=6, path_effects=cased(3.0, "white")))
+    axD.text(m0, 1, r"$C$", fontsize=10, color=CORAL, ha="center", va="center")
+    # parameters in-panel, as in (a) and (e), rather than as a panel title
+    axD.text(m0 - 1.7, 5.3, rf"$u(i,s)$,  $m={m0}$,  $\lambda={lam0:g}$",
+             fontsize=8.8, color=SEC, ha="center", va="center")
     axD.set_xlabel(r"susceptible  $s$"); axD.set_ylabel(r"infected  $i$")
     axD.set_xticks(range(0, m0 + 1)); axD.set_yticks(range(0, m0 + 1))
-    axD.set_title(rf"$u(i,s)$,  $m={m0}$,  $\lambda={lam0:g}$", fontsize=9.2, pad=4)
     axD.grid(False)
     axD.tick_params(which="both", top=False, right=False)
     tag(axD, "d")

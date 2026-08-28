@@ -1,4 +1,4 @@
-"""Figure 3 (central result): the epidemic threshold as a phase portrait.
+"""Figure 4 (central result): the epidemic threshold as a phase portrait.
 
 With a per-layer rate the condition rho(N)=1 is a curve in the (lambda_1,lambda_2)
 plane, not a point. Four panels:
@@ -17,6 +17,7 @@ read from figure4_data.json.
 import json
 import numpy as np
 import matplotlib as mpl
+import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
 from matplotlib.ticker import AutoMinorLocator
 from matplotlib.patches import Patch
@@ -26,6 +27,13 @@ from theory import next_gen_matrix, spectral_radius, cascade_C, degree_moments, 
 from figure4_rho12 import bootstrap_lc
 
 INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
+
+
+def cased(lw, fg="#17171a"):
+    """Stroke behind a white overlay so it survives the light end of magma."""
+    return [pe.withStroke(linewidth=lw, foreground=fg)]
+
+
 TEAL, CORAL, BLUE = "#1C9B8E", "#E76F51", "#2F5FD0"
 MED = "#a23c1a"
 P_ANCHOR = {(2, 2): 0.5, (3, 3): 0.5}
@@ -99,9 +107,15 @@ def main():
     cur = crit_curve(P_ANCHOR, l1)
     im = axA.pcolormesh(gv, gv, Za, cmap="magma", vmin=0, vmax=3.0,
                         shading="gouraud", rasterized=True)
+    # magma runs to near-white at rho=3, so every white overlay is cased --
+    # the same treatment the other panels' overlays get, and the reason the
+    # perceptually uniform map needs no alteration
     cs = axA.contour(gv, gv, Za, levels=[0.25, 0.5, 1.0, 1.5, 2.0, 2.5],
-                     colors="white", linewidths=0.7, alpha=0.85)
-    axA.clabel(cs, [0.5, 1.5, 2.5], fmt="%.1f", fontsize=7, colors="white")
+                     colors="white", linewidths=0.8)
+    cs.set_path_effects(cased(1.9))
+    for t in axA.clabel(cs, [0.5, 1.5, 2.5], fmt="%.1f", fontsize=7,
+                        colors="white"):
+        t.set_path_effects(cased(1.5))
     # the synergy wedge S of (3.1): above the critical curve, yet below BOTH
     # single-layer lines -- each channel subcritical alone, supercritical together.
     # Shaded so the central claim of 3.1 is legible without tracing contours.
@@ -111,13 +125,16 @@ def main():
                      hatch="///", edgecolor="white", lw=0.0, alpha=0.5, zorder=2)
     axA.plot(l1, cur, color="white", lw=2.4, zorder=3)
     axA.plot(l1, cur, color=INK, lw=1.0, ls=(0, (1, 1.4)), zorder=3)
-    axA.axvline(lc1, color="white", lw=0.9, ls=(0, (4, 3)), alpha=0.7, zorder=3)
-    axA.axhline(lc2, color="white", lw=0.9, ls=(0, (4, 3)), alpha=0.7, zorder=3)
-    axA.plot([0.13], [0.13], "o", ms=6, mfc="none", mec="white", mew=1.6, zorder=4)
+    axA.axvline(lc1, color="white", lw=1.0, ls=(0, (4, 3)), zorder=3,
+                path_effects=cased(2.2))
+    axA.axhline(lc2, color="white", lw=1.0, ls=(0, (4, 3)), zorder=3,
+                path_effects=cased(2.2))
+    axA.plot([0.13], [0.13], "o", ms=6, mfc="none", mec="white", mew=1.6,
+             zorder=4, path_effects=cased(3.0))
     axA.text(0.253, 0.253, r"$\mathcal{S}$", color="white", fontsize=15,
-             ha="center", va="center", zorder=4)
+             ha="center", va="center", zorder=4, path_effects=cased(1.8))
     axA.text(0.253, 0.196, "synergy", color="white", fontsize=8.6, style="italic",
-             ha="center", va="center", zorder=4)
+             ha="center", va="center", zorder=4, path_effects=cased(1.4))
     axA.set_xlim(0, hi); axA.set_ylim(0, hi); axA.set_aspect("equal")
     axA.set_xlabel(r"$\lambda_1$"); axA.set_ylabel(r"$\lambda_2$")
     axA.set_title(r"$P=\{(2,2),(3,3)\}$", fontsize=9.6, pad=4)

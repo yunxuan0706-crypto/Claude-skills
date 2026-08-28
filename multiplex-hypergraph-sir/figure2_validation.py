@@ -1,4 +1,4 @@
-"""Figure 2: the group closure is correct, two independent ways.
+"""Figure 3: the group closure is correct, two independent ways.
 
   (a) full transient: I(t) from the closure vs an exact Gillespie simulation
       (N=6000, 400 runs), the two indistinguishable;

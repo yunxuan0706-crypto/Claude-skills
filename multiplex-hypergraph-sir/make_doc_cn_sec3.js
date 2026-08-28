@@ -66,11 +66,11 @@ const d7 = JSON.parse(fs.readFileSync("figure7_data.json", "utf8"));
 const f4 = (x) => Number(x).toFixed(4);
 const f5 = (x) => Number(x).toFixed(5);
 const lc0 = d7.lc[0], lcEnd = d7.lc[d7.lc.length - 1];
-const se0 = d7.se[0], seEnd = d7.se[d7.se.length - 1];
 const rise = ((lcEnd / lc0 - 1) * 100).toFixed(0);
 const minus = (s) => String(s).replace(/-/g, "−");   // typographic minus
-const pull0 = minus(((lc0 - d7.lc_theory) / se0).toFixed(1));
-const pullEnd = ((lcEnd - d7.lc_theory) / seEnd).toFixed(0);
+// the pulls the prose quotes are pull0s/pullEnds below, formed with the
+// sqrt(chi2/dof)-inflated errors; the unscaled ones are deliberately not
+// defined here, so a later edit cannot reach for the optimistic version
 
 // worst residual pull over the six weighted linear fits, so the prose cannot
 // claim a fit quality the data does not have

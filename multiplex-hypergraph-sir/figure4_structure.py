@@ -1,4 +1,4 @@
-"""Figure 4: structural design, and where the theory stops.
+"""Figure 5: structural design, and where the theory stops.
 
   (a) channel allocation. At fixed total budget the most dangerous split is
       interior in every case tested -- a pure allocation zeroes the cross-layer

@@ -153,9 +153,10 @@ def main():
     for m, y in ((3, 11.1), (4, 21.5), (5, 31.0)):
         axB.plot([1.0], [y], "o", ms=4.6, mfc="white", mec=col[m], mew=1.5, zorder=5)
     axB.axvline(1.0, color=MUTED, lw=0.8, ls=(0, (4, 3)), zorder=1)
-    for m, y in ((3, 11.1), (4, 21.5), (5, 31.0)):
-        axB.annotate(f"{y}%", xy=(1.0, y), xytext=(7, -1), textcoords="offset points",
-                     fontsize=8.0, color=col[m], va="center", ha="left")
+    for m, y, dy in ((3, 11.1, -8), (4, 21.5, -1), (5, 31.0, 6)):
+        axB.annotate(f"{y}%", xy=(1.0, y), xytext=(10, dy), textcoords="offset points",
+                     fontsize=8.0, color=col[m], va="center", ha="left",
+                     bbox=dict(fc="white", ec="none", alpha=0.8, pad=0.6))
     axB.set_xlim(0, 2.5); axB.set_ylim(0, None)
     axB.set_xlabel(r"$\lambda$")
     axB.set_ylabel(r"excess  $C/[(m{-}1)T]-1$   (%)")
@@ -172,8 +173,10 @@ def main():
     edges_l = np.concatenate([lg - dl / 2, [lg[-1] + dl / 2]])
     im = axC.pcolormesh(edges_l, edges_m, Z, cmap="magma", vmin=0, vmax=6.0,
                         rasterized=True)
-    cs = axC.contour(lg, mg, Z, levels=[1.0], colors="white", linewidths=1.9)
-    axC.clabel(cs, fmt={1.0: r"$C=1$"}, fontsize=8.2, colors="white")
+    cs = axC.contour(lg, mg, Z, levels=[1.0], colors="white", linewidths=2.2)
+    cl = axC.clabel(cs, fmt={1.0: r"$C=1$"}, fontsize=8.8, colors="white")
+    for t in cl:
+        t.set_bbox(dict(fc="black", ec="none", alpha=0.45, pad=1.2))
     axC.set_yticks(mg)
     axC.set_xlabel(r"$\lambda$"); axC.set_ylabel(r"group size  $m$")
     axC.grid(False)
@@ -189,8 +192,9 @@ def main():
                      interpolation="nearest")
     axD.plot([m0 - 1], [1], "o", ms=7, mfc="none", mec=CORAL, mew=1.8, zorder=4)
     axD.annotate(r"$C=u(1,m{-}1)$", xy=(m0 - 1, 1.42), xytext=(m0 - 1, 3.5),
-                 fontsize=8.6, color=CORAL, ha="center",
-                 arrowprops=dict(arrowstyle="->", color=CORAL, lw=1.0,
+                 fontsize=8.6, color="white", ha="center",
+                 bbox=dict(fc="black", ec="none", alpha=0.5, pad=1.5),
+                 arrowprops=dict(arrowstyle="->", color="white", lw=1.2,
                                  shrinkA=2, shrinkB=2))
     axD.set_xlabel(r"susceptible  $s$"); axD.set_ylabel(r"infected  $i$")
     axD.set_xticks(range(0, m0 + 1)); axD.set_yticks(range(0, m0 + 1))

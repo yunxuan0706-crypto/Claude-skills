@@ -10,11 +10,14 @@ recursion.
   (a) C(m,lambda) against the naive (m-1)T, m = 2..6;
   (b) the excess C/[(m-1)T] - 1 in percent, which is what the closure would
       lose if the cascade were dropped;
-  (c) C over the (lambda, m) plane, on a scale that diverges about C=1 -- the
-      neutral band is the locus where one group alone already replaces its
-      seed, so the two regimes read off the colour directly;
+  (c) C over the (lambda, m) plane on a perceptually uniform map, stretched
+      by a power norm so the low end opens up; the C=1 locus -- where one
+      group alone already replaces its seed -- is the one heavy contour;
   (d) the recursion's internal state lattice u(i,s) for m=6, lambda=1, values
       printed on the cells and the one cell the closure reads off marked;
+
+Both maps are colour-vision-safe and monotone in lightness, so the panels
+reproduce in greyscale; overlays are cased rather than the maps altered.
   (e) recursion vs Gillespie on twelve (m,lambda,theta) settings;
   (f) the same comparison in units of the Monte-Carlo standard error.
 
@@ -26,8 +29,8 @@ from functools import lru_cache
 
 import numpy as np
 import matplotlib as mpl
+import matplotlib.patheffects as pe
 import matplotlib.pyplot as plt
-from matplotlib.colors import LinearSegmentedColormap, TwoSlopeNorm
 from matplotlib.patches import Rectangle
 from matplotlib.ticker import AutoMinorLocator
 
@@ -37,6 +40,12 @@ INK, SEC, MUTED = "#20201e", "#565550", "#9b9a93"
 TEAL, CORAL, BLUE, PLUM = "#1C9B8E", "#E76F51", "#2F5FD0", "#7D6B9E"
 BAND2, BAND1 = "#eef2f6", "#dbe3ec"
 CACHE = "figure_cascade_data.json"
+
+# Overlays on a perceptually uniform map have to survive the whole range of
+# that map, so every line and label drawn on one is cased -- the standard
+# treatment, and the reason the colormaps themselves need no alteration.
+def cased(lw, fg="#17171a"):
+    return [pe.withStroke(linewidth=lw, foreground=fg)]
 
 # the twelve settings the Monte-Carlo check runs on
 MC_CASES = [(2, 0.35, 1), (2, 1.0, 1), (3, 0.5, 1), (3, 1.0, 1), (3, 2.0, 1),
@@ -175,64 +184,84 @@ def main():
     edges_m = np.arange(1.5, 9.5, 1.0)
     dl = lg[1] - lg[0]
     edges_l = np.concatenate([lg - dl / 2, [lg[-1] + dl / 2]])
-    # the result this panel carries is the C=1 locus, so the scale diverges
-    # about it: the neutral band *is* the boundary, cool below it (a group
-    # cannot replace its own seed), warm above. m=2 stays cool throughout --
-    # a pairwise-sized group never self-replaces, however large lambda gets.
-    cmap_c = LinearSegmentedColormap.from_list("sub_super", [
-        (0.00, "#5d8fbe"), (0.28, "#b6cfe4"), (0.50, "#f5f2ec"),
-        (0.70, "#f0b298"), (0.86, "#dc6d53"), (1.00, "#9d3419")])
+    # The field keeps the perceptually uniform, colour-vision-safe map the
+    # rest of the figure is sampled from; the result is carried by the
+    # contours, not by a hue trick, so the panel stays monotone in lightness
+    # and reproduces in greyscale. Thin lines at C=2,4,6 make the field
+    # quantitative; the C=1 locus -- where one group alone already replaces
+    # its seed -- is the only heavy line, and every overlay is cased.
+    # C spans a decade over this plane and the region that matters is the
+    # low end, so the map is stretched by a power norm -- the colourbar
+    # carries its own ticks, so the scale stays readable while C=1 lands
+    # near the middle of the ramp instead of in the darkest corner.
     zmax = float(np.ceil(Z.max()))
-    im = axC.pcolormesh(edges_l, edges_m, Z, cmap=cmap_c,
-                        norm=TwoSlopeNorm(vmin=0.0, vcenter=1.0, vmax=zmax),
+    im = axC.pcolormesh(edges_l, edges_m, Z, cmap="viridis",
+                        norm=mpl.colors.PowerNorm(gamma=0.55, vmin=0.0,
+                                                  vmax=zmax),
                         rasterized=True)
-    cs = axC.contour(lg, mg, Z, levels=[1.0], colors=INK, linewidths=1.5)
-    axC.clabel(cs, fmt={1.0: r"$C=1$"}, fontsize=8.6, colors=INK)
-    axC.text(1.62, 2.0, r"$C<1$", fontsize=9, color=INK, ha="center",
-             va="center")
-    axC.text(1.62, 7.5, r"$C>1$", fontsize=9, color="white", ha="center",
-             va="center")
+    thin = [v for v in (2.0, 4.0) if v < zmax]
+    cs_t = axC.contour(lg, mg, Z, levels=thin, colors="white", linewidths=1.0)
+    cs_t.set_path_effects(cased(2.1))
+    for t in axC.clabel(cs_t, fmt="%g", fontsize=7.0, colors="white"):
+        t.set_path_effects(cased(1.5))
+    cs = axC.contour(lg, mg, Z, levels=[1.0], colors="white", linewidths=2.2)
+    cs.set_path_effects(cased(3.6))
+    for t in axC.clabel(cs, fmt={1.0: r"$C=1$"}, fontsize=8.8, colors="white",
+                        manual=[(1.20, 2.80)]):
+        t.set_path_effects(cased(1.6))
+    # m=2 stays below the line over the whole row: a pairwise-sized group
+    # never replaces its own seed, however large lambda gets
+    for (x, y), s in (((1.72, 2.0), r"$C<1$"), ((1.62, 7.5), r"$C>1$")):
+        axC.text(x, y, s, fontsize=9, color="white", ha="center", va="center",
+                 path_effects=cased(1.5))
     axC.set_yticks(mg)
     axC.set_xlabel(r"$\lambda$"); axC.set_ylabel(r"group size  $m$")
     axC.grid(False)
     cb = fig.colorbar(im, ax=axC, fraction=0.046, pad=0.03,
-                      ticks=[0, 1, 2, 4, zmax])
+                      ticks=np.arange(0, zmax + 0.5, 1.0))
     cb.set_label(r"$C$", fontsize=9); cb.ax.tick_params(labelsize=7.5)
-    cb.ax.axhline(1.0, color=INK, lw=1.1)      # the divergence point, marked
+    cb.ax.axhline(1.0, color="white", lw=1.5, path_effects=cased(2.8))
     cb.outline.set_linewidth(0.7); cb.outline.set_edgecolor("#c6c5bf")
     axC.tick_params(which="both", top=False, right=False)
     tag(axC, "c")
 
     # ------------------------------------- (d) the recursion lattice u(i,s), m=8
-    # the numbers are the result here, so the shading stays pale and carries
-    # only the trend; every reachable cell prints its own u, and the single
-    # cell the closure reads off is the one accent in the panel.
+    # An annotated lattice is a different object from the continuous field of
+    # (c), so it takes a different scale -- a single-hue sequential ramp, the
+    # conventional choice for a table one reads numbers off, and likewise
+    # monotone in lightness. Cell text follows the cell's own luminance, so
+    # the values read at both ends of the ramp without touching the map.
     m0, lam0 = 6, 1.0
     U = u_lattice(m0, lam0, 1)
-    cmap_d = LinearSegmentedColormap.from_list(
-        "pale_teal", ["#f0f7f5", "#d3e9e5", "#a8d5ce", "#74bdb3", "#3aa396"])
+    cmap_d = plt.get_cmap("Blues")
+    umax = float(np.nanmax(U))
     axD.set_facecolor("white")                 # unreachable cells stay blank
     axD.imshow(U, origin="lower", cmap=cmap_d, aspect="equal",
-               interpolation="nearest", vmin=0.0, vmax=float(np.nanmax(U)))
+               interpolation="nearest", vmin=0.0, vmax=umax)
     for i in range(m0 + 1):
         for s in range(m0 + 1):
             if np.isnan(U[i, s]):
                 continue
+            r, g, b, _ = cmap_d(U[i, s] / umax)
+            dark = 0.299 * r + 0.587 * g + 0.114 * b < 0.55
             # i=0 (died out) and s=0 (group exhausted) are absorbing, u=0
             # there by definition; keep them as structure, not as data
             absorbing = i == 0 or s == 0
             axD.text(s, i, "0" if absorbing else f"{U[i, s]:.2f}",
                      ha="center", va="center", zorder=3,
-                     fontsize=6.4 if absorbing else 6.8,
-                     color=MUTED if absorbing else INK)
+                     fontsize=6.4 if absorbing else 6.9,
+                     alpha=0.55 if absorbing else 1.0,
+                     color=("white" if dark else INK))
     axD.add_patch(Rectangle((m0 - 1.5, 0.5), 1.0, 1.0, fill=False, ec=CORAL,
-                            lw=2.0, zorder=6))
+                            lw=2.0, zorder=6, path_effects=cased(3.6, "white")))
     axD.annotate(rf"$C=u(1,m{{-}}1)={U[1, m0 - 1]:.3f}$",
-                 xy=(m0 - 1, 1.58), xytext=(m0 - 2.5, 4.4),
-                 fontsize=8.8, color=CORAL, ha="center",
+                 xy=(m0 - 1, 1.58), xytext=(m0 - 1.6, 5.25),
+                 fontsize=8.4, color=CORAL, ha="center",
+                 path_effects=cased(2.4, "white"),
                  arrowprops=dict(arrowstyle="->", color=CORAL, lw=1.1,
-                                 connectionstyle="arc3,rad=-0.22",
-                                 shrinkA=3, shrinkB=3))
+                                 connectionstyle="arc3,rad=-0.16",
+                                 shrinkA=3, shrinkB=3,
+                                 path_effects=cased(2.8, "white")))
     axD.set_xlabel(r"susceptible  $s$"); axD.set_ylabel(r"infected  $i$")
     axD.set_xticks(range(0, m0 + 1)); axD.set_yticks(range(0, m0 + 1))
     axD.set_title(rf"$u(i,s)$,  $m={m0}$,  $\lambda={lam0:g}$", fontsize=9.2, pad=4)

@@ -10,9 +10,11 @@ recursion.
   (a) C(m,lambda) against the naive (m-1)T, m = 2..6;
   (b) the excess C/[(m-1)T] - 1 in percent, which is what the closure would
       lose if the cascade were dropped;
-  (c) C over the (lambda, m) plane with the C=1 contour, i.e. the locus where
-      one group alone already replaces its seed;
-  (d) the recursion's internal state lattice u(i,s) for m=8, lambda=1;
+  (c) C over the (lambda, m) plane, on a scale that diverges about C=1 -- the
+      neutral band is the locus where one group alone already replaces its
+      seed, so the two regimes read off the colour directly;
+  (d) the recursion's internal state lattice u(i,s) for m=6, lambda=1, values
+      printed on the cells and the one cell the closure reads off marked;
   (e) recursion vs Gillespie on twelve (m,lambda,theta) settings;
   (f) the same comparison in units of the Monte-Carlo standard error.
 
@@ -25,6 +27,8 @@ from functools import lru_cache
 import numpy as np
 import matplotlib as mpl
 import matplotlib.pyplot as plt
+from matplotlib.colors import LinearSegmentedColormap, TwoSlopeNorm
+from matplotlib.patches import Rectangle
 from matplotlib.ticker import AutoMinorLocator
 
 from theory import cascade_C
@@ -171,37 +175,69 @@ def main():
     edges_m = np.arange(1.5, 9.5, 1.0)
     dl = lg[1] - lg[0]
     edges_l = np.concatenate([lg - dl / 2, [lg[-1] + dl / 2]])
-    im = axC.pcolormesh(edges_l, edges_m, Z, cmap="magma", vmin=0, vmax=6.0,
+    # the result this panel carries is the C=1 locus, so the scale diverges
+    # about it: the neutral band *is* the boundary, cool below it (a group
+    # cannot replace its own seed), warm above. m=2 stays cool throughout --
+    # a pairwise-sized group never self-replaces, however large lambda gets.
+    cmap_c = LinearSegmentedColormap.from_list("sub_super", [
+        (0.00, "#5d8fbe"), (0.28, "#b6cfe4"), (0.50, "#f5f2ec"),
+        (0.70, "#f0b298"), (0.86, "#dc6d53"), (1.00, "#9d3419")])
+    zmax = float(np.ceil(Z.max()))
+    im = axC.pcolormesh(edges_l, edges_m, Z, cmap=cmap_c,
+                        norm=TwoSlopeNorm(vmin=0.0, vcenter=1.0, vmax=zmax),
                         rasterized=True)
-    cs = axC.contour(lg, mg, Z, levels=[1.0], colors="white", linewidths=2.2)
-    cl = axC.clabel(cs, fmt={1.0: r"$C=1$"}, fontsize=8.8, colors="white")
-    for t in cl:
-        t.set_bbox(dict(fc="black", ec="none", alpha=0.45, pad=1.2))
+    cs = axC.contour(lg, mg, Z, levels=[1.0], colors=INK, linewidths=1.5)
+    axC.clabel(cs, fmt={1.0: r"$C=1$"}, fontsize=8.6, colors=INK)
+    axC.text(1.62, 2.0, r"$C<1$", fontsize=9, color=INK, ha="center",
+             va="center")
+    axC.text(1.62, 7.5, r"$C>1$", fontsize=9, color="white", ha="center",
+             va="center")
     axC.set_yticks(mg)
     axC.set_xlabel(r"$\lambda$"); axC.set_ylabel(r"group size  $m$")
     axC.grid(False)
-    cb = fig.colorbar(im, ax=axC, fraction=0.046, pad=0.03)
+    cb = fig.colorbar(im, ax=axC, fraction=0.046, pad=0.03,
+                      ticks=[0, 1, 2, 4, zmax])
     cb.set_label(r"$C$", fontsize=9); cb.ax.tick_params(labelsize=7.5)
+    cb.ax.axhline(1.0, color=INK, lw=1.1)      # the divergence point, marked
+    cb.outline.set_linewidth(0.7); cb.outline.set_edgecolor("#c6c5bf")
     axC.tick_params(which="both", top=False, right=False)
     tag(axC, "c")
 
     # ------------------------------------- (d) the recursion lattice u(i,s), m=8
-    m0, lam0 = 8, 1.0
+    # the numbers are the result here, so the shading stays pale and carries
+    # only the trend; every reachable cell prints its own u, and the single
+    # cell the closure reads off is the one accent in the panel.
+    m0, lam0 = 6, 1.0
     U = u_lattice(m0, lam0, 1)
-    im2 = axD.imshow(U, origin="lower", cmap="viridis", aspect="equal",
-                     interpolation="nearest")
-    axD.plot([m0 - 1], [1], "o", ms=7, mfc="none", mec=CORAL, mew=1.8, zorder=4)
-    axD.annotate(r"$C=u(1,m{-}1)$", xy=(m0 - 1, 1.42), xytext=(m0 - 1, 3.5),
-                 fontsize=8.6, color="white", ha="center",
-                 bbox=dict(fc="black", ec="none", alpha=0.5, pad=1.5),
-                 arrowprops=dict(arrowstyle="->", color="white", lw=1.2,
-                                 shrinkA=2, shrinkB=2))
+    cmap_d = LinearSegmentedColormap.from_list(
+        "pale_teal", ["#f0f7f5", "#d3e9e5", "#a8d5ce", "#74bdb3", "#3aa396"])
+    axD.set_facecolor("white")                 # unreachable cells stay blank
+    axD.imshow(U, origin="lower", cmap=cmap_d, aspect="equal",
+               interpolation="nearest", vmin=0.0, vmax=float(np.nanmax(U)))
+    for i in range(m0 + 1):
+        for s in range(m0 + 1):
+            if np.isnan(U[i, s]):
+                continue
+            # i=0 (died out) and s=0 (group exhausted) are absorbing, u=0
+            # there by definition; keep them as structure, not as data
+            absorbing = i == 0 or s == 0
+            axD.text(s, i, "0" if absorbing else f"{U[i, s]:.2f}",
+                     ha="center", va="center", zorder=3,
+                     fontsize=6.4 if absorbing else 6.8,
+                     color=MUTED if absorbing else INK)
+    axD.add_patch(Rectangle((m0 - 1.5, 0.5), 1.0, 1.0, fill=False, ec=CORAL,
+                            lw=2.0, zorder=6))
+    axD.annotate(rf"$C=u(1,m{{-}}1)={U[1, m0 - 1]:.3f}$",
+                 xy=(m0 - 1, 1.58), xytext=(m0 - 2.5, 4.4),
+                 fontsize=8.8, color=CORAL, ha="center",
+                 arrowprops=dict(arrowstyle="->", color=CORAL, lw=1.1,
+                                 connectionstyle="arc3,rad=-0.22",
+                                 shrinkA=3, shrinkB=3))
     axD.set_xlabel(r"susceptible  $s$"); axD.set_ylabel(r"infected  $i$")
     axD.set_xticks(range(0, m0 + 1)); axD.set_yticks(range(0, m0 + 1))
     axD.set_title(rf"$u(i,s)$,  $m={m0}$,  $\lambda={lam0:g}$", fontsize=9.2, pad=4)
     axD.grid(False)
-    cb2 = fig.colorbar(im2, ax=axD, fraction=0.046, pad=0.03)
-    cb2.ax.tick_params(labelsize=7.5)
+    axD.tick_params(which="both", top=False, right=False)
     tag(axD, "d")
 
     # ------------------------------------------ (e) recursion vs Gillespie MC

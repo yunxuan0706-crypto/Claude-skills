@@ -102,13 +102,22 @@ def main():
     cs = axA.contour(gv, gv, Za, levels=[0.25, 0.5, 1.0, 1.5, 2.0, 2.5],
                      colors="white", linewidths=0.7, alpha=0.85)
     axA.clabel(cs, [0.5, 1.5, 2.5], fmt="%.1f", fontsize=7, colors="white")
-    axA.plot(l1, cur, color="white", lw=2.4)
-    axA.plot(l1, cur, color=INK, lw=1.0, ls=(0, (1, 1.4)))
-    axA.axvline(lc1, color="white", lw=0.9, ls=(0, (4, 3)), alpha=0.7)
-    axA.axhline(lc2, color="white", lw=0.9, ls=(0, (4, 3)), alpha=0.7)
-    axA.plot([0.13], [0.13], "o", ms=6, mfc="none", mec="white", mew=1.6)
-    axA.text(0.30, 0.335, "synergy", color="white", fontsize=10.5, style="italic",
-             ha="center", rotation=-38)
+    # the synergy wedge S of (3.1): above the critical curve, yet below BOTH
+    # single-layer lines -- each channel subcritical alone, supercritical together.
+    # Shaded so the central claim of 3.1 is legible without tracing contours.
+    axA.fill_between(l1, cur, lc2, where=(cur < lc2), color="white", alpha=0.16,
+                     lw=0, zorder=2)
+    axA.fill_between(l1, cur, lc2, where=(cur < lc2), facecolor="none",
+                     hatch="///", edgecolor="white", lw=0.0, alpha=0.5, zorder=2)
+    axA.plot(l1, cur, color="white", lw=2.4, zorder=3)
+    axA.plot(l1, cur, color=INK, lw=1.0, ls=(0, (1, 1.4)), zorder=3)
+    axA.axvline(lc1, color="white", lw=0.9, ls=(0, (4, 3)), alpha=0.7, zorder=3)
+    axA.axhline(lc2, color="white", lw=0.9, ls=(0, (4, 3)), alpha=0.7, zorder=3)
+    axA.plot([0.13], [0.13], "o", ms=6, mfc="none", mec="white", mew=1.6, zorder=4)
+    axA.text(0.253, 0.253, r"$\mathcal{S}$", color="white", fontsize=15,
+             ha="center", va="center", zorder=4)
+    axA.text(0.253, 0.196, "synergy", color="white", fontsize=8.6, style="italic",
+             ha="center", va="center", zorder=4)
     axA.set_xlim(0, hi); axA.set_ylim(0, hi); axA.set_aspect("equal")
     axA.set_xlabel(r"$\lambda_1$"); axA.set_ylabel(r"$\lambda_2$")
     axA.set_title(r"$P=\{(2,2),(3,3)\}$", fontsize=9.6, pad=4)

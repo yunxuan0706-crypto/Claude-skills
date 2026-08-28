@@ -149,7 +149,7 @@ k.push(caption([
   R(" 在 ", { size: SMALL }), ...E("(λ_{1},λ_{2})", SMALL),
   R(" 平面上的热力图（magma），白色细线为等值线、加粗白线为 ", { size: SMALL }), ...E("ρ(N)=1", SMALL),
   R(" 临界曲线，两条白虚线为单层条件 ", { size: SMALL }), ...E("N_{aa}=1", SMALL),
-  R("；临界曲线与两条单层线围出的区域即 (3.1) 的协同楔 ", { size: SMALL }), ...E("𝒮", SMALL),
+  R("；临界曲线与两条单层线围出的斜纹填充区即 (3.1) 的协同楔 ", { size: SMALL }), ...E("𝒮", SMALL),
   R("，空心圆为解析锚点 ", { size: SMALL }), ...E("λ_{1}=λ_{2}=0.13", SMALL),
   R("（", { size: SMALL }), ...E("ρ=1.0132", SMALL),
   R("）。(b) 固定边缘的 ", { size: SMALL }), ...E("{2,4}", SMALL),

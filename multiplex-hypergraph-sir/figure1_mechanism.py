@@ -56,9 +56,11 @@ def arrow(ax, a, b, color=BLK, lw=0.95, ms=7.5, z=6, rad=0.0):
 
 
 def panel_label(ax, letter, title):
-    ax.text(0.0, 1.0, f"{letter}. ", transform=ax.transAxes, fontsize=11,
+    # same weight/size as the panel tags of figures 2-4, so the four figures
+    # carry one labelling convention
+    ax.text(0.0, 1.0, letter, transform=ax.transAxes, fontsize=13,
             fontweight="bold", va="top", ha="left")
-    ax.text(0.035, 1.0, title, transform=ax.transAxes, fontsize=10,
+    ax.text(0.048, 0.997, title, transform=ax.transAxes, fontsize=10,
             va="top", ha="left")
 
 

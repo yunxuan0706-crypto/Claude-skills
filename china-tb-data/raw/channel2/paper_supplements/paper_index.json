@@ -1,0 +1,62 @@
+[
+  {
+    "id": "frontiers_2024_1436515",
+    "title": "TB disease burden in China: spatio-temporal clustering (2004-2018, 31省月度)",
+    "url": "https://www.frontiersin.org/journals/public-health/articles/10.3389/fpubh.2024.1436515/full",
+    "note": "Frontiers OA - 访问论文页面下载 Supplementary Material"
+  },
+  {
+    "id": "frontiers_2026_1866155",
+    "title": "Trends and spatial distribution of PTB in China (2004-2025, 31省月度)",
+    "url": "https://www.frontiersin.org/journals/public-health/articles/10.3389/fpubh.2026.1866155/full",
+    "note": "Frontiers OA - 最新最完整的省级月度数据"
+  },
+  {
+    "id": "sciencedirect_S120197122600322X",
+    "title": "Spatiotemporal patterns of PTB in China 2000-2024 (31省月度+预测到2030)",
+    "url": "https://www.sciencedirect.com/science/article/pii/S120197122600322X",
+    "note": "ScienceDirect - 可能需机构订阅, 覆盖2000-2024"
+  },
+  {
+    "id": "springer_s41182_026_00928",
+    "title": "TB incidence and mortality trends in mainland China 2004-2024",
+    "url": "https://link.springer.com/article/10.1186/s41182-026-00928-4",
+    "note": "Springer OA (Tropical Medicine and Health)"
+  },
+  {
+    "id": "pmc_11149027_jiangsu",
+    "title": "PTB spatial-temporal distribution in eastern China (江苏95县 2011-2021)",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC11149027/",
+    "note": "PMC OA - 县级数据"
+  },
+  {
+    "id": "pmc_9695586_shandong",
+    "title": "County-level TB in Shandong 2016-2020 (135,185 cases)",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC9695586/",
+    "note": "PMC OA - 县级数据"
+  },
+  {
+    "id": "pmc_8297355_hunan",
+    "title": "Spatiotemporal patterns of TB in Hunan Province (2013-2018, 县级)",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8297355/",
+    "note": "PMC OA - 县级数据"
+  },
+  {
+    "id": "plosone_0290978_mgwr",
+    "title": "Influential factors of TB in mainland China (MGWR, 县级面板数据)",
+    "url": "https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0290978",
+    "note": "PLOS ONE OA - 附件含县级面板数据"
+  },
+  {
+    "id": "pmc_10041483_spatiotemporal",
+    "title": "Spatial-temporal dynamic distribution of TB in China 2008-2018 (省级)",
+    "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC10041483/",
+    "note": "PMC OA - 省级年度面板数据"
+  },
+  {
+    "id": "bmc_s12889_025_24575",
+    "title": "Factors affecting TB incidence in mainland Chinese economic regions (省级)",
+    "url": "https://link.springer.com/article/10.1186/s12889-025-24575-2",
+    "note": "BMC Public Health OA"
+  }
+]

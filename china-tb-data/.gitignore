@@ -4,6 +4,14 @@ raw/channel1/github-infectious-disease/
 raw/channel1/tb_prediction_files/
 raw/channel2/gtbreport2025/
 
+# Downloaded paper supplement files (keep paper_index.json)
+raw/channel2/paper_supplements/*/
+
+# Downloaded data from scripts (recreated by download_all_sources.py)
+raw/channel1/cdc_monthly_reports/
+raw/channel1/nhc_yearbook/
+raw/channel1/who_data/
+
 # Python
 __pycache__/
 *.pyc

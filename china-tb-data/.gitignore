@@ -1,0 +1,9 @@
+# Cloned git repos (large, have their own .git history)
+raw/channel1/China-CDC-raw-data/
+raw/channel1/github-infectious-disease/
+raw/channel1/tb_prediction_files/
+raw/channel2/gtbreport2025/
+
+# Python
+__pycache__/
+*.pyc

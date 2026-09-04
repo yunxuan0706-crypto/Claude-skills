@@ -5,54 +5,74 @@ spreading on multiplex hypergraphs"* (Wang, You & Pan), in the visual idiom of
 **Chaos, Solitons & Fractals** / Elsevier: Arial-metric sans-serif throughout, filled
 hyperedge blobs, SIR-coloured nodes, bold `(a)`–`(d)` panel labels, one shared legend.
 
-## Output
+## Two variants
 
-| file | width | use |
+`fig1_lean_*` is the one to submit. `fig1_csf_*` carries the same drawing plus the
+prose and equation numbers inline, which makes it readable with no caption at hand —
+useful for a talk slide or a supplementary figure, too heavy for a journal page.
+
+|  | text elements | characters | equation refs | size |
+|---|---|---|---|---|
+| `fig1_lean_190mm.pdf` | 125 | 336 | 0 | 190.0 × 138.0 mm |
+| `fig1_csf_190mm.pdf`  | 251 | 1133 | 17 | 190.0 × 158.0 mm |
+
+The lean variant keeps only labels that **name something drawn in the panel**
+($u$, $e_1$, $\beta_a$, $h_a$, $x^{(a)}_{sir}$, $(i,s)$, $B_{aa}$, $K_{ab}=B_{ab}C_b$,
+the closure cycle). Every sentence and every `[Eq. (n)]` moved into the caption, which
+is why the lean caption below is longer than the full variant's.
+
+Each variant is built at two widths:
+
+| suffix | width | use |
 |---|---|---|
-| `fig1_csf_190mm.pdf` | 190.0 × 158.0 mm | Elsevier / CSF double column |
-| `fig1_csf_178mm.pdf` | 177.8 × 147.9 mm | REVTeX 4 two-column `\textwidth` (7 in), AIP *Chaos* |
+| `_190mm` | 190.0 mm | Elsevier / CSF double column |
+| `_178mm` | 177.8 mm | REVTeX 4 two-column `\textwidth` (7 in), AIP *Chaos* |
 
-Both are **fully vector** (no embedded raster), with selectable text and all base
-lettering at **7.0–9.0 pt at final size** — the two widths differ in geometry only,
-the type is identical, so neither needs rescaling on `\includegraphics`.
+All four are **fully vector** (no embedded raster), with selectable text and all base
+lettering at **7.0–9.0 pt at final size**. The two widths differ in geometry only —
+the type is identical — so neither needs rescaling on `\includegraphics`.
 
 ## Include
 
 ```latex
 \begin{figure*}[t]
   \centering
-  \includegraphics[width=\textwidth]{fig1_csf_178mm.pdf}  % 190mm variant for elsarticle
+  \includegraphics[width=\textwidth]{fig1_lean_178mm.pdf}  % 190mm variant for elsarticle
   \caption{\label{fig:framework} <caption below> }
 \end{figure*}
 ```
 
-## Caption
+## Caption (lean variant)
 
 > **FIG. 1.** Structure, edge-based closure, and the two factors of the epidemic
-> threshold. **(a)** A two-layer multiplex hypergraph. Layer $a$ is $m_a$-uniform
-> (solid, $m_a=3$), layer $b$ is $m_b$-uniform (dashed, $m_b=4$), and the test node
-> $u$ has layer-specific hyperdegrees $k^{(a)}(u)=2$, $k^{(b)}(u)=1$. The joint
-> hyperdegree distribution $P(\mathbf{k})$ enters the theory through the generating
-> functions $\Psi$, for a uniformly sampled node, and $\psi_a$, for a node reached
-> through layer $a$ with its arrival hyperedge excluded.
+> threshold. Node fill gives the SIR state and outline style gives the layer (legend).
+> **(a)** A two-layer multiplex hypergraph: layer $a$ is $m_a$-uniform (solid,
+> $m_a=3$, hyperedges $e_1,e_2$), layer $b$ is $m_b$-uniform (dashed, $m_b=4$,
+> hyperedge $e_3$), and the test node $u$ has $k^{(a)}(u)=2$, $k^{(b)}(u)=1$. The joint
+> hyperdegree distribution $P(\mathbf{k})$ enters through the generating functions
+> $\Psi$, for a uniformly sampled node [Eq.~(3)], and $\psi_a$, for a node reached
+> through layer $a$ with its arrival hyperedge excluded [Eq.~(4)].
 > **(b)** Edge-based closure at finite prevalence. Transmission out of $u$ is
-> suppressed, which makes its incident hyperedges conditionally independent on a
-> locally tree-like incidence graph. For one representative layer-$a$ hyperedge $e$
-> the theory retains the joint SIR composition $x^{(a)}_{sir}$ of the $m_a-1$ other
-> members; those members are additionally infected from their remaining incident
-> hyperedges at rate $h_a$, obtained from $\psi_a(\Phi)$. The cycle
-> $x^{(a)}_{sir}\to A_a\to\Phi_a\to\psi_a(\Phi)\to h_a\to x^{(a)}_{sir}$ closes the
-> dynamics and determines $S(t)$, $I(t)$, $R(t)$ and $R(\infty)$.
-> **(c)** Rare-infection limit, within-hyperedge factor. A single seed in an
-> otherwise susceptible hyperedge infects $(m-1)T$ members directly, but secondary
-> infections lengthen the interval over which $e$ still contains an infectious node,
-> so the expected total satisfies $C(m,\lambda,\theta)\geq(m-1)T$, with equality only
-> at $m=2$. States are labelled by $(i,s)$ as in Eq.~(20).
-> **(d)** Rare-infection limit, network factor. A newly infected node is a member of
-> the hyperedge through which infection arrived — excluded from its offspring, giving
-> the $-\delta_{ab}$ of Eq.~(23) — and of $B_{ab}$ further layer-$b$ hyperedges, each
-> seeding $C_b$ new infections on average. The product $K_{ab}=B_{ab}C_b$ is the
-> next-generation matrix, and $\rho(K)=1$ fixes the threshold $\lambda_c$.
+> suppressed ($\times$), which makes its incident hyperedges conditionally independent
+> on a locally tree-like incidence graph. For one representative layer-$a$ hyperedge the
+> theory retains the joint SIR composition $x^{(a)}_{sir}$ of the $m_a-1$ other members
+> [Eq.~(9)]; that hyperedge transmits to $u$ at rate $\beta_a$, while the same members
+> are infected from their remaining incident hyperedges at rate $h_a$ [Eq.~(13)],
+> obtained from $\psi_a(\Phi)$. The cycle
+> $x^{(a)}_{sir}\to A_a\to\Phi_a\to\psi_a(\Phi)\to h_a$ closes the dynamics
+> [Eqs.~(11), (12), (4), (14)] and determines $S(t)$, $I(t)$, $R(t)$ and $R(\infty)$
+> [Eqs.~(8), (17), (18)].
+> **(c)** Rare-infection limit, within-hyperedge factor. A seed acting alone infects
+> $(m-1)T$ members of an otherwise susceptible hyperedge. Secondary infections both add
+> infectious members and prolong the interval over which the hyperedge still contains
+> one, so the expected total obeys $C(m,\lambda,\theta)\geq(m-1)T$, with equality only
+> at $m=2$. States are labelled $(i,s)$ as in Eq.~(20).
+> **(d)** Rare-infection limit, network factor. A newly infected node belongs to the
+> hyperedge through which infection arrived — excluded from its offspring, contributing
+> the $-\delta_{ab}$ of Eq.~(23) — and to $B_{aa}$ further layer-$a$ and $B_{ab}$
+> further layer-$b$ hyperedges, each seeding $C_a$ or $C_b$ new infections on average.
+> The product $K_{ab}=B_{ab}C_b$ is the next-generation matrix [Eq.~(24)], and
+> $\rho(K)=1$ fixes the threshold $\lambda_c$ [Eq.~(25)].
 
 ## What changed relative to the previous Fig. 1
 
@@ -128,12 +148,14 @@ the old figure was cited exactly once in the whole paper.
 ## Rebuild
 
 ```bash
-pip install matplotlib                       # needs a Liberation Sans (Arial-metric) font
-FIG_WIDTH_MM=190   python3 fig1.py           # Elsevier / CSF
-FIG_WIDTH_MM=177.8 python3 fig1.py           # REVTeX / AIP Chaos
+pip install matplotlib                            # needs Liberation Sans (Arial-metric)
+for w in 190 177.8; do
+  FIG_WIDTH_MM=$w python3 fig1_lean.py            # submit this one
+  FIG_WIDTH_MM=$w python3 fig1.py                 # annotated variant
+done
 ```
 
-`style.py` holds the palette, type scale and the hyperedge-blob geometry (rounded
+Both scripts share `style.py`, which holds the palette, type scale and the hyperedge-blob geometry (rounded
 convex offset = Minkowski sum of the members' convex hull with a disk). Layout
 coordinates in `fig1.py` are millimetres on a fixed 190 × 158 canvas; `FIG_WIDTH_MM`
 rescales the geometry while leaving type at its point size.

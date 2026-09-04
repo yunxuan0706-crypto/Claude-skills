@@ -25,17 +25,34 @@ FS_MATH  = 7.8     # display-ish math
 FS_SM    = 7.0     # smallest text used anywhere
 
 # ---------------------------------------------------------------- palette
-C_S    = "#A7C8E8"; C_S_E = "#2F5C8A"     # susceptible  (light)
-C_I    = "#E2726A"; C_I_E = "#A32E26"     # infected     (mid)
-C_R    = "#4A4E52"; C_R_E = "#1E2124"     # recovered    (dark)
-C_U    = "#FFFFFF"; C_U_E = "#111111"     # test node u
-C_INK  = "#2B2B2B"                        # hyperedge outline
-C_TRAN = "#C0392B"                        # transmission arrows
-C_COUP = "#00757F"                        # coupling / information arrows
-C_MUTE = "#9AA0A6"                        # de-emphasised (excluded hyperedge)
+# PALETTE=full  three hues + warm/cool layer tints (richest)
+# PALETTE=duo   two hues, one neutral layer tint      (recommended for CSF)
+# PALETTE=mono  single red accent, everything else neutral
+_P = __import__("os").environ.get("PALETTE", "duo")
 
-L1 = dict(ec=C_INK, fc="#5B7FA6", alpha_f=0.085, ls="-")      # layer 1 / a : solid
-L2 = dict(ec=C_INK, fc="#B08A3E", alpha_f=0.10, ls=(0, (3, 2)))  # layer 2 / b : dashed
+if _P == "full":
+    C_S, C_S_E = "#A7C8E8", "#2F5C8A"
+    C_I, C_I_E = "#E2726A", "#A32E26"
+    C_R, C_R_E = "#4A4E52", "#1E2124"
+    _F1, _A1, _F2, _A2 = "#5B7FA6", 0.085, "#B08A3E", 0.10
+    C_TRAN, C_COUP = "#C0392B", "#00757F"
+elif _P == "mono":
+    C_S, C_S_E = "#C6C6C6", "#6E6E6E"
+    C_I, C_I_E = "#C0392B", "#8C2A20"
+    C_R, C_R_E = "#8E9296", "#3D4145"
+    _F1, _A1, _F2, _A2 = "#8A8A8A", 0.06, "#8A8A8A", 0.06
+    C_TRAN, C_COUP = "#C0392B", "#3D3D3D"
+else:                                    # duo
+    C_S, C_S_E = "#9DC3E6", "#2E5F8F"
+    C_I, C_I_E = "#DE6B63", "#973630"
+    C_R, C_R_E = "#43474A", "#1B1E20"
+    _F1, _A1, _F2, _A2 = "#7A8794", 0.07, "#7A8794", 0.07
+    C_TRAN, C_COUP = "#C0392B", "#3D3D3D"
+
+C_U, C_U_E = "#FFFFFF", "#111111"
+C_INK, C_MUTE = "#2B2B2B", "#9AA0A6"
+L1 = dict(ec=C_INK, fc=_F1, alpha_f=_A1, ls="-")
+L2 = dict(ec=C_INK, fc=_F2, alpha_f=_A2, ls=(0, (3, 2)))
 
 NR = 1.55          # node radius (mm)
 

@@ -32,6 +32,40 @@ All four are **fully vector** (no embedded raster), with selectable text and all
 lettering at **7.0–9.0 pt at final size**. The two widths differ in geometry only —
 the type is identical — so neither needs rescaling on `\includegraphics`.
 
+## Palette
+
+Elsevier's artwork guidance that bears on colour: vector formats preferred, 190 mm
+double column, embedded fonts at a uniform size, and colour images that stay readable
+for readers with impaired colour vision. Elsevier also asks for a usable black-and-white
+version alongside the colour one, because automatic colour-to-grey conversion often
+fails. **Whether colour in the printed version carries a charge is journal-specific —
+check the CSF Guide for Authors.**
+
+`style.py` ships three palettes, selected with the `PALETTE` environment variable.
+`duo` is the default and the one to submit.
+
+| `PALETTE` | hues | notes |
+|---|---|---|
+| `full` | 5 (blue, salmon, slate, cool + warm layer tints, brick, teal) | reads as an infographic; the warm layer-$b$ tint is redundant with the dashed outline, and the teal appears on one arrow |
+| **`duo`** | **2 (blue, red) + neutrals** | **layers carried by line style alone, one neutral blob tint, coupling arrow neutral** |
+| `mono` | 1 (red) + neutrals | most conservative, but grey S and grey R send the reader back to the legend |
+
+`palette_compare.png` shows panel (d) and the legend under all three.
+
+Colour never carries information on its own here. Node **state** is fill, node
+**identity** ($u$) is a heavy ring plus a label, **layer** is line style, and every
+category is named in the legend — so the figure survives greyscale printing intact.
+The four node fills form an even luminance ladder, which is what makes that work:
+
+| | $u$ | S | I | R | smallest gap |
+|---|---|---|---|---|---|
+| `full` | 1.000 | 0.766 | 0.538 | 0.304 | 0.228 |
+| `duo`  | 1.000 | 0.743 | 0.513 | 0.276 | 0.230 |
+| `mono` | 1.000 | 0.776 | 0.570 | 0.332 | 0.206 |
+
+`check_cvd.png` renders the legend in greyscale, deuteranopia, protanopia and
+tritanopia; all four node types stay distinct in each.
+
 ## Include
 
 ```latex
@@ -149,7 +183,7 @@ the old figure was cited exactly once in the whole paper.
 
 ```bash
 pip install matplotlib                            # needs Liberation Sans (Arial-metric)
-for w in 190 177.8; do
+for w in 190 177.8; do                            # PALETTE=full|duo|mono
   FIG_WIDTH_MM=$w python3 fig1_lean.py            # submit this one
   FIG_WIDTH_MM=$w python3 fig1.py                 # annotated variant
 done

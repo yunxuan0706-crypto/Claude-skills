@@ -3,14 +3,13 @@ in it. Every sentence and every equation number lives in the caption instead."""
 import sys, pathlib, os
 sys.path.insert(0, str(pathlib.Path(__file__).parent))
 from style import *
-from matplotlib.patches import FancyBboxPatch
 
 W, H = 190.0, 138.0
 OUT_MM = float(os.environ.get("FIG_WIDTH_MM", 190.0))
 fig = plt.figure(figsize=(OUT_MM / 25.4, OUT_MM / W * H / 25.4))
 ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, W); ax.set_ylim(0, H); ax.axis("off")
-ax.plot([95, 95], [14, 134], color="#DCDCDC", lw=0.6, zorder=0)
-ax.plot([5, 186], [72, 72], color="#DCDCDC", lw=0.6, zorder=0)
+rule(ax, 95, 14, 95, 134)
+rule(ax, 5, 72, 186, 72)
 
 # ───────────────────────────────  (a)
 panel_head(ax, 5, 133, "a", "Multiplex hypergraph")
@@ -55,9 +54,7 @@ for x, s in zip(cyc, lab): txt(ax, x, YC, s, size=FS_MATH, ha="center")
 for i in range(4):
     arrow(ax, (cyc[i] + 5.8, YC), (cyc[i + 1] - 5.8, YC),
           color="#4A4A4A", lw=0.8, sa=0, sb=0, ms=5)
-ax.add_patch(FancyArrowPatch((178, YC - 2.6), (105, YC - 2.6), arrowstyle="-|>",
-                             mutation_scale=5, lw=0.8, color="#4A4A4A", zorder=4,
-                             connectionstyle="arc3,rad=-0.22"))
+curve(ax, (178, YC - 2.6), (105, YC - 2.6), -0.22, "#4A4A4A", 0.8)
 txt(ax, 99, 75.5, "$\\Rightarrow\;S(t),\\,I(t),\\,R(t),\;R(\\infty)$", size=FS_MATH)
 
 # ───────────────────────────────  (c)
@@ -102,19 +99,20 @@ for p in ta[1:] + tb[1:]: node(ax, p, "S")
 node(ax, F, "I", r=2.0)
 txt(ax, 168, 60, "layer $a$", size=FS_SM); txt(ax, 168, 55.5, "$B_{aa}$", size=FS_MATH)
 txt(ax, 172, 33, "layer $b$", size=FS_SM); txt(ax, 172, 28.5, "$B_{ab}$", size=FS_MATH)
-ax.add_patch(FancyBboxPatch((99, 14.6), 44, 7.2, boxstyle="round,pad=0,rounding_size=1.2",
-                            fc="#F2F4F6", ec="#B9C0C7", lw=0.7, zorder=3))
+roundbox(ax, 99, 14.6, 44, 7.2)
 txt(ax, 102, 18.2, "$K_{ab}=B_{ab}\\,C_b$", size=FS_MATH + 0.8, weight="bold")
 
 # ───────────────────────────────  legend
-ax.plot([5, 186], [11.0, 11.0], color="#DCDCDC", lw=0.6, zorder=0)
+rule(ax, 5, 11.0, 186, 11.0)
 for x, st, s in [(6, "S", "susceptible"), (30, "I", "infected"),
                  (52, "R", "recovered"), (75, "U", "test node $u$")]:
     node(ax, (x, 6.0), st, r=1.55); txt(ax, x + 3.0, 6.0, s, size=FS_SM)
-ax.plot([100, 106], [6.0, 6.0], color=C_INK, lw=0.9); txt(ax, 108, 6.0, "layer $a$", size=FS_SM)
-ax.plot([126, 132], [6.0, 6.0], color=C_INK, lw=0.9, ls=(0, (3, 2)))
+rule(ax, 100, 6.0, 106, 6.0, C_INK, 0.9); txt(ax, 108, 6.0, "layer $a$", size=FS_SM)
+rule(ax, 126, 6.0, 132, 6.0, C_INK, 0.9, dashed=True)
 txt(ax, 134, 6.0, "layer $b$", size=FS_SM)
 
+if os.environ.get("EXPORT_SPEC"):
+    export_spec(os.environ["EXPORT_SPEC"], fig, ax, W, H)
 tag = "%dmm" % round(OUT_MM)
 fig.savefig("fig1_lean_%s.pdf" % tag); fig.savefig("fig1_lean_%s.png" % tag, dpi=400)
 print("wrote fig1_lean_%s.pdf  (%.1f x %.1f mm)" % (tag, OUT_MM, OUT_MM / W * H))

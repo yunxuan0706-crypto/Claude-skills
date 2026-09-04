@@ -108,6 +108,46 @@ tritanopia; all four node types stay distinct in each.
 > The product $K_{ab}=B_{ab}C_b$ is the next-generation matrix [Eq.~(24)], and
 > $\rho(K)=1$ fixes the threshold $\lambda_c$ [Eq.~(25)].
 
+## Editable PowerPoint
+
+`fig1_lean_editable.pptx` and `fig1_annotated_editable.pptx` are the same two figures
+as **native PowerPoint shapes** — ellipses, freeform hyperedge blobs, arrows with real
+arrowheads, rounded rectangles and text boxes with genuine sub/superscript runs. No
+image is embedded in either deck (`0 pictures`), so every node can be dragged, every
+label retyped, and every colour changed in PowerPoint.
+
+| deck | slide | shapes |
+|---|---|---|
+| `fig1_lean_editable.pptx` | 190.0 × 138.0 mm | 127 |
+| `fig1_annotated_editable.pptx` | 190.0 × 158.0 mm | 156 |
+
+The slide is sized to the figure, so **File → Export → PDF gives the figure at its
+correct dimensions** with no cropping or rescaling. Type is at its true 7–9 pt, which
+looks small on screen — zoom in PowerPoint rather than resizing anything.
+
+Two limits worth knowing:
+
+- PowerPoint cannot stack a superscript over a subscript, so `x^{(a)}_{sir}` renders as
+  a superscript followed by a subscript rather than the two aligned vertically. Every
+  other symbol matches the PDF.
+- Moving a node does not reshape the hyperedge blob around it — the blob is one
+  freeform, not a container. Drag the blob's own outline to follow.
+
+The decks are generated from the same layout code as the PDFs, not redrawn: the
+drawing helpers in `style.py` record what they draw, `export_spec` writes that out as
+JSON with y measured from the top, and `build_pptx.js` replays it through pptxgenjs.
+Text boxes are placed from extents measured off the real matplotlib render, which is
+what keeps the two formats aligned. `mathrun.py` converts the mathtext (`$\Phi_a$`,
+`$x^{(a)}_{sir}$`) into PowerPoint runs with Greek characters and baseline offsets.
+
+```bash
+npm install pptxgenjs
+EXPORT_SPEC=fig1_lean_spec.json FIG_WIDTH_MM=190 python3 fig1_lean.py
+node build_pptx.js fig1_lean_spec.json fig1_lean_editable.pptx
+```
+
+Edit the Python and both formats follow. Edit the `.pptx` and only the deck changes.
+
 ## What changed relative to the previous Fig. 1
 
 **Content**

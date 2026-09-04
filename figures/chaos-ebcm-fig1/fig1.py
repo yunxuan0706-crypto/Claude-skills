@@ -1,7 +1,6 @@
-import sys, numpy as np
+import sys, os, numpy as np
 sys.path.insert(0, str(__import__("pathlib").Path(__file__).parent))
 from style import *
-from matplotlib.patches import FancyBboxPatch
 
 W, H = 190.0, 158.0                       # layout canvas, in mm
 # Physical output width. 190 mm = Elsevier/CSF double column;
@@ -9,8 +8,8 @@ W, H = 190.0, 158.0                       # layout canvas, in mm
 OUT_MM = float(__import__("os").environ.get("FIG_WIDTH_MM", 190.0))
 fig = plt.figure(figsize=(OUT_MM / 25.4, OUT_MM / W * H / 25.4))
 ax = fig.add_axes([0, 0, 1, 1]); ax.set_xlim(0, W); ax.set_ylim(0, H); ax.axis("off")
-ax.plot([95, 95], [15, 154], color="#DCDCDC", lw=0.6, zorder=0)
-ax.plot([5, 186], [81, 81], color="#DCDCDC", lw=0.6, zorder=0)
+rule(ax, 95, 15, 95, 154)
+rule(ax, 5, 81, 186, 81)
 
 # ═══════════════════════════════════════════════  (a) structure
 panel_head(ax, 5, 155, "a", "Multiplex hypergraph and hyperdegrees")
@@ -65,9 +64,7 @@ for i in range(4):
     x0, x1 = cyc[i] + 5.8, cyc[i + 1] - 5.8
     arrow(ax, (x0, YC), (x1, YC), color="#4A4A4A", lw=0.8, sa=0, sb=0, ms=5)
     if eqs[i]: txt(ax, (x0 + x1) / 2, YC + 3.4, eqs[i], size=FS_SM, ha="center", color="#7A7A7A")
-ax.add_patch(FancyArrowPatch((178, YC - 2.6), (105, YC - 2.6), arrowstyle="-|>",
-                             mutation_scale=5, lw=0.8, color="#4A4A4A", zorder=4,
-                             connectionstyle="arc3,rad=-0.22"))
+curve(ax, (178, YC - 2.6), (105, YC - 2.6), -0.22, "#4A4A4A", 0.8)
 txt(ax, 141, 91.6, "closure   [Eq. (14)]", size=FS_SM, ha="center", color="#7A7A7A",
     bbox=dict(facecolor="white", edgecolor="none", pad=1.4))
 txt(ax, 99, 85.5, "$\\Rightarrow$   $S(t),\\,I(t),\\,R(t)$   and   $R(\\infty)$   [Eqs. (8), (17), (18)]", size=FS_MATH)
@@ -101,9 +98,9 @@ txt(ax, 84, 45, "$\\Rightarrow\;C$", size=FS_MATH)
 bx = 26.0
 for y, segs in [(29.5, [(0, 20, "#333333")]), (25.0, [(0, 20, "#333333"), (20, 36, C_TRAN)])]:
     for a, b, c in segs:
-        ax.plot([bx + a, bx + b], [y, y], color=c, lw=1.9, solid_capstyle="butt", zorder=4)
-        ax.plot([bx + b, bx + b], [y - 1.1, y + 1.1], color=c, lw=0.7, zorder=4)
-ax.plot([bx, bx], [23.9, 30.6], color="#777777", lw=0.7, zorder=3)
+        rule(ax, bx + a, y, bx + b, y, c, 1.9, z=4)
+        rule(ax, bx + b, y - 1.1, bx + b, y + 1.1, c, 0.7, z=4)
+rule(ax, bx, 23.9, bx, 30.6, "#777777", 0.7, z=3)
 txt(ax, 5, 29.5, "direct", size=FS_SM)
 txt(ax, 5, 25.0, "secondary", size=FS_SM)
 txt(ax, 64, 25.0, "extension", size=FS_SM, color=C_TRAN)
@@ -132,24 +129,25 @@ txt(ax, 167, 67.5, "layer $a$", size=FS_SM)
 txt(ax, 171, 41.5, "layer $b$", size=FS_SM)
 txt(ax, 99, 29.0, "a type-$a$ node reaches $B_{ab}$ remaining layer-$b$ hyperedges", size=FS_SM)
 txt(ax, 99, 24.0, "$B_{ab}=\\langle k^{(a)}k^{(b)}\\rangle/\\langle k^{(a)}\\rangle-\\delta_{ab}$   [Eq. (23)]", size=FS_SM)
-ax.add_patch(FancyBboxPatch((99, 13.4), 44, 7.2, boxstyle="round,pad=0,rounding_size=1.2",
-                            fc="#F2F4F6", ec="#B9C0C7", lw=0.7, zorder=3))
+roundbox(ax, 99, 13.4, 44, 7.2)
 txt(ax, 102, 17.0, "$K_{ab}=B_{ab}\\,C_b$", size=FS_MATH + 0.8, weight="bold")
 txt(ax, 147, 17.0, "$\\rho(K)=1\;\\Rightarrow\;\\lambda_c$   [Eqs. (24), (25)]", size=FS_SM)
 
 # ═══════════════════════════════════════════════  legend
-ax.plot([5, 186], [11.6, 11.6], color="#DCDCDC", lw=0.6, zorder=0)
+rule(ax, 5, 11.6, 186, 11.6)
 for x, st, s in [(6, "S", "susceptible"), (27, "I", "infected"),
                  (45, "R", "recovered"), (64, "U", "test node $u$")]:
     node(ax, (x, 6.2), st, r=1.55); txt(ax, x + 3.0, 6.2, s, size=FS_SM)
-ax.plot([86, 92], [6.2, 6.2], color=C_INK, lw=0.9); txt(ax, 94, 6.2, "layer $a$", size=FS_SM)
-ax.plot([108, 114], [6.2, 6.2], color=C_INK, lw=0.9, ls=(0, (3, 2)))
+rule(ax, 86, 6.2, 92, 6.2, C_INK, 0.9); txt(ax, 94, 6.2, "layer $a$", size=FS_SM)
+rule(ax, 108, 6.2, 114, 6.2, C_INK, 0.9, dashed=True)
 txt(ax, 116, 6.2, "layer $b$", size=FS_SM)
 arrow(ax, (130, 6.2), (136, 6.2), color=C_TRAN, lw=0.9, sa=0, sb=0, ms=5)
 txt(ax, 138, 6.2, "transmission", size=FS_SM)
 arrow(ax, (158, 6.2), (164, 6.2), color=C_COUP, lw=0.9, sa=0, sb=0, ms=5)
 txt(ax, 166, 6.2, "coupling", size=FS_SM)
 
+if os.environ.get("EXPORT_SPEC"):
+    export_spec(os.environ["EXPORT_SPEC"], fig, ax, W, H)
 tag = "%dmm" % round(OUT_MM)
 fig.savefig("fig1_csf_%s.pdf" % tag); fig.savefig("fig1_csf_%s.png" % tag, dpi=400)
 print("wrote fig1_csf_%s.pdf  (%.1f x %.1f mm)" % (tag, OUT_MM, OUT_MM / W * H))

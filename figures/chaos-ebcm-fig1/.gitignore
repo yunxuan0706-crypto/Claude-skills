@@ -1,0 +1,7 @@
+# npm working tree for build_pptx.js (see README: npm install pptxgenjs)
+node_modules/
+package-lock.json
+# regenerable intermediates
+*_spec.json
+fig1_*_editable.pdf
+__pycache__/

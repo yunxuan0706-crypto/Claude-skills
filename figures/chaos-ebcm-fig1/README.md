@@ -148,6 +148,49 @@ node build_pptx.js fig1_lean_spec.json fig1_lean_editable.pptx
 
 Edit the Python and both formats follow. Edit the `.pptx` and only the deck changes.
 
+## Rebuilding it by hand in PowerPoint
+
+The `*_editable.pptx` decks above are editable but not *reproducible*: their hyperedges
+are freeform shapes traced from a convex-hull offset, 70-odd points each, which nobody
+is going to redraw by hand. `fig1_ppt_reproducible.pptx` is a third variant whose
+geometry was redesigned so that **every element is one shape from PowerPoint's own
+gallery**:
+
+| element | PowerPoint shape |
+|---|---|
+| hyperedge | **Oval** (a circle, or an ellipse plus a rotation) |
+| node | **Oval** (circle) |
+| arrow, rule, exclusion cross | **Line**, arrowhead set on the line |
+| $K_{ab}$ box | **Rounded Rectangle** |
+| every label | **Text Box** |
+
+Hyperedges are circles or ellipses with their member nodes placed on the boundary —
+the construction the original figure used — so shared nodes fall naturally on
+intersections. It contains **no freeform shapes and no Bezier arrows**: the closure
+feedback loop is a three-segment elbow and the $h_a$ coupling arrow is straight.
+python-pptx reports only `AUTO_SHAPE` and `TEXT_BOX`, 128 shapes, 0 pictures.
+
+| file | what it is |
+|---|---|
+| `fig1_ppt_190mm.png` / `.pdf` | the target to reproduce (190 × 145 mm) |
+| `fig1_ppt_reproducible.pptx` | the same figure as standard shapes — open it, copy pieces out |
+| `BUILD_SHEET.md` | every shape's exact geometry in centimetres |
+
+`BUILD_SHEET.md` is generated from the figure, not written by hand
+(`python3 make_build_sheet.py fig1_ppt_spec.json`), so its numbers cannot drift from
+the drawing. It gives the slide size, a style registry (node fills and diameters,
+hyperedge line/fill and transparency, arrow colours, text sizes), and then per panel a
+table of positions: X/Y of each shape's bounding box, width, height and rotation in
+the exact units PowerPoint's Format Shape pane expects. Faded elements list their
+pre-blended hex, since a PowerPoint line colour cannot carry alpha.
+
+```bash
+FIG_WIDTH_MM=190 python3 fig1_ppt.py                       # figure + PNG/PDF
+EXPORT_SPEC=fig1_ppt_spec.json FIG_WIDTH_MM=190 python3 fig1_ppt.py
+node build_pptx.js fig1_ppt_spec.json fig1_ppt_reproducible.pptx
+python3 make_build_sheet.py fig1_ppt_spec.json             # BUILD_SHEET.md
+```
+
 ## What changed relative to the previous Fig. 1
 
 **Content**

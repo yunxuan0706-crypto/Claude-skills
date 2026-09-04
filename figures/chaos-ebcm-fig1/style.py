@@ -196,6 +196,9 @@ def export_spec(path, fig, ax, W, H):
             d["w"], d["h"] = abs(x1 - x0), abs(y1 - y0)
             d["runs"] = mathrun.runs(d.pop("s"))
             d["y"] = H - d["y"]
+        elif d["kind"] == "ellipse":
+            d["cy"] = H - d["cy"]
+            d["ang"] = -d["ang"]                  # y flips, so rotation mirrors
         elif d["kind"] == "blob":
             d["pts"] = [[x, H - y] for x, y in d["pts"]]
         elif d["kind"] in ("node", "cross"):
@@ -209,3 +212,28 @@ def export_spec(path, fig, ax, W, H):
         out.append(d)
     json.dump({"w_mm": W, "h_mm": H, "shapes": out}, open(path, "w"), indent=1)
     print("wrote %s  (%d shapes)" % (path, len(out)))
+
+
+# ---------------------------------- hyperedges as plain ellipses
+# Everything here maps to one standard PowerPoint shape: Insert > Shapes > Oval,
+# then set Size and Rotation. Nodes sit on the ellipse boundary.
+def on_ell(c, a, b, ang, t):
+    """Point at parameter t (deg) on an ellipse centred at c, rotated ang (deg)."""
+    import math
+    tr, ar = math.radians(t), math.radians(ang)
+    x, y = a * math.cos(tr), b * math.sin(tr)
+    return (c[0] + x * math.cos(ar) - y * math.sin(ar),
+            c[1] + x * math.sin(ar) + y * math.cos(ar))
+
+
+def hyperedge(ax, c, a, b, ang, ts, layer, lw=0.9, z=1, alpha_scale=1.0):
+    """One hyperedge drawn as an ellipse; returns member positions at params ts."""
+    from matplotlib.patches import Ellipse
+    for fc, ec, al, zz in ((layer["fc"], "none", layer["alpha_f"] * alpha_scale, z),
+                           ("none", layer["ec"], alpha_scale, z + 0.5)):
+        ax.add_patch(Ellipse(c, 2 * a, 2 * b, angle=ang, facecolor=fc, edgecolor=ec,
+                             lw=lw, ls=layer["ls"], alpha=al, zorder=zz))
+    _rec(kind="ellipse", cx=c[0], cy=c[1], a=a, b=b, ang=ang, fill=layer["fc"],
+         alpha=layer["alpha_f"] * alpha_scale, edge=layer["ec"], lw=lw,
+         dashed=layer["ls"] != "-", edge_alpha=alpha_scale)
+    return [on_ell(c, a, b, ang, t) for t in ts]

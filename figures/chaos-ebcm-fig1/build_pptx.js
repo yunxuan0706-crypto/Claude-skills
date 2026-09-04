@@ -54,6 +54,16 @@ for (const o of spec.shapes) {
       break;
     }
 
+    case 'ellipse':                                  // hyperedge = PowerPoint Oval
+      s.addShape(pres.ShapeType.ellipse, {
+        x: inch(o.cx - o.a), y: inch(o.cy - o.b), w: inch(2 * o.a), h: inch(2 * o.b),
+        rotate: o.ang,
+        fill: { color: hex(o.fill), transparency: Math.round((1 - o.alpha) * 100) },
+        line: { color: fade(o.edge, o.edge_alpha), width: o.lw,
+                dashType: o.dashed ? 'dash' : 'solid' },
+      });
+      break;
+
     case 'node':
       s.addShape(pres.ShapeType.ellipse, {
         x: inch(o.x - o.r), y: inch(o.y - o.r), w: inch(2 * o.r), h: inch(2 * o.r),
